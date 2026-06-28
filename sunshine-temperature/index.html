@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>labs.klymot • Sunshine & Temperature</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Ccircle cx='16' cy='16' r='13' fill='%230a1628'/%3E%3Ccircle cx='16' cy='16' r='13' stroke='%23d4a855' stroke-width='1.25'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.2' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='9.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='22.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='3' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='9' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Ccircle cx='19.5' cy='10.5' r='4' stroke='%23d4a855' stroke-width='1' fill='none' opacity='0.45'/%3E%3Ccircle cx='19.5' cy='10.5' r='2' fill='%23d4a855'/%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&amp;family=Source+Sans+3:wght@300;400;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap');
+        
+        :root {
+            --bg-primary: #0a1628;
+            --bg-secondary: #0f2047;
+            --bg-elevated: #152c4a;
+            --text-primary: #e8e4d8;
+            --text-secondary: #a8a090;
+            --text-muted: #5a6880;
+            --accent-primary: #d4a855;
+            --accent-hover: #e0bc72;
+            --border-color: rgba(212, 168, 85, 0.20);
+            --border-strong: rgba(212, 168, 85, 0.42);
+            --success: #30c880;
+            --warning: #f08030;
+            --danger: #e05050;
+        }
+        
+        body {
+            font-family: 'Source Sans 3', system-ui, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(212, 168, 85, 0.08), transparent 24rem),
+                var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .font-display {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .klymot-header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .brand-logo {
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .header-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: var(--text-primary);
+            letter-spacing: 0.02em;
+        }
+
+        .header-subtitle,
+        .lab-subtitle {
+            color: var(--text-muted);
+            letter-spacing: 0.14em;
+            font-variant-caps: all-small-caps;
+        }
+
+        .section-card {
+            background: var(--bg-elevated) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+        }
+
+        .metric-value {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 220px;
+        }
+
+        .nav-link {
+            transition: all 0.1s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--accent-primary);
+        }
+
+        .data-table {
+            font-size: 13px;
+        }
+
+        .explanation {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .station-pill {
+            background: rgba(15, 32, 71, 0.92);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        a:hover {
+            color: var(--accent-primary) !important;
+        }
+
+        select,
+        button {
+            font-family: 'Source Sans 3', system-ui, sans-serif;
+        }
+
+        select {
+            background: var(--bg-elevated) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border-color) !important;
+            border-radius: 8px !important;
+        }
+
+        select:focus {
+            border-color: var(--accent-primary) !important;
+            box-shadow: 0 0 0 2px rgba(212, 168, 85, 0.16);
+        }
+
+        button {
+            border-radius: 6px !important;
+        }
+
+        button:hover {
+            border-color: var(--border-strong);
+        }
+
+        .btn-brand,
+        button.bg-sky-600 {
+            background: var(--accent-primary) !important;
+            color: var(--bg-primary) !important;
+            border-color: var(--accent-primary) !important;
+            font-weight: 600;
+        }
+
+        .btn-brand:hover,
+        button.bg-sky-600:hover {
+            background: var(--accent-hover) !important;
+            border-color: var(--accent-hover) !important;
+        }
+
+        .brand-control {
+            background: rgba(15, 32, 71, 0.92);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .brand-control.active {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .text-slate-900,
+        .text-slate-700 {
+            color: var(--text-primary) !important;
+        }
+
+        .text-slate-600,
+        .text-slate-500,
+        .text-slate-400 {
+            color: var(--text-secondary) !important;
+        }
+
+        .text-sky-600,
+        .text-sky-700 {
+            color: var(--accent-primary) !important;
+        }
+
+        .text-emerald-600 {
+            color: var(--success) !important;
+        }
+
+        .text-amber-600,
+        .text-amber-700,
+        .text-amber-800,
+        .text-orange-600 {
+            color: var(--warning) !important;
+        }
+
+        .text-red-600 {
+            color: var(--danger) !important;
+        }
+
+        .bg-white,
+        .bg-slate-50,
+        .bg-slate-100 {
+            background-color: var(--bg-elevated) !important;
+        }
+
+        .bg-slate-900 {
+            background-color: var(--accent-primary) !important;
+            color: var(--bg-primary) !important;
+        }
+
+        .shadow-sm {
+            background-color: var(--accent-primary) !important;
+            color: var(--bg-primary) !important;
+            box-shadow: none !important;
+        }
+
+        .bg-sky-100,
+        .bg-amber-50 {
+            background-color: rgba(212, 168, 85, 0.11) !important;
+        }
+
+        .border,
+        .border-b,
+        .border-slate-300,
+        .border-amber-200 {
+            border-color: var(--border-color) !important;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace !important;
+        }
+
+        tbody tr {
+            color: var(--text-secondary);
+        }
+
+        canvas {
+            filter: saturate(0.92);
+        }
+
+        .chart-container {
+            background: rgba(10, 22, 40, 0.28);
+            border: 1px solid rgba(212, 168, 85, 0.12);
+            border-radius: 6px;
+            padding: 0.5rem;
+        }
+
+        .mini-tool {
+            min-width: 2rem;
+            height: 2rem;
+            padding: 0 0.55rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 32, 71, 0.92);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            font-size: 0.78rem;
+            line-height: 1;
+        }
+
+        .mini-tool:hover {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            border-color: var(--border-strong);
+        }
+
+        .control-readout {
+            min-width: 3.6rem;
+            height: 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: rgba(10, 22, 40, 0.22);
+            color: var(--text-secondary);
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+            align-items: start;
+        }
+
+        .metric-card {
+            display: grid;
+            grid-template-rows: 2.25rem auto;
+            align-items: end;
+            text-align: center;
+        }
+
+        .metric-label {
+            align-self: start;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            line-height: 1.15;
+        }
+
+        .source-list {
+            text-align: left;
+        }
+
+        .source-list a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .source-list a:hover {
+            color: var(--accent-hover) !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <!-- Header -->
+    <header class="klymot-header sticky top-0 z-50">
+        <div class="max-w-[420px] mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-x-3 min-w-0">
+                <a href="https://klymot.com" class="flex items-center gap-x-2 shrink-0" aria-label="klymot home">
+                    <span class="brand-logo" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="24" height="24"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"/><ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"/><ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/><ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/><ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/><ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/><circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/><circle cx="19.5" cy="10.5" r="2" fill="currentColor"/></svg>
+                    </span>
+                    <div class="leading-none">
+                        <span class="header-title text-xl font-semibold">klymot</span>
+                        <span class="header-subtitle block text-[9px]">labs</span>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="flex items-center gap-x-2 text-sm">
+                <a href=".." class="px-3 py-1.5 brand-control active text-sm font-medium">Labs</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-[420px] mx-auto px-4 pb-12">
+        
+        <!-- Hero / Intro -->
+        <div class="pt-6 pb-4">
+            <div class="flex items-center gap-x-2 mb-1">
+                <span class="px-3 py-1 bg-sky-100 text-sky-700 text-xs font-semibold rounded">LAB</span>
+            </div>
+            <h1 class="font-display text-3xl tracking-tighter font-semibold leading-none">Sunshine &amp; Temperature</h1>
+            <p class="mt-2 text-slate-600 text-[15px]">Exploring the relationship between surface solar radiation (sunshine) and surface air temperature.</p>
+        </div>
+
+        <!-- Quick Explainer -->
+        <div class="section-card p-4 mb-6">
+            <div class="flex items-start gap-3">
+                <div class="w-5 h-5 mt-0.5 flex-shrink-0 text-sky-600">☀️</div>
+                <div class="text-sm explanation">
+                    <strong>Incoming sunshine</strong> delivers energy to the surface. More sunshine generally supports higher temperatures, but the relationship is complex. 
+                    <span class="text-slate-500">Clouds, aerosols, albedo (ice/snow reflection), elevation, latitude, and ocean/land effects all play major roles.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Station Selection -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-2 px-1">
+                <div class="font-semibold text-sm">Select Station Pair</div>
+                <div class="text-xs text-slate-500">Raw + Adjusted loaded</div>
+            </div>
+            
+            <select id="stationSelect" onchange="updateStation()" 
+                    class="w-full bg-white border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-sky-400">
+                <!-- Populated by JS -->
+            </select>
+            
+            <div id="stationInfo" class="mt-2 flex gap-2 text-xs"></div>
+        </div>
+
+        <!-- Complications Note -->
+        <div class="section-card p-4 mb-6 bg-amber-50 border-amber-200">
+            <div class="text-xs font-semibold text-amber-700 mb-1.5">IMPORTANT CAVEATS</div>
+            <div id="stationCaveats" class="text-xs text-amber-800 space-y-1.5 explanation">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Data Controls -->
+        <div class="section-card p-4 mb-6">
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Data Type -->
+                <div>
+                    <div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Temperature Data</div>
+                    <div class="flex bg-slate-100 rounded-2xl p-1">
+                        <button onclick="setDataType('qcu')" id="btn-qcu"
+                                class="flex-1 py-1.5 text-xs font-medium rounded-[14px] bg-white shadow-sm">Raw</button>
+                        <button onclick="setDataType('qcf')" id="btn-qcf"
+                                class="flex-1 py-1.5 text-xs font-medium rounded-[14px]">Adjusted</button>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Comparison</div>
+                    <div class="flex bg-slate-100 rounded-2xl p-1">
+                        <button onclick="setResolution('monthly')" id="btn-monthly"
+                                class="flex-1 py-1.5 text-xs font-medium rounded-[14px] bg-white shadow-sm">Monthly</button>
+                        <button onclick="setResolution('yearly')" id="btn-yearly"
+                                class="flex-1 py-1.5 text-xs font-medium rounded-[14px]">Yearly</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3 text-[10px] text-slate-500 px-1">
+                Raw is unadjusted monthly GHCN temperature from Klymot; Adjusted is homogenized. 
+                Sunshine is QC-only, loaded from <span class="font-mono">data/sunshine-qc.json</span>.
+            </div>
+            <div id="loadStatus" class="mt-2 text-[10px] text-slate-500 px-1"></div>
+        </div>
+
+        <div class="section-card p-4 mb-6">
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Sunshine Lag</div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Lag sunshine one quarter month earlier">−</button>
+                        <span id="lagReadout" class="control-readout">0 mo</span>
+                        <button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Lag sunshine one quarter month later">+</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Time Axis</div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="panTime(-1)" class="mini-tool" aria-label="Pan time axis earlier">‹</button>
+                        <button onclick="zoomTime(1)" class="mini-tool" aria-label="Zoom in time axis">+</button>
+                        <button onclick="zoomTime(-1)" class="mini-tool" aria-label="Zoom out time axis">−</button>
+                        <button onclick="panTime(1)" class="mini-tool" aria-label="Pan time axis later">›</button>
+                    </div>
+                </div>
+            </div>
+            <div id="timeWindowReadout" class="mt-3 text-[10px] text-slate-500 px-1"></div>
+        </div>
+
+        <!-- Visualizations -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-3 px-1">
+                <div class="font-semibold">Visualizations</div>
+                <div id="resolutionBadge" class="text-xs px-2 py-0.5 bg-white border rounded-full text-slate-500">Monthly pairs</div>
+            </div>
+            
+            <!-- Time Series -->
+            <div class="section-card p-4 mb-4">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="font-medium text-sm">Time Series</div>
+                    <div class="text-[10px] text-slate-400">Aligned observations</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="timeSeriesChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Scatter Plot -->
+            <div class="section-card p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="font-medium text-sm">Scatter: Sunshine vs Temperature</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="scatterChart"></canvas>
+                </div>
+                <div id="scatterNote" class="text-[10px] text-center text-slate-500 mt-1"></div>
+            </div>
+        </div>
+
+        <!-- Correlation Analysis -->
+        <div class="section-card p-4 mb-6">
+            <div class="font-semibold mb-3">Correlation Analysis</div>
+            
+            <div class="metric-grid mb-4">
+                <div class="metric-card">
+                    <div class="metric-label text-xs text-slate-500">Pearson r</div>
+                    <div id="pearsonR" class="text-3xl font-semibold tabular-nums text-sky-600">0.72</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label text-xs text-slate-500">r² (explained variance)</div>
+                    <div id="rSquared" class="text-3xl font-semibold tabular-nums">0.52</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label text-xs text-slate-500">p-value (approx)</div>
+                    <div id="pValue" class="text-3xl font-semibold tabular-nums text-emerald-600">&lt;0.001</div>
+                </div>
+            </div>
+            
+            <div class="bg-slate-50 rounded-2xl p-3 text-xs">
+                <div class="font-medium mb-1">Contribution Score</div>
+                <div id="contributionScore" class="text-lg font-semibold text-emerald-600">Strong positive contribution (r = 0.72)</div>
+                <div class="text-[10px] text-slate-600 mt-1">
+                    Sunshine explains a meaningful portion of temperature variance at this location. 
+                    Other factors (clouds, circulation, etc.) account for the remainder.
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer / Notes -->
+        <div class="section-card p-4 mb-6 text-[11px] text-slate-400 source-list">
+            <div class="font-semibold text-sm mb-2 text-slate-700">Sources &amp; References</div>
+            <p class="mb-2"><strong>Temperature:</strong> Klymot station CSVs derived from GHCN-Monthly v4 Raw and Adjusted records. GHCNm is the Global Historical Climatology Network Monthly temperature dataset; Klymot uses station records as the primary climate observation source. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018 DOI</a>.</p>
+            <p class="mb-2"><strong>Homogenization:</strong> Adjusted records follow the GHCN processing lineage, including pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009 DOI</a>.</p>
+            <p class="mb-2"><strong>Sunshine:</strong> QC sunshine and shortwave radiation are generated by <span class="font-mono">scripts/fetch_sunshine.py</span> from the Open-Meteo Historical Weather API, then stored locally in <span class="font-mono">data/sunshine-qc.json</span>. <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo documentation</a>.</p>
+            <p>This is a neutral exploration tool. Correlation does not imply causation; circulation, clouds, albedo, elevation, land/sea effects, and station exposure can influence both variables.</p>
+        </div>
+        
+    </div>
+
+    <script>
+        // Tailwind script
+        function initTailwind() {
+            document.documentElement.style.setProperty('--accent', '#d4a855');
+        }
+
+        function cssVar(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        function themedChartOptions(extra = {}) {
+            const text = cssVar('--text-secondary');
+            const grid = 'rgba(212, 168, 85, 0.14)';
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: { color: text },
+                        grid: { color: grid },
+                        title: { color: text }
+                    },
+                    y: {
+                        ticks: { color: text },
+                        grid: { color: grid },
+                        title: { color: text }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: text }
+                    }
+                },
+                ...extra
+            };
+        }
+
+        const KLYMOT_DATA_BASE = 'https://www.klymot.com/data';
+        const FALLBACK_SUNSHINE = {
+            source: 'Built-in fallback sample; run scripts/fetch_sunshine.py for latest QC sunshine',
+            stations: [{
+                key: 'VAL',
+                name: 'Valentia Observatory, Ireland',
+                lat: 51.9394,
+                lon: -10.2219,
+                source: 'fallback sample',
+                qc: true,
+                temperature_station: {
+                    id: 'EI000003953',
+                    name: 'VALENTIA OBSERVATORY',
+                    lat: 51.9394,
+                    lon: -10.2219,
+                    elevation_m: 9,
+                    first_year: 1869,
+                    last_year: 2026,
+                    distance_km: 0
+                },
+                monthly: [
+                    { year: 2022, month: 1, sunshine_hours: 53, shortwave_mj_m2: 83, days: 31 },
+                    { year: 2022, month: 2, sunshine_hours: 68, shortwave_mj_m2: 140, days: 28 },
+                    { year: 2022, month: 3, sunshine_hours: 121, shortwave_mj_m2: 285, days: 31 },
+                    { year: 2022, month: 4, sunshine_hours: 162, shortwave_mj_m2: 445, days: 30 },
+                    { year: 2022, month: 5, sunshine_hours: 180, shortwave_mj_m2: 560, days: 31 },
+                    { year: 2022, month: 6, sunshine_hours: 155, shortwave_mj_m2: 565, days: 30 },
+                    { year: 2022, month: 7, sunshine_hours: 170, shortwave_mj_m2: 575, days: 31 },
+                    { year: 2022, month: 8, sunshine_hours: 150, shortwave_mj_m2: 485, days: 31 },
+                    { year: 2022, month: 9, sunshine_hours: 118, shortwave_mj_m2: 330, days: 30 },
+                    { year: 2022, month: 10, sunshine_hours: 83, shortwave_mj_m2: 190, days: 31 },
+                    { year: 2022, month: 11, sunshine_hours: 56, shortwave_mj_m2: 95, days: 30 },
+                    { year: 2022, month: 12, sunshine_hours: 45, shortwave_mj_m2: 62, days: 31 },
+                    { year: 2023, month: 1, sunshine_hours: 50, shortwave_mj_m2: 78, days: 31 },
+                    { year: 2023, month: 2, sunshine_hours: 82, shortwave_mj_m2: 154, days: 28 },
+                    { year: 2023, month: 3, sunshine_hours: 105, shortwave_mj_m2: 260, days: 31 },
+                    { year: 2023, month: 4, sunshine_hours: 148, shortwave_mj_m2: 420, days: 30 },
+                    { year: 2023, month: 5, sunshine_hours: 190, shortwave_mj_m2: 585, days: 31 },
+                    { year: 2023, month: 6, sunshine_hours: 205, shortwave_mj_m2: 610, days: 30 },
+                    { year: 2023, month: 7, sunshine_hours: 142, shortwave_mj_m2: 530, days: 31 },
+                    { year: 2023, month: 8, sunshine_hours: 146, shortwave_mj_m2: 455, days: 31 },
+                    { year: 2023, month: 9, sunshine_hours: 123, shortwave_mj_m2: 345, days: 30 },
+                    { year: 2023, month: 10, sunshine_hours: 88, shortwave_mj_m2: 205, days: 31 },
+                    { year: 2023, month: 11, sunshine_hours: 58, shortwave_mj_m2: 98, days: 30 },
+                    { year: 2023, month: 12, sunshine_hours: 47, shortwave_mj_m2: 68, days: 31 }
+                ]
+            }]
+        };
+
+        let stations = {};
+        let sunshinePayload = null;
+        let currentStation = 'VAL';
+        let currentDataType = 'qcu';
+        let currentResolution = 'monthly';
+        let monthLag = 0;
+        let timeWindowStart = 0;
+        let timeWindowSize = null;
+        let timeSeriesChart = null;
+        let scatterChart = null;
+        let lastAlignedData = [];
+
+        function setStatus(message) {
+            document.getElementById('loadStatus').textContent = message;
+        }
+
+        function klymotCsvUrl(kind, stationId) {
+            return `${KLYMOT_DATA_BASE}/${kind}/${stationId}.csv`;
+        }
+
+        function monthKey(year, month) {
+            return `${year}-${String(month).padStart(2, '0')}`;
+        }
+
+        function mean(values) {
+            const valid = values.filter(value => Number.isFinite(value));
+            return valid.length ? valid.reduce((sum, value) => sum + value, 0) / valid.length : null;
+        }
+
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function addMonths(year, month, offset) {
+            const zeroBased = (year * 12) + (month - 1) + offset;
+            return {
+                year: Math.floor(zeroBased / 12),
+                month: (zeroBased % 12) + 1
+            };
+        }
+
+        function parseKlymotMonthlyCsv(text) {
+            const points = new Map();
+            text.trim().split(/\r?\n/).forEach(line => {
+                const parts = line.split(',');
+                const year = Number(parts[0]);
+                if (!Number.isFinite(year)) return;
+                for (let i = 1; i <= 12; i++) {
+                    const raw = parts[i];
+                    if (raw === undefined || raw === '') continue;
+                    const value = Number(raw);
+                    if (!Number.isFinite(value) || value <= -9000) continue;
+                    points.set(monthKey(year, i), value / 100);
+                }
+            });
+            return points;
+        }
+
+        async function fetchText(url) {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`${response.status} ${url}`);
+            return response.text();
+        }
+
+        async function loadTemperatureSeries(station) {
+            const [qcuText, qcfText] = await Promise.all([
+                fetchText(klymotCsvUrl('qcu', station.tempStation.id)),
+                fetchText(klymotCsvUrl('qcf', station.tempStation.id))
+            ]);
+            station.temperature = {
+                qcu: parseKlymotMonthlyCsv(qcuText),
+                qcf: parseKlymotMonthlyCsv(qcfText)
+            };
+        }
+
+        async function loadSunshinePayload() {
+            try {
+                const response = await fetch('data/sunshine-qc.json', { cache: 'no-store' });
+                if (!response.ok) throw new Error(`${response.status} data/sunshine-qc.json`);
+                return await response.json();
+            } catch (error) {
+                console.warn('[Sunshine-Temp Lab] Using fallback sunshine sample:', error);
+                return FALLBACK_SUNSHINE;
+            }
+        }
+
+        function buildStations(payload) {
+            stations = {};
+            payload.stations.forEach(record => {
+                stations[record.key] = {
+                    key: record.key,
+                    name: record.name,
+                    lat: record.lat,
+                    lon: record.lon,
+                    source: record.source || payload.source || 'QC sunshine',
+                    sunshineMonthly: record.monthly || [],
+                    sunshineDaily: record.daily || [],
+                    tempStation: record.temperature_station,
+                    temperature: null
+                };
+            });
+        }
+
+        function populateStationSelect() {
+            const select = document.getElementById('stationSelect');
+            select.innerHTML = '';
+            
+            Object.keys(stations).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = stations[key].name;
+                select.appendChild(opt);
+            });
+            
+            select.value = currentStation;
+        }
+
+        function updateStationInfo() {
+            const infoDiv = document.getElementById('stationInfo');
+            const s = stations[currentStation];
+            if (!s) return;
+            
+            infoDiv.innerHTML = `
+                <div class="station-pill flex items-center gap-1">
+                    <span class="font-mono text-[10px]">Raw/Adjusted: ${s.tempStation.id}</span>
+                </div>
+                <div class="station-pill flex items-center gap-1">
+                    <span class="font-mono text-[10px]">Sun: QC</span>
+                </div>
+                <div class="text-[10px] text-slate-500 self-center">${s.tempStation.name}, ${Number(s.tempStation.distance_km || 0).toFixed(1)} km</div>
+            `;
+            updateStationCaveats();
+        }
+
+        function stationCaveatItems(station) {
+            const items = [];
+            const distance = Number(station.tempStation.distance_km || 0);
+            const elevation = Number(station.tempStation.elevation_m);
+            if (distance > 25) {
+                items.push(`<strong>Temperature pairing</strong>: sunshine is for ${station.name}, but the covering temperature station is ${station.tempStation.name}, ${distance.toFixed(1)} km away.`);
+            }
+            if (Number.isFinite(elevation) && elevation > 1000) {
+                items.push(`<strong>High elevation</strong>: ${station.tempStation.name} is ${elevation.toFixed(0)} m above sea level, so lapse-rate effects can dominate local temperature.`);
+            }
+            if (/TOKYO/i.test(station.name) || /TOKYO/i.test(station.tempStation.name)) {
+                items.push('<strong>Urban station</strong>: Tokyo has strong urban heat-island exposure, especially in minimum temperatures.');
+            }
+            if (/POTSDAM/i.test(station.name) || /POTSDAM/i.test(station.tempStation.name)) {
+                items.push('<strong>Urban influence</strong>: Potsdam is near the Berlin urban region, so land-use change and UHI can affect temperature independently of sunshine.');
+            }
+            if (/STOCKHOLM/i.test(station.name) || /STOCKHOLM/i.test(station.tempStation.name)) {
+                items.push('<strong>Urban influence</strong>: Stockholm has a meaningful urban heat-island signal, especially in recent decades.');
+            }
+            if (/STOCKHOLM/i.test(station.name) || /POTSDAM/i.test(station.name)) {
+                items.push('<strong>Seasonal snow</strong>: winter albedo and cloudiness can weaken direct sunshine-temperature coupling.');
+            }
+            if (/VALENTIA/i.test(station.name)) {
+                items.push('<strong>Maritime exposure</strong>: Atlantic circulation and sea-surface temperatures can mute local sunshine-temperature changes.');
+            }
+            if (/DAVOS/i.test(station.name)) {
+                items.push('<strong>Davos pairing</strong>: Davos sunshine is paired to Saentis because the Davos Klymot temperature record does not cover the full 1940-current span.');
+            }
+            items.push('<strong>Lag control</strong>: offsetting sunshine by ±2 months tests delayed thermal response rather than same-month correlation.');
+            return items;
+        }
+
+        function updateStationCaveats() {
+            const caveats = document.getElementById('stationCaveats');
+            const station = stations[currentStation];
+            if (!caveats || !station) return;
+            caveats.innerHTML = stationCaveatItems(station).map(item => `<div>• ${item}</div>`).join('');
+        }
+
+        async function ensureCurrentTemperatureLoaded() {
+            const station = stations[currentStation];
+            if (!station || station.temperature) return;
+            setStatus(`Loading Raw and Adjusted temperature for ${station.tempStation.id} from www.klymot.com...`);
+            await loadTemperatureSeries(station);
+            setStatus(`Loaded ${station.tempStation.id} Raw/Adjusted and QC sunshine (${sunshinePayload.source}).`);
+        }
+
+        async function updateStation() {
+            currentStation = document.getElementById('stationSelect').value;
+            resetTimeWindow();
+            updateStationInfo();
+            await ensureCurrentTemperatureLoaded();
+            updateAllVisuals();
+        }
+
+        function setDataType(type) {
+            currentDataType = type;
+            
+            document.getElementById('btn-qcu').classList.toggle('bg-white', type === 'qcu');
+            document.getElementById('btn-qcu').classList.toggle('shadow-sm', type === 'qcu');
+            document.getElementById('btn-qcf').classList.toggle('bg-white', type === 'qcf');
+            document.getElementById('btn-qcf').classList.toggle('shadow-sm', type === 'qcf');
+            
+            updateAllVisuals();
+        }
+
+        function setResolution(type) {
+            currentResolution = type;
+            resetTimeWindow();
+            
+            document.getElementById('btn-monthly').classList.toggle('bg-white', type === 'monthly');
+            document.getElementById('btn-monthly').classList.toggle('shadow-sm', type === 'monthly');
+            document.getElementById('btn-yearly').classList.toggle('bg-white', type === 'yearly');
+            document.getElementById('btn-yearly').classList.toggle('shadow-sm', type === 'yearly');
+            
+            updateAllVisuals();
+        }
+
+        function shiftLag(delta) {
+            monthLag = clamp(monthLag + delta, -2, 2);
+            monthLag = Math.round(monthLag * 4) / 4;
+            updateAllVisuals();
+        }
+
+        function resetTimeWindow() {
+            timeWindowStart = 0;
+            timeWindowSize = null;
+        }
+
+        function ensureTimeWindow(rows) {
+            if (!rows.length) {
+                timeWindowStart = 0;
+                timeWindowSize = 0;
+                return;
+            }
+            const defaultSize = currentResolution === 'monthly' ? Math.min(rows.length, 12 * 20) : Math.min(rows.length, 40);
+            if (!timeWindowSize || timeWindowSize > rows.length) timeWindowSize = defaultSize;
+            timeWindowSize = clamp(timeWindowSize, currentResolution === 'monthly' ? 24 : 10, rows.length);
+            timeWindowStart = clamp(timeWindowStart, 0, Math.max(0, rows.length - timeWindowSize));
+        }
+
+        function zoomTime(direction) {
+            const data = getCurrentData();
+            const total = data.rows.length;
+            if (!total) return;
+            ensureTimeWindow(data.rows);
+            const factor = direction > 0 ? 0.7 : 1.4;
+            const minSize = currentResolution === 'monthly' ? 24 : 10;
+            const center = timeWindowStart + (timeWindowSize / 2);
+            timeWindowSize = clamp(Math.round(timeWindowSize * factor), minSize, total);
+            timeWindowStart = clamp(Math.round(center - (timeWindowSize / 2)), 0, Math.max(0, total - timeWindowSize));
+            updateTimeSeriesChart();
+        }
+
+        function panTime(direction) {
+            const data = getCurrentData();
+            if (!data.rows.length) return;
+            ensureTimeWindow(data.rows);
+            const step = Math.max(1, Math.round(timeWindowSize * 0.25));
+            timeWindowStart = clamp(timeWindowStart + (direction * step), 0, Math.max(0, data.rows.length - timeWindowSize));
+            updateTimeSeriesChart();
+        }
+
+        function visibleTimeRows(rows) {
+            ensureTimeWindow(rows);
+            return rows.slice(timeWindowStart, timeWindowStart + timeWindowSize);
+        }
+
+        function yearTickStep(rows) {
+            if (!rows.length) return 1;
+            const first = rows[0].year;
+            const last = rows[rows.length - 1].year;
+            const span = Math.max(1, last - first);
+            const rawStep = Math.ceil(span / 6);
+            const niceSteps = [1, 2, 5, 10, 20, 25, 50];
+            return niceSteps.find(step => step >= rawStep) || 100;
+        }
+
+        function timeAxisLabel(row, rows) {
+            if (!row) return '';
+            const step = yearTickStep(rows);
+            const firstYear = rows[0]?.year || row.year;
+            if ((row.year - firstYear) % step !== 0) return '';
+            if (currentResolution === 'monthly' && row.month !== 1) return '';
+            return String(row.year);
+        }
+
+        function updateControlsReadout(rows) {
+            const lagText = monthLag === 0 ? '0 mo' : `${monthLag > 0 ? '+' : ''}${monthLag} mo`;
+            document.getElementById('lagReadout').textContent = lagText;
+            const readout = document.getElementById('timeWindowReadout');
+            if (!readout || !rows.length) return;
+            const visible = visibleTimeRows(rows);
+            const first = visible[0]?.label || 'n/a';
+            const last = visible[visible.length - 1]?.label || 'n/a';
+            readout.textContent = `Visible: ${first} to ${last}`;
+        }
+
+        function alignMonthlyData(station) {
+            const tempMap = station.temperature[currentDataType];
+            const sunshineByMonth = station.sunshineDaily.length
+                ? laggedDailySunshineByMonth(station.sunshineDaily, monthLag)
+                : fallbackLaggedMonthlySunshine(station.sunshineMonthly, monthLag);
+            const rows = [];
+            [...tempMap.keys()].sort().forEach(key => {
+                const shiftedSunshine = sunshineByMonth.get(key);
+                const temp = tempMap.get(key);
+                if (!shiftedSunshine || !Number.isFinite(temp) || !Number.isFinite(shiftedSunshine.sunshine_hours)) return;
+                const [year, month] = key.split('-').map(Number);
+                rows.push({
+                    key,
+                    label: key,
+                    year,
+                    month,
+                    temp,
+                    sunshine: shiftedSunshine.sunshine_hours,
+                    shortwave: shiftedSunshine.shortwave_mj_m2,
+                    days: shiftedSunshine.days
+                });
+            });
+            return rows;
+        }
+
+        function laggedDailySunshineByMonth(dailyRows, lagMonths) {
+            const lagDays = Math.round(lagMonths * 30.4375);
+            const buckets = new Map();
+            dailyRows.forEach(row => {
+                const sourceDate = new Date(`${row.date}T00:00:00Z`);
+                if (Number.isNaN(sourceDate.getTime())) return;
+                const targetDate = new Date(sourceDate);
+                targetDate.setUTCDate(targetDate.getUTCDate() - lagDays);
+                const key = monthKey(targetDate.getUTCFullYear(), targetDate.getUTCMonth() + 1);
+                if (!buckets.has(key)) {
+                    buckets.set(key, { sunshine_hours: 0, shortwave_mj_m2: 0, days: 0 });
+                }
+                const bucket = buckets.get(key);
+                bucket.sunshine_hours += row.sunshine_hours || 0;
+                bucket.shortwave_mj_m2 += row.shortwave_mj_m2 || 0;
+                bucket.days += 1;
+            });
+            buckets.forEach(bucket => {
+                bucket.sunshine_hours = Number(bucket.sunshine_hours.toFixed(2));
+                bucket.shortwave_mj_m2 = Number(bucket.shortwave_mj_m2.toFixed(2));
+            });
+            return buckets;
+        }
+
+        function fallbackLaggedMonthlySunshine(monthlyRows, lagMonths) {
+            const roundedLag = Math.round(lagMonths);
+            const buckets = new Map();
+            monthlyRows.forEach(row => {
+                const shifted = addMonths(row.year, row.month, -roundedLag);
+                buckets.set(monthKey(shifted.year, shifted.month), row);
+            });
+            return buckets;
+        }
+
+        function aggregateYearly(monthlyRows) {
+            const byYear = new Map();
+            monthlyRows.forEach(row => {
+                if (!byYear.has(row.year)) byYear.set(row.year, []);
+                byYear.get(row.year).push(row);
+            });
+            return [...byYear.entries()].sort((a, b) => a[0] - b[0]).map(([year, rows]) => ({
+                key: String(year),
+                label: String(year),
+                year,
+                temp: mean(rows.map(row => row.temp)),
+                sunshine: rows.reduce((sum, row) => sum + row.sunshine, 0),
+                shortwave: rows.reduce((sum, row) => sum + (row.shortwave || 0), 0),
+                monthCount: rows.length
+            })).filter(row => row.monthCount >= 9 && Number.isFinite(row.temp) && Number.isFinite(row.sunshine));
+        }
+
+        function getCurrentData() {
+            const s = stations[currentStation];
+            if (!s || !s.temperature) return { labels: [], temp: [], sunshine: [], rows: [], station: s };
+            const monthly = alignMonthlyData(s);
+            const rows = currentResolution === 'monthly' ? monthly : aggregateYearly(monthly);
+            lastAlignedData = rows;
+            updateControlsReadout(rows);
+            
+            return {
+                labels: rows.map(row => row.label),
+                temp: rows.map(row => row.temp),
+                sunshine: rows.map(row => row.sunshine),
+                rows,
+                station: s
+            };
+        }
+
+        function updateTimeSeriesChart() {
+            const ctx = document.getElementById('timeSeriesChart');
+            const data = getCurrentData();
+            const rows = visibleTimeRows(data.rows);
+            
+            if (timeSeriesChart) timeSeriesChart.destroy();
+            
+            timeSeriesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: rows.map(row => row.label),
+                    datasets: [
+                        {
+                            label: `${currentDataType.toUpperCase()} temperature (°C)`,
+                            data: rows.map(row => row.temp),
+                            borderColor: cssVar('--success'),
+                            backgroundColor: 'rgba(48, 200, 128, 0.12)',
+                            borderWidth: 2,
+                            yAxisID: 'y',
+                            tension: 0.3,
+                            pointRadius: 0,
+                            pointHoverRadius: 0
+                        },
+                        {
+                            label: 'QC sunshine (hours)',
+                            data: rows.map(row => row.sunshine),
+                            borderColor: cssVar('--accent-primary'),
+                            backgroundColor: 'rgba(212, 168, 85, 0.12)',
+                            borderWidth: 2,
+                            yAxisID: 'y1',
+                            tension: 0.3,
+                            pointRadius: 0,
+                            pointHoverRadius: 0
+                        }
+                    ]
+                },
+                options: themedChartOptions({
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: cssVar('--text-secondary'),
+                                maxRotation: 0,
+                                autoSkip: false,
+                                callback: (value, index) => {
+                                    const row = rows[index];
+                                    return timeAxisLabel(row, rows);
+                                }
+                            },
+                            grid: { color: 'rgba(212, 168, 85, 0.10)' },
+                            title: { display: true, text: 'Year', color: cssVar('--text-secondary') }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            ticks: { color: cssVar('--text-secondary') },
+                            grid: { color: 'rgba(212, 168, 85, 0.14)' },
+                            title: { display: true, text: 'Temp °C', color: cssVar('--text-secondary') }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            ticks: { color: cssVar('--text-secondary') },
+                            title: { display: true, text: 'Sunshine hours', color: cssVar('--text-secondary') },
+                            grid: { drawOnChartArea: false, color: 'rgba(212, 168, 85, 0.14)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top', align: 'end', labels: { color: cssVar('--text-secondary') } }
+                    }
+                })
+            });
+        }
+
+        function updateScatterChart() {
+            const ctx = document.getElementById('scatterChart');
+            const data = getCurrentData();
+            
+            if (scatterChart) scatterChart.destroy();
+            
+            const scatterData = data.rows.map((row, i) => ({
+                x: data.sunshine[i],
+                y: data.temp[i],
+                label: row.label
+            }));
+            const fit = regressionFit(scatterData);
+            
+            scatterChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: `${currentResolution === 'monthly' ? 'Monthly' : 'Annual'} pairs`,
+                            data: scatterData,
+                            backgroundColor: 'rgba(212, 168, 85, 0.45)',
+                            borderColor: cssVar('--accent-hover'),
+                            borderWidth: 1,
+                            pointRadius: 3,
+                            pointHoverRadius: 3
+                        },
+                        {
+                            type: 'line',
+                            label: 'Correlation fit',
+                            data: fit.points,
+                            parsing: false,
+                            borderColor: cssVar('--success'),
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 0,
+                            tension: 0
+                        }
+                    ]
+                },
+                options: themedChartOptions({
+                    scales: {
+                        x: {
+                            ticks: { color: cssVar('--text-secondary') },
+                            grid: { color: 'rgba(212, 168, 85, 0.14)' },
+                            title: { display: true, text: 'QC sunshine hours', color: cssVar('--text-secondary') }
+                        },
+                        y: {
+                            ticks: { color: cssVar('--text-secondary') },
+                            grid: { color: 'rgba(212, 168, 85, 0.14)' },
+                            title: { display: true, text: 'Temperature (°C)', color: cssVar('--text-secondary') }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                })
+            });
+            
+            document.getElementById('scatterNote').innerHTML = 
+                `Fit: y = ${fit.slope.toFixed(4)}x ${fit.intercept < 0 ? '-' : '+'} ${Math.abs(fit.intercept).toFixed(2)}. Sunshine lag: ${monthLag === 0 ? '0' : `${monthLag > 0 ? '+' : ''}${monthLag}`} month(s).`;
+        }
+
+        function regressionFit(points) {
+            const valid = points.filter(point => Number.isFinite(point.x) && Number.isFinite(point.y));
+            if (valid.length < 2) return { slope: 0, intercept: 0, points: [] };
+            const meanX = mean(valid.map(point => point.x));
+            const meanY = mean(valid.map(point => point.y));
+            let numerator = 0;
+            let denominator = 0;
+            valid.forEach(point => {
+                numerator += (point.x - meanX) * (point.y - meanY);
+                denominator += (point.x - meanX) ** 2;
+            });
+            const slope = denominator ? numerator / denominator : 0;
+            const intercept = meanY - (slope * meanX);
+            const xs = valid.map(point => point.x);
+            const minX = Math.min(...xs);
+            const maxX = Math.max(...xs);
+            return {
+                slope,
+                intercept,
+                points: [
+                    { x: minX, y: (slope * minX) + intercept },
+                    { x: maxX, y: (slope * maxX) + intercept }
+                ]
+            };
+        }
+
+        function calculateCorrelation() {
+            const data = getCurrentData();
+            const n = data.rows.length;
+            if (n < 3) return { r: NaN, r2: NaN, p: 'n/a' };
+            
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+            
+            for (let i = 0; i < n; i++) {
+                const x = data.sunshine[i];
+                const y = data.temp[i];
+                sumX += x;
+                sumY += y;
+                sumXY += x * y;
+                sumX2 += x * x;
+                sumY2 += y * y;
+            }
+            
+            const meanX = sumX / n;
+            const meanY = sumY / n;
+            
+            let numerator = 0;
+            let denomX = 0;
+            let denomY = 0;
+            
+            for (let i = 0; i < n; i++) {
+                const dx = data.sunshine[i] - meanX;
+                const dy = data.temp[i] - meanY;
+                numerator += dx * dy;
+                denomX += dx * dx;
+                denomY += dy * dy;
+            }
+            
+            const r = numerator / Math.sqrt(denomX * denomY);
+            const r2 = r * r;
+            
+            // Simple p-value approximation.
+            const t = r * Math.sqrt((n - 2) / (1 - r2));
+            const p = 2 * (1 - Math.abs(t) / (Math.abs(t) + 2)); // very rough approx
+            
+            return { r: parseFloat(r.toFixed(3)), r2: parseFloat(r2.toFixed(3)), p: p < 0.001 ? '<0.001' : p.toFixed(3) };
+        }
+
+        function updateCorrelationMetrics() {
+            const corr = calculateCorrelation();
+            
+            document.getElementById('pearsonR').textContent = Number.isFinite(corr.r) ? corr.r : 'n/a';
+            document.getElementById('rSquared').textContent = Number.isFinite(corr.r2) ? corr.r2 : 'n/a';
+            document.getElementById('pValue').textContent = corr.p;
+            
+            let scoreText = '';
+            let scoreColor = 'text-emerald-600';
+            
+            if (!Number.isFinite(corr.r)) {
+                scoreText = 'Not enough overlapping paired observations';
+                scoreColor = 'text-amber-600';
+            } else if (corr.r > 0.7) {
+                scoreText = `Strong positive contribution (r = ${corr.r})`;
+                scoreColor = 'text-emerald-600';
+            } else if (corr.r > 0.4) {
+                scoreText = `Moderate positive contribution (r = ${corr.r})`;
+                scoreColor = 'text-amber-600';
+            } else if (corr.r > 0) {
+                scoreText = `Weak positive contribution (r = ${corr.r})`;
+                scoreColor = 'text-orange-600';
+            } else {
+                scoreText = `Weak or negative relationship (r = ${corr.r})`;
+                scoreColor = 'text-red-600';
+            }
+            
+            const scoreEl = document.getElementById('contributionScore');
+            scoreEl.textContent = scoreText;
+            scoreEl.className = `text-lg font-semibold ${scoreColor}`;
+        }
+
+        function updateAllVisuals() {
+            document.getElementById('resolutionBadge').textContent = currentResolution === 'monthly' ? 'Monthly pairs' : 'Annual means';
+            updateTimeSeriesChart();
+            updateScatterChart();
+            updateCorrelationMetrics();
+        }
+
+        async function initialize() {
+            initTailwind();
+            setStatus('Loading QC sunshine station pairs...');
+            sunshinePayload = await loadSunshinePayload();
+            buildStations(sunshinePayload);
+            populateStationSelect();
+            if (!stations[currentStation]) currentStation = Object.keys(stations)[0];
+            document.getElementById('stationSelect').value = currentStation;
+            updateStationInfo();
+            
+            document.getElementById('btn-qcu').classList.add('bg-white', 'shadow-sm');
+            document.getElementById('btn-monthly').classList.add('bg-white', 'shadow-sm');
+            await ensureCurrentTemperatureLoaded();
+            updateAllVisuals();
+            
+            console.log('%c[Sunshine-Temp Lab] SPA initialized with Klymot Raw/Adjusted temperature and QC sunshine.', 'color:#a8a090');
+        }
+
+        // Boot
+        window.onload = () => initialize().catch(error => {
+            console.error(error);
+            setStatus(`Data could not be loaded: ${error.message}`);
+        });
+    </script>
+</body>
+</html>
