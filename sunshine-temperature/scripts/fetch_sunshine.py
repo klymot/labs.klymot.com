@@ -142,6 +142,9 @@ def fetch_open_meteo_sunshine(location: dict, start_date: str, end_date: str) ->
         "longitude": location["lon"],
         "start_date": start_date,
         "end_date": end_date,
+        # sunshine_duration: seconds of bright sunshine per day (threshold ~120 W/m², Campbell-Stokes equivalent)
+        # shortwave_radiation_sum: daily total downwelling shortwave radiation in MJ/m² (ERA5 reanalysis;
+        #   equivalent to what a pyranometer records as global horizontal irradiance)
         "daily": "sunshine_duration,shortwave_radiation_sum",
         "timezone": "UTC",
     }
@@ -305,10 +308,24 @@ def main() -> int:
 
     payload = {
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
-        "source": "Open-Meteo Historical Weather API",
+        "source": "Open-Meteo Historical Weather API (ERA5 reanalysis)",
         "units": {
-            "sunshine_hours": "monthly sum of daily sunshine duration",
-            "shortwave_mj_m2": "monthly sum of daily shortwave radiation",
+            "sunshine_hours": "monthly sum of daily sunshine duration (hours); bright-sunshine threshold ~120 W/m²",
+            "shortwave_mj_m2": (
+                "monthly sum of daily shortwave_radiation_sum (MJ/m²); ERA5 downwelling shortwave radiation "
+                "at the surface — equivalent to global horizontal irradiance as measured by a pyranometer"
+            ),
+        },
+        "variable_notes": {
+            "sunshine_hours": (
+                "Derived from ERA5 sunshine_duration. Counts hours of 'bright' sunshine (direct irradiance "
+                "above ~120 W/m²). Does not capture diffuse radiation on overcast days."
+            ),
+            "shortwave_mj_m2": (
+                "Derived from ERA5 shortwave_radiation_sum. Represents total incoming solar energy "
+                "(direct + diffuse) at the surface per day. This is the physically meaningful energy-balance "
+                "quantity and is what a pyranometer measures."
+            ),
         },
         "station_pairing_rule": (
             "Choose the nearest Klymot temperature station whose record starts no later "
