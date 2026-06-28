@@ -80,6 +80,12 @@
             height: 220px;
         }
 
+        @media (min-width: 640px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+
         .nav-link {
             transition: all 0.1s ease;
         }
@@ -89,11 +95,11 @@
         }
 
         .data-table {
-            font-size: 13px;
+            font-size: 14px;
         }
 
         .explanation {
-            font-size: 14px;
+            font-size: 15px;
             line-height: 1.6;
         }
 
@@ -320,7 +326,7 @@
 <body class="bg-slate-50 text-slate-900">
     <!-- Header -->
     <header class="klymot-header sticky top-0 z-50">
-        <div class="max-w-[420px] mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="max-w-[420px] sm:max-w-[600px] mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-x-3 min-w-0">
                 <a href="https://klymot.com" class="flex items-center gap-x-2 shrink-0" aria-label="klymot home">
                     <span class="brand-logo" aria-hidden="true">
@@ -339,7 +345,7 @@
         </div>
     </header>
 
-    <div class="max-w-[420px] mx-auto px-4 pb-12">
+    <div class="max-w-[420px] sm:max-w-[600px] mx-auto px-4 pb-12">
         
         <!-- Hero / Intro -->
         <div class="pt-6 pb-4">
@@ -347,7 +353,7 @@
                 <span class="px-3 py-1 bg-sky-100 text-sky-700 text-xs font-semibold rounded">LAB</span>
             </div>
             <h1 class="font-display text-3xl tracking-tighter font-semibold leading-none">Sunshine &amp; Temperature</h1>
-            <p class="mt-2 text-slate-600 text-[15px]">Exploring the relationship between surface solar radiation (sunshine) and surface air temperature.</p>
+            <p class="mt-2 text-slate-600 text-[16px]">Exploring the relationship between surface solar radiation (sunshine) and surface air temperature.</p>
         </div>
 
         <!-- Quick Explainer -->
@@ -433,6 +439,7 @@
                         <button onclick="zoomTime(1)" class="mini-tool" aria-label="Zoom in time axis">+</button>
                         <button onclick="zoomTime(-1)" class="mini-tool" aria-label="Zoom out time axis">−</button>
                         <button onclick="panTime(1)" class="mini-tool" aria-label="Pan time axis later">›</button>
+                        <button onclick="resetTimeAxis()" class="mini-tool" aria-label="Reset time axis to default">↺</button>
                     </div>
                 </div>
             </div>
@@ -499,7 +506,7 @@
         </div>
 
         <!-- Footer / Notes -->
-        <div class="section-card p-4 mb-6 text-[11px] text-slate-400 source-list">
+        <div class="section-card p-4 mb-6 text-[13px] text-slate-400 source-list">
             <div class="font-semibold text-sm mb-2 text-slate-700">Sources &amp; References</div>
             <p class="mb-2"><strong>Temperature:</strong> Klymot station CSVs derived from GHCN-Monthly v4 Raw and Adjusted records. GHCNm is the Global Historical Climatology Network Monthly temperature dataset; Klymot uses station records as the primary climate observation source. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018 DOI</a>.</p>
             <p class="mb-2"><strong>Homogenization:</strong> Adjusted records follow the GHCN processing lineage, including pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009 DOI</a>.</p>
@@ -606,6 +613,30 @@
         let timeSeriesChart = null;
         let scatterChart = null;
         let lastAlignedData = [];
+
+        function readStateFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                station: params.get('s') || null,
+                dataType: params.get('t') || null,
+                resolution: params.get('r') || null,
+                lag: params.has('lag') ? parseFloat(params.get('lag')) : null,
+                windowStart: params.has('ws') ? parseInt(params.get('ws'), 10) : null,
+                windowSize: params.has('wz') ? parseInt(params.get('wz'), 10) : null
+            };
+        }
+
+        function pushStateToUrl() {
+            const params = new URLSearchParams();
+            params.set('s', currentStation);
+            params.set('t', currentDataType);
+            params.set('r', currentResolution);
+            if (monthLag !== 0) params.set('lag', String(monthLag));
+            if (timeWindowStart !== 0) params.set('ws', String(timeWindowStart));
+            if (timeWindowSize !== null) params.set('wz', String(timeWindowSize));
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState(null, '', newUrl);
+        }
 
         function setStatus(message) {
             document.getElementById('loadStatus').textContent = message;
@@ -782,40 +813,52 @@
             updateStationInfo();
             await ensureCurrentTemperatureLoaded();
             updateAllVisuals();
+            pushStateToUrl();
         }
 
         function setDataType(type) {
             currentDataType = type;
-            
+
             document.getElementById('btn-qcu').classList.toggle('bg-white', type === 'qcu');
             document.getElementById('btn-qcu').classList.toggle('shadow-sm', type === 'qcu');
             document.getElementById('btn-qcf').classList.toggle('bg-white', type === 'qcf');
             document.getElementById('btn-qcf').classList.toggle('shadow-sm', type === 'qcf');
-            
+
             updateAllVisuals();
+            pushStateToUrl();
         }
 
         function setResolution(type) {
             currentResolution = type;
             resetTimeWindow();
-            
+
             document.getElementById('btn-monthly').classList.toggle('bg-white', type === 'monthly');
             document.getElementById('btn-monthly').classList.toggle('shadow-sm', type === 'monthly');
             document.getElementById('btn-yearly').classList.toggle('bg-white', type === 'yearly');
             document.getElementById('btn-yearly').classList.toggle('shadow-sm', type === 'yearly');
-            
+
             updateAllVisuals();
+            pushStateToUrl();
         }
 
         function shiftLag(delta) {
             monthLag = clamp(monthLag + delta, -2, 2);
             monthLag = Math.round(monthLag * 4) / 4;
             updateAllVisuals();
+            pushStateToUrl();
         }
 
         function resetTimeWindow() {
             timeWindowStart = 0;
             timeWindowSize = null;
+        }
+
+        function resetTimeAxis() {
+            const data = getCurrentData();
+            timeWindowStart = 0;
+            timeWindowSize = data.rows.length || null;
+            updateTimeSeriesChart();
+            pushStateToUrl();
         }
 
         function ensureTimeWindow(rows) {
@@ -841,6 +884,7 @@
             timeWindowSize = clamp(Math.round(timeWindowSize * factor), minSize, total);
             timeWindowStart = clamp(Math.round(center - (timeWindowSize / 2)), 0, Math.max(0, total - timeWindowSize));
             updateTimeSeriesChart();
+            pushStateToUrl();
         }
 
         function panTime(direction) {
@@ -850,6 +894,7 @@
             const step = Math.max(1, Math.round(timeWindowSize * 0.25));
             timeWindowStart = clamp(timeWindowStart + (direction * step), 0, Math.max(0, data.rows.length - timeWindowSize));
             updateTimeSeriesChart();
+            pushStateToUrl();
         }
 
         function visibleTimeRows(rows) {
@@ -1228,6 +1273,15 @@
 
         async function initialize() {
             initTailwind();
+
+            const urlState = readStateFromUrl();
+            if (urlState.station) currentStation = urlState.station;
+            if (urlState.dataType === 'qcu' || urlState.dataType === 'qcf') currentDataType = urlState.dataType;
+            if (urlState.resolution === 'monthly' || urlState.resolution === 'yearly') currentResolution = urlState.resolution;
+            if (urlState.lag !== null && Number.isFinite(urlState.lag)) monthLag = clamp(Math.round(urlState.lag * 4) / 4, -2, 2);
+            if (urlState.windowStart !== null && Number.isFinite(urlState.windowStart)) timeWindowStart = Math.max(0, urlState.windowStart);
+            if (urlState.windowSize !== null && Number.isFinite(urlState.windowSize)) timeWindowSize = Math.max(1, urlState.windowSize);
+
             setStatus('Loading QC sunshine station pairs...');
             sunshinePayload = await loadSunshinePayload();
             buildStations(sunshinePayload);
@@ -1235,12 +1289,20 @@
             if (!stations[currentStation]) currentStation = Object.keys(stations)[0];
             document.getElementById('stationSelect').value = currentStation;
             updateStationInfo();
-            
-            document.getElementById('btn-qcu').classList.add('bg-white', 'shadow-sm');
-            document.getElementById('btn-monthly').classList.add('bg-white', 'shadow-sm');
+
+            document.getElementById('btn-qcu').classList.toggle('bg-white', currentDataType === 'qcu');
+            document.getElementById('btn-qcu').classList.toggle('shadow-sm', currentDataType === 'qcu');
+            document.getElementById('btn-qcf').classList.toggle('bg-white', currentDataType === 'qcf');
+            document.getElementById('btn-qcf').classList.toggle('shadow-sm', currentDataType === 'qcf');
+            document.getElementById('btn-monthly').classList.toggle('bg-white', currentResolution === 'monthly');
+            document.getElementById('btn-monthly').classList.toggle('shadow-sm', currentResolution === 'monthly');
+            document.getElementById('btn-yearly').classList.toggle('bg-white', currentResolution === 'yearly');
+            document.getElementById('btn-yearly').classList.toggle('shadow-sm', currentResolution === 'yearly');
+
             await ensureCurrentTemperatureLoaded();
             updateAllVisuals();
-            
+            pushStateToUrl();
+
             console.log('%c[Sunshine-Temp Lab] SPA initialized with Klymot Raw/Adjusted temperature and QC sunshine.', 'color:#a8a090');
         }
 
