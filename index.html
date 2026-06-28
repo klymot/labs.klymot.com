@@ -210,6 +210,19 @@
             font-size: 0.75rem;
         }
     </style>
+    <script>
+        (function () {
+            var h = window.location.hostname;
+            if (h === 'localhost' || h === '127.0.0.1') return;
+            var payload = JSON.stringify({ path: 'labs.klymot.com' + window.location.pathname, referrer: document.referrer || '' });
+            var blob = new Blob([payload], { type: 'text/plain' });
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon('https://api.klymot.com/api/v1/usage', blob);
+            } else {
+                fetch('https://api.klymot.com/api/v1/usage', { method: 'POST', body: blob, keepalive: true }).catch(function () {});
+            }
+        }());
+    </script>
 </head>
 <body>
     <div class="page">
