@@ -2123,6 +2123,14 @@ import '../../styles/theme.css';
       }
       pushStateToUrl();
 
+      // Scroll to resume point when page loaded with URL state
+      if (urlState.station && currentStation) {
+        const target = (currentResolution && currentDataType && currentComparison)
+          ? document.getElementById('labContent')
+          : document.getElementById('compareSection');
+        if (target) requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      }
+
       console.log('%c[Sunshine-Temp Lab] initialized.', 'color:#a8a090');
     }
 
