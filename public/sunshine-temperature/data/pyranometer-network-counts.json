@@ -2,8 +2,8 @@
   "source": "AssessingSolar/solarstations GitHub catalog",
   "source_url": "https://github.com/AssessingSolar/solarstations/blob/65aad53872a60bc97428a4c5d002b8ca3f378a7b/solarstations.csv",
   "generated_at": "2026-06-29T00:00:00+00:00",
-  "methodology": "Series begins with a hard-coded seed for the first documented pyranometer-class instrument (Ångström pyrheliometer, Stockholm 1893). Catalog-derived counts follow: a station is active in year Y if start_year ≤ Y and end_year (if present) ≥ Y. The 17 catalog stations whose Time Period field is blank use individually researched start years (see STATION_START_OVERRIDES in scripts/fetch_sunshine.py).",
-  "note": "The catalog covers stations documented by AssessingSolar; it is not exhaustive. The gap 1893–1954 reflects absent catalog data. The 1977–1980 spike reflects US NOAA/WEST regional campaigns that ended in 1980.",
+  "methodology": "Active station count per year from the AssessingSolar/solarstations catalog. A station is active in year Y if start_year ≤ Y and end_year (if present) ≥ Y. STATION_START_OVERRIDES in scripts/fetch_sunshine.py supplies researched start years for stations whose catalog period is missing or historically incomplete. Norrköping (SMHI national reference, still active) carries the 1893 origin to represent the Swedish radiation-measurement tradition beginning with Ångström.",
+  "note": "The catalog covers stations documented by AssessingSolar; it is not exhaustive. The gap 1893–1954 (count=1) reflects the lone Norrköping/Ångström origin point before Valentia Observatory joins in 1954. The 1977–1980 spike reflects US NOAA/WEST regional campaigns that ended in 1980.",
   "series": [
     {
       "year": 1893,
@@ -11,27 +11,27 @@
     },
     {
       "year": 1954,
-      "active_stations": 1
+      "active_stations": 2
     },
     {
       "year": 1976,
-      "active_stations": 27
+      "active_stations": 28
     },
     {
       "year": 1977,
-      "active_stations": 71
+      "active_stations": 72
     },
     {
       "year": 1978,
-      "active_stations": 96
+      "active_stations": 97
     },
     {
       "year": 1979,
-      "active_stations": 102
+      "active_stations": 103
     },
     {
       "year": 1981,
-      "active_stations": 24
+      "active_stations": 25
     },
     {
       "year": 1983,
