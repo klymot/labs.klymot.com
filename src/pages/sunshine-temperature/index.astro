@@ -706,18 +706,21 @@ import '../../styles/theme.css';
       align-items: center;
       gap: 0.45rem;
       background: none;
-      border: 1px solid transparent;
-      border-radius: 4px;
+      border: 1.5px solid transparent;
+      border-radius: 6px;
       cursor: pointer;
-      padding: 0.2rem 0.45rem;
+      padding: 0.25rem 0.6rem;
       font-family: var(--font-sans);
       font-size: 0.78rem;
       color: var(--text-secondary);
-      transition: opacity 0.15s, border-color 0.15s;
+      transition: opacity 0.15s, border-color 0.15s, color 0.15s;
       user-select: none;
     }
-    .legend-btn:hover { border-color: var(--border); }
-    .legend-btn.series-off { opacity: 0.32; }
+    .legend-btn.series-off {
+      opacity: 0.38;
+      border-color: transparent !important;
+    }
+    .legend-btn.series-off:hover { border-color: var(--border) !important; opacity: 0.55; }
     .legend-swatch {
       display: block;
       width: 1.4rem;
@@ -1693,8 +1696,18 @@ import '../../styles/theme.css';
 
     // ── Series toggle ──────────────────────────────────────────────
     function syncLegendButtons() {
-      document.getElementById('legendTemp')?.classList.toggle('series-off',  !showTemp);
-      document.getElementById('legendSolar')?.classList.toggle('series-off', !showSolar);
+      const tempBtn  = document.getElementById('legendTemp');
+      const solarBtn = document.getElementById('legendSolar');
+      if (tempBtn) {
+        tempBtn.classList.toggle('series-off', !showTemp);
+        tempBtn.style.borderColor  = showTemp  ? cssVar('--success')        : '';
+        tempBtn.style.color        = showTemp  ? cssVar('--success')        : '';
+      }
+      if (solarBtn) {
+        solarBtn.classList.toggle('series-off', !showSolar);
+        solarBtn.style.borderColor = showSolar ? cssVar('--accent-primary') : '';
+        solarBtn.style.color       = showSolar ? cssVar('--accent-primary') : '';
+      }
     }
 
     function toggleSeries(which) {
