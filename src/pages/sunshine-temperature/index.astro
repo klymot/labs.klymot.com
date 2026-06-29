@@ -526,6 +526,12 @@ import '../../styles/theme.css';
       color: var(--muted);
     }
 
+    .station-klymot-link {
+      font-size: 0.7rem;
+      color: var(--accent);
+      margin-inline-start: 0.25rem;
+    }
+
     .caveat-card {
       background: rgba(240, 128, 48, 0.07) !important;
       border-color: rgba(240, 128, 48, 0.28) !important;
@@ -1396,9 +1402,10 @@ import '../../styles/theme.css';
     function updateStationInfo() {
       const el = document.getElementById('stationInfo');
       const s = stations[currentStation];
-      if (!el || !s) return;
+      if (!el || !s) { if (el) el.innerHTML = ''; return; }
       const dist = Number(s.tempStation.distance_km || 0).toFixed(1);
-      el.innerHTML = `<span class="station-pill">${s.tempStation.id}</span><span class="station-dist">${s.tempStation.name}, ${dist} km</span>`;
+      const klymotUrl = `https://www.klymot.com/#station=${s.tempStation.id};bu;2020;-;-;-;-;-`;
+      el.innerHTML = `<span class="station-pill">${s.tempStation.id}</span><span class="station-dist">${s.tempStation.name}, ${dist} km</span><a class="station-klymot-link" href="${klymotUrl}" target="_blank" rel="noopener">View on klymot.com →</a>`;
     }
 
     function setPrompt(chosen) {
