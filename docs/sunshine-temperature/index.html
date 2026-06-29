@@ -20,7 +20,7 @@
       }
     }());
   </script><!-- Chart library --><script src="/js/klymot-chart.js"></script><style>:root{--font-sans:"Source Sans 3", system-ui, -apple-system, sans-serif;--font-mono:"JetBrains Mono", ui-monospace, monospace;--font-display:"Playfair Display", Georgia, serif;--step-0:clamp(1rem, .96rem + .2vw, 1.0625rem);--step-1:clamp(1.125rem, 1.05rem + .4vw, 1.25rem);--step-2:clamp(1.375rem, 1.2rem + .8vw, 1.75rem);--step-3:clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);--bg:#0a1628;--bg-secondary:#0f2047;--surface:#152c4a;--text:#e8e4d8;--text-secondary:#a8a090;--muted:#5a6880;--border:#d4a85533;--border-strong:#d4a8556b;--accent:#d4a855;--accent-hover:#e0bc72;--link:#d4a855;--btn-bg:#0f2047eb;--btn-hover:#152c4af7}:root[data-theme=light]{--bg:#f4f0e8;--bg-secondary:#ede7d6;--surface:#fff;--text:#2a2218;--text-secondary:#6b5d48;--muted:#9a8a70;--border:#7a5f2033;--border-strong:#7a5f206b;--accent:#7a5f20;--accent-hover:#5a4518;--link:#7a5f20;--btn-bg:#f4f0e8f0;--btn-hover:#ede7d6fc}*,:before,:after{box-sizing:border-box}html{-webkit-text-size-adjust:100%;font-size:16px}body{font-family:var(--font-sans);font-size:var(--step-0);color:var(--text);background-color:var(--bg);flex-direction:column;min-height:100dvh;margin:0;line-height:1.6;transition:background-color .25s,color .25s;display:flex}a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}.container{width:min(920px,100% - 2rem);margin-inline:auto}.site-header{z-index:10;background-color:var(--bg-secondary);border-bottom:1px solid var(--border);height:3.25rem;transition:background-color .25s,border-color .25s;position:sticky;top:0}.header-inner{justify-content:space-between;align-items:center;gap:1rem;height:100%;display:flex}.brand-link{color:var(--text);align-items:center;gap:.5rem;text-decoration:none;display:inline-flex}.brand-link:hover{text-decoration:none}.brand-link:hover .brand-title{color:var(--accent)}.brand-logo{color:var(--accent);flex-shrink:0;align-items:center;transition:color .15s;display:flex}.brand-title{font-family:var(--font-display);letter-spacing:.02em;color:var(--text);font-size:1.2rem;font-weight:600;line-height:1;transition:color .15s}.brand-sub{color:var(--muted);letter-spacing:.14em;font-size:.7rem;font-variant-caps:all-small-caps;line-height:1}.theme-toggle{border:1px solid var(--border);background:var(--btn-bg);width:44px;height:44px;color:var(--text-secondary);cursor:pointer;border-radius:.375rem;flex-shrink:0;justify-content:center;align-items:center;font-size:1rem;line-height:1;transition:color .15s,border-color .15s,background .15s;display:inline-flex}.theme-toggle:hover{color:var(--accent);border-color:var(--border-strong);background:var(--btn-hover)}.theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}main{flex:1;padding-block:3rem}.site-footer{border-top:1px solid var(--border);padding-block:1.5rem}.site-footer p{color:var(--muted);margin:0;font-size:.8125rem}
-</style><link rel="stylesheet" href="/_astro/index.j6J7LxNO.css"></head><body><header class="site-header"><div class="container header-inner"><nav class="header-nav" aria-label="Site navigation"><a class="brand-link" href="https://klymot.com" aria-label="klymot home"><span class="brand-logo" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="22" height="22"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"></circle><ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"></circle><circle cx="19.5" cy="10.5" r="2" fill="currentColor"></circle></svg></span><span class="brand-title">klymot</span><span class="brand-sub">· labs</span></a><a href="/" class="back-link" aria-label="Back to labs index">← Labs</a></nav><div class="header-actions"><button class="reset-btn" id="resetLab" type="button" aria-label="Reset all choices">Reset lab</button><button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" type="button">◐</button></div></div></header><main><!-- ── Hero ──────────────────────────────────────────────────── --><div class="container"><div class="page-hero"><span class="eyebrow" aria-hidden="true">Lab 01</span><h1>Sunshine &amp; Temperature</h1><p class="lede">Exploring the relationship between incoming solar radiation and surface air temperature.</p></div></div><!-- ── Section 1: Measuring solar radiation ─────────────────── --><section class="lab-section" id="pyranometer" aria-labelledby="pyranometer-heading"><div class="container"><div class="prose"><h2 id="pyranometer-heading">Measuring solar radiation</h2><div class="diagram-wrap"><img src="/sunshine-temperature/pyranometer-diagram.svg" alt="Cross-section diagram of a thermopile pyranometer showing outer and inner glass domes, thermopile absorber disk, desiccant cartridge, instrument body, and voltage output" class="pyranometer-diagram" width="480" height="320" loading="lazy"></div><p>A <strong>pyranometer</strong> measures the total solar energy arriving at the Earth's surface from all directions — a quantity called <strong>global horizontal irradiance (GHI)</strong> — by letting sunlight heat a black absorber disk under a glass dome and reading the resulting voltage.</p><details class="expander"><summary>What exactly is global horizontal irradiance?</summary><div class="expander-body"><p>GHI is the sum of direct sunlight and diffuse skylight falling on a flat, horizontal surface. It is measured in watts per square metre (W/m²) at any instant, and accumulated into megajoules per square metre (MJ/m²) over a day or month. It is the single most useful quantity for characterising how much solar energy a location receives.</p></div></details><details class="expander"><summary>Why two glass domes?</summary><div class="expander-body"><p>The inner dome blocks long-wave thermal radiation emitted by the outer dome itself, so only shortwave solar radiation reaches the absorber. The outer dome shields the inner dome from wind, rain and direct convective cooling. Together they make the instrument's response depend almost entirely on incoming sunlight rather than on wind speed or ambient temperature.</p></div></details><details class="expander"><summary>How does the thermopile work?</summary><div class="expander-body"><p>A thermopile is a stack of thermocouple junctions — pairs of dissimilar metals that generate a small voltage whenever the two junctions are at different temperatures. The black absorber disk heats up in sunlight while the instrument body stays cooler; the temperature difference drives a voltage that is calibrated against a reference standard and expressed directly in W/m².</p></div></details><details class="expander"><summary>What is the desiccant for?</summary><div class="expander-body"><p>Moisture inside the sealed dome space would condense on the inner surface and scatter or absorb some of the incoming light, creating a reading error. A small desiccant cartridge — visible as the ribbed cylinder on the side of the instrument body — absorbs water vapour to keep the dome interior dry.</p></div></details><details class="expander"><summary>What units are used here?</summary><div class="expander-body"><p>Instantaneous readings are in W/m². This lab shows <strong>monthly totals in MJ/m²</strong> (megajoules per square metre), which are obtained by integrating the instantaneous readings over each day and summing across the month. 1 MJ/m² ≈ 0.278 kWh/m².</p></div></details></div></div></section><!-- ── Section 2: Global network ─────────────────────────────── --><section class="lab-section" id="network" aria-labelledby="network-heading"><div class="container"><div class="prose"><h2 id="network-heading">A global measurement network</h2></div><div class="chart-bleed" style="margin-top:1rem"><div class="section-card" style="padding:1rem"><div class="chart-header"><span class="chart-title">Active pyranometer stations, 1893–present</span><span class="chart-meta" id="networkChartMeta"></span></div><div class="network-chart-container" id="networkChartContainer"><canvas id="networkChartCanvas" aria-label="Line chart of active pyranometer station count over time"></canvas><div id="networkChartTooltip" class="nc-tooltip" hidden></div><p class="chart-loading" id="networkChartLoading">Loading…</p></div></div></div><div class="prose" style="margin-top:1.5rem"><p>From a single instrument in Stockholm in 1893, the global network has grown to over 500 active stations today — hover the dashed milestone lines to read key events.</p><details class="expander"><summary>Why the spike around 1977–1980?</summary><div class="expander-body"><p>The sharp rise to around 100 stations in the late 1970s was driven by two large US-funded field campaigns: NOAA's Regional Energy/Climate Studies programme and the WEST Associates solar resource surveys, which temporarily deployed dense networks of pyranometers across the American Southwest and Great Plains to assess solar energy potential. Most of these campaign stations were decommissioned once the surveys ended, which explains the sharp drop back down in the early 1980s.</p></div></details><details class="expander"><summary>What is the BSRN?</summary><div class="expander-body"><p>The Baseline Surface Radiation Network, established in 1992 by the World Climate Research Programme, operates around 60 stations with tightly standardised instruments, calibration schedules, and data-quality procedures. BSRN stations report at 1-minute resolution and are considered the global reference for surface radiation measurements. The steady growth from the early 1990s onward largely reflects BSRN expansion and the formalisation of national radiation networks to BSRN standards.</p></div></details><details class="expander"><summary>Why does the count start with just one station?</summary><div class="expander-body"><p>Knut Ångström made the first systematic solar radiation measurements in Stockholm from 1893 using an instrument of his own design — the Ångström pyrheliometer. Routine monitoring elsewhere only followed once international instrument standards were established, first by the International Pyrheliometric Scale (IPS) in 1924 and later refined by the World Radiometric Reference (WRR) in 1979. The early count reflects only stations with confirmed, uninterrupted measurement records that survive in modern catalogs.</p></div></details><details class="expander"><summary>Are all stations measuring the same thing?</summary><div class="expander-body"><p>All stations shown measure global horizontal irradiance (GHI) — total downwelling shortwave radiation on a horizontal surface. Instrument types vary (thermopile pyranometers, silicon-cell sensors, rotating shadowband radiometers) and calibration standards have changed over time, which is one reason long-term consistency requires careful quality control. The WRR, maintained by the Physical Meteorological Observatory Davos (PMOD/WRC) in Switzerland, is the current international reference against which all pyranometers are calibrated.</p></div></details></div></div></section><!-- ── Section 3: The lab ─────────────────────────────────────── --><section class="lab-section" id="lab" aria-labelledby="lab-heading"><div class="container"><div class="prose" style="margin-bottom:1.5rem"><h2 id="lab-heading">Explore the data</h2><p>Select one of the longest-running measurement locations. For each, compare incoming shortwave radiation against the raw (unadjusted) and homogenised temperature records from the nearest GHCN station.</p></div><!-- Station selection --><p class="random-order-note">Stations are shown in a random order to avoid nudging your choice.</p><div class="station-grid" id="stationGrid" role="group" aria-label="Select a measurement station"></div><div id="stationInfo" class="station-pills"></div><span id="loadStatus" class="meta-note" style="display:block;margin-block-end:0.5rem"></span><!-- Dynamic prompt: "select" or "you chose" --><p id="selectPrompt" class="select-prompt">Select a station above to explore the data.</p><!-- Lab content — hidden until a station is selected --><div id="labContent" hidden><!-- Data controls --><div class="section-card"><div class="controls-grid"><div class="control-group"><div class="control-label">Temperature data</div><div class="toggle-row"><button onclick="setDataType('qcu')" id="btn-qcu" class="toggle-btn active">Raw</button><button onclick="setDataType('qcf')" id="btn-qcf" class="toggle-btn">Adjusted</button></div></div><div class="control-group"><div class="control-label">Aggregation</div><div class="toggle-row"><button onclick="setResolution('monthly')" id="btn-monthly" class="toggle-btn active">Monthly</button><button onclick="setResolution('yearly')" id="btn-yearly" class="toggle-btn">Yearly</button></div></div></div><div class="control-note"><strong>Shortwave radiation (MJ/m²)</strong> — monthly total incoming solar energy (direct + diffuse). Raw temperature is unadjusted monthly GHCN; Adjusted is homogenised.</div></div><!-- Time controls --><div class="section-card"><div class="controls-grid"><div class="control-group"><div class="control-label">Sunshine lag</div><div class="control-row-tight"><button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Shift lag earlier">−</button><span id="lagReadout" class="control-readout">0 mo</span><button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Shift lag later">+</button></div></div><div class="control-group"><div class="control-label">Time axis</div><div class="control-row-tight"><button onclick="panTime(-1)" class="mini-tool" aria-label="Pan earlier">‹</button><button onclick="zoomTime(1)" class="mini-tool" aria-label="Zoom in">+</button><button onclick="zoomTime(-1)" class="mini-tool" aria-label="Zoom out">−</button><button onclick="panTime(1)" class="mini-tool" aria-label="Pan later">›</button><button onclick="resetTimeAxis()" class="mini-tool" aria-label="Reset time axis">↺</button></div></div></div><div id="timeWindowReadout" class="control-note"></div></div><!-- Time series chart --><div class="section-card" style="padding:1rem"><div class="chart-header"><span class="chart-title">Time series</span><span class="chart-meta">Aligned observations</span></div><div id="timeSeriesChart" class="chart-container"></div></div><!-- Scatter chart --><div class="section-card" style="padding:1rem"><div class="chart-header"><span class="chart-title">Scatter: radiation vs temperature</span><span class="chart-meta" id="resolutionBadge">Monthly pairs</span></div><div id="scatterChart" class="chart-container"></div><div id="scatterNote" class="chart-footnote"></div></div><!-- Correlation analysis --><div class="section-card"><div class="section-heading">Correlation analysis</div><div class="metric-grid"><div class="metric-card"><div class="metric-label">Pearson r</div><div id="pearsonR" class="metric-value accent">—</div></div><div class="metric-card"><div class="metric-label">r² (explained variance)</div><div id="rSquared" class="metric-value">—</div></div><div class="metric-card"><div class="metric-label">p-value (approx)</div><div id="pValue" class="metric-value success">—</div></div></div><div class="contribution-box"><div class="contribution-label">Contribution score</div><div id="contributionScore" class="contribution-value">—</div><div class="contribution-note">Sunshine explains a portion of temperature variance. Clouds, circulation, albedo, land/sea effects, and station exposure also play major roles.</div></div></div></div><!-- /#labContent --><!-- Data sources & methodology — always at the foot --><details class="expander sources-expander"><summary>Data sources &amp; methodology</summary><div class="expander-body"><dl class="sources-list"><dt>Temperature — GHCN-Monthly v4</dt><dd>Global Historical Climatology Network Monthly (GHCNm v4) dataset, served via klymot.com. Raw and Adjusted (homogenised) records. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018</a>.</dd><dt>Homogenisation</dt><dd>Adjusted records use pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009</a>.</dd><dt>Shortwave radiation</dt><dd>Monthly totals of global horizontal irradiance (MJ/m²) — total downwelling shortwave radiation at the surface, the quantity measured by a pyranometer.</dd><dt>Station network history</dt><dd>Cumulative station counts derived from the <a href="https://github.com/AssessingSolar/solarstations" target="_blank" rel="noopener">AssessingSolar/solarstations</a> catalog on GitHub. Milestone events curated by hand.</dd></dl><p class="sources-footer">This is a neutral exploration tool. Correlation does not imply causation.</p></div></details></div></section></main><footer class="site-footer"><div class="container"><p>© Klymot</p></div></footer><!-- Theme toggle + Reset lab wiring --><script>
+</style><link rel="stylesheet" href="/_astro/index.B5x0RFLq.css"></head><body><header class="site-header"><div class="container header-inner"><nav class="header-nav" aria-label="Site navigation"><a class="brand-link" href="https://klymot.com" aria-label="klymot home"><span class="brand-logo" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="22" height="22"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"></circle><ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"></circle><circle cx="19.5" cy="10.5" r="2" fill="currentColor"></circle></svg></span><span class="brand-title">klymot</span><span class="brand-sub">· labs</span></a><a href="/" class="back-link" aria-label="Back to labs index">← Labs</a></nav><div class="header-actions"><button class="reset-btn" id="resetLab" type="button" aria-label="Reset all choices">Reset lab</button><button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" type="button">◐</button></div></div></header><main><!-- ── Hero ──────────────────────────────────────────────────── --><div class="container"><div class="page-hero"><span class="eyebrow" aria-hidden="true">Lab 01</span><h1>Sunshine &amp; Temperature</h1><p class="lede">Exploring the relationship between incoming solar radiation and surface air temperature.</p></div></div><!-- ── Section 1: Measuring solar radiation ─────────────────── --><section class="lab-section" id="pyranometer" aria-labelledby="pyranometer-heading"><div class="container"><div class="prose"><h2 id="pyranometer-heading">Measuring solar radiation</h2><div class="diagram-wrap"><img src="/sunshine-temperature/pyranometer-diagram.svg" alt="Cross-section diagram of a thermopile pyranometer showing outer and inner glass domes, thermopile absorber disk, desiccant cartridge, instrument body, and voltage output" class="pyranometer-diagram" width="480" height="320" loading="lazy"></div><p>A <strong>pyranometer</strong> measures the total solar energy arriving at the Earth's surface from all directions — a quantity called <strong>global horizontal irradiance (GHI)</strong> — by letting sunlight heat a black absorber disk under a glass dome and reading the resulting voltage.</p><details class="expander"><summary>What exactly is global horizontal irradiance?</summary><div class="expander-body"><p>GHI is the sum of direct sunlight and diffuse skylight falling on a flat, horizontal surface. It is measured in watts per square metre (W/m²) at any instant, and accumulated into megajoules per square metre (MJ/m²) over a day or month. It is the single most useful quantity for characterising how much solar energy a location receives.</p></div></details><details class="expander"><summary>Why two glass domes?</summary><div class="expander-body"><p>The inner dome blocks long-wave thermal radiation emitted by the outer dome itself, so only shortwave solar radiation reaches the absorber. The outer dome shields the inner dome from wind, rain and direct convective cooling. Together they make the instrument's response depend almost entirely on incoming sunlight rather than on wind speed or ambient temperature.</p></div></details><details class="expander"><summary>How does the thermopile work?</summary><div class="expander-body"><p>A thermopile is a stack of thermocouple junctions — pairs of dissimilar metals that generate a small voltage whenever the two junctions are at different temperatures. The black absorber disk heats up in sunlight while the instrument body stays cooler; the temperature difference drives a voltage that is calibrated against a reference standard and expressed directly in W/m².</p></div></details><details class="expander"><summary>What is the desiccant for?</summary><div class="expander-body"><p>Moisture inside the sealed dome space would condense on the inner surface and scatter or absorb some of the incoming light, creating a reading error. A small desiccant cartridge — visible as the ribbed cylinder on the side of the instrument body — absorbs water vapour to keep the dome interior dry.</p></div></details><details class="expander"><summary>What units are used here?</summary><div class="expander-body"><p>Instantaneous readings are in W/m². This lab shows <strong>monthly totals in MJ/m²</strong> (megajoules per square metre), which are obtained by integrating the instantaneous readings over each day and summing across the month. 1 MJ/m² ≈ 0.278 kWh/m².</p></div></details></div></div></section><!-- ── Section 2: Global network ─────────────────────────────── --><section class="lab-section" id="network" aria-labelledby="network-heading"><div class="container"><div class="prose"><h2 id="network-heading">A global measurement network</h2></div><div class="chart-bleed" style="margin-top:1rem"><div class="section-card" style="padding:1rem"><div class="chart-header"><span class="chart-title">Active pyranometer stations, 1893–present</span><span class="chart-meta" id="networkChartMeta"></span></div><div class="network-chart-container" id="networkChartContainer"><canvas id="networkChartCanvas" aria-label="Line chart of active pyranometer station count over time"></canvas><div id="networkChartTooltip" class="nc-tooltip" hidden></div><p class="chart-loading" id="networkChartLoading">Loading…</p></div></div></div><div class="prose" style="margin-top:1.5rem"><p>From a single instrument in Stockholm in 1893, the global network has grown to over 500 active stations today — hover the dashed milestone lines to read key events.</p><details class="expander"><summary>Why the spike around 1977–1980?</summary><div class="expander-body"><p>The sharp rise to around 100 stations in the late 1970s was driven by two large US-funded field campaigns: NOAA's Regional Energy/Climate Studies programme and the WEST Associates solar resource surveys, which temporarily deployed dense networks of pyranometers across the American Southwest and Great Plains to assess solar energy potential. Most of these campaign stations were decommissioned once the surveys ended, which explains the sharp drop back down in the early 1980s.</p></div></details><details class="expander"><summary>What is the BSRN?</summary><div class="expander-body"><p>The Baseline Surface Radiation Network, established in 1992 by the World Climate Research Programme, operates around 60 stations with tightly standardised instruments, calibration schedules, and data-quality procedures. BSRN stations report at 1-minute resolution and are considered the global reference for surface radiation measurements. The steady growth from the early 1990s onward largely reflects BSRN expansion and the formalisation of national radiation networks to BSRN standards.</p></div></details><details class="expander"><summary>Why does the count start with just one station?</summary><div class="expander-body"><p>Knut Ångström made the first systematic solar radiation measurements in Stockholm from 1893 using an instrument of his own design — the Ångström pyrheliometer. Routine monitoring elsewhere only followed once international instrument standards were established, first by the International Pyrheliometric Scale (IPS) in 1924 and later refined by the World Radiometric Reference (WRR) in 1979. The early count reflects only stations with confirmed, uninterrupted measurement records that survive in modern catalogs.</p></div></details><details class="expander"><summary>Are all stations measuring the same thing?</summary><div class="expander-body"><p>All stations shown measure global horizontal irradiance (GHI) — total downwelling shortwave radiation on a horizontal surface. Instrument types vary (thermopile pyranometers, silicon-cell sensors, rotating shadowband radiometers) and calibration standards have changed over time, which is one reason long-term consistency requires careful quality control. The WRR, maintained by the Physical Meteorological Observatory Davos (PMOD/WRC) in Switzerland, is the current international reference against which all pyranometers are calibrated.</p></div></details></div></div></section><!-- ── Section 3: The lab ─────────────────────────────────────── --><section class="lab-section" id="lab" aria-labelledby="lab-heading"><div class="container"><div class="prose" style="margin-bottom:1.5rem"><h2 id="lab-heading">Explore the data</h2><p>Select one of the longest-running measurement locations. For each, compare incoming shortwave radiation against the raw (unadjusted) and homogenised temperature records from the nearest GHCN station.</p></div><!-- Station selection --><p class="random-order-note">Stations are shown in a random order to avoid nudging your choice.</p><div class="station-grid" id="stationGrid" role="group" aria-label="Select a measurement station"></div><div id="stationInfo" class="station-pills"></div><span id="loadStatus" class="meta-note" style="display:block;margin-block-end:0.5rem"></span><!-- Dynamic prompt: "select" or "you chose" --><p id="selectPrompt" class="select-prompt">Select a station above to explore the data.</p><!-- Blocking choice: what to compare (all three axes shown together) --><div id="compareSection" hidden><h3 class="choice-heading">What do you want to compare?</h3><p class="choice-intro">Set all three axes. You can change any of them at any time — changing one won't reset the others.</p><p class="choice-subheading">Time resolution</p><p class="random-order-note">Options shown in a random order.</p><div class="station-grid" id="resolutionGrid" role="group" aria-label="Choose time resolution"></div><p id="resolutionPrompt" class="select-prompt">Choose one.</p><p class="choice-subheading">Temperature record</p><p class="random-order-note">Options shown in a random order.</p><div class="station-grid" id="tempGrid" role="group" aria-label="Choose temperature data"></div><p id="tempPrompt" class="select-prompt">Choose one.</p><p class="choice-subheading">Comparison type</p><p class="random-order-note">Options shown in a random order.</p><div class="station-grid" id="compGrid" role="group" aria-label="Choose comparison type"></div><p id="compPrompt" class="select-prompt">Choose one.</p><details class="expander" style="margin-top:1.25rem"><summary>How are anomalies calculated?</summary><div class="expander-body"><p>Each month's value has its long-term monthly mean subtracted — so every January is compared only against other Januarys in the loaded record, every July against other Julys, and so on. The baseline is the mean of the full loaded record for this station; no external reference period is used.</p><p>For annual values, the anomaly is the average of the 12 monthly anomalies for that year — not the departure of the annual mean from an annual mean baseline.</p></div></details><details class="expander"><summary>Does the baseline period matter?</summary><div class="expander-body"><p>For correlation purposes, no. Subtracting a constant (the long-term monthly mean) from every value shifts all numbers by the same amount, but correlation measures the shape of the relationship — not the absolute level. If you used a different baseline, every January value would shift by the same offset, so the pattern of departures and the r value would be identical.</p><p>The baseline affects the zero line on the chart but nothing about the statistical relationship. We use the mean of the full loaded record simply because it is the natural centre of the data you are looking at.</p></div></details></div><!-- Lab content — hidden until all three comparison axes are chosen --><div id="labContent" hidden><!-- Time controls --><div class="section-card"><div class="controls-grid"><div class="control-group"><div class="control-label">Sunshine lag</div><div class="control-row-tight"><button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Shift lag earlier">−</button><span id="lagReadout" class="control-readout">0 mo</span><button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Shift lag later">+</button></div></div><div class="control-group"><div class="control-label">Time axis</div><div class="control-row-tight"><button onclick="panTime(-1)" class="mini-tool" aria-label="Pan earlier">‹</button><button onclick="zoomTime(1)" class="mini-tool" aria-label="Zoom in">+</button><button onclick="zoomTime(-1)" class="mini-tool" aria-label="Zoom out">−</button><button onclick="panTime(1)" class="mini-tool" aria-label="Pan later">›</button><button onclick="resetTimeAxis()" class="mini-tool" aria-label="Reset time axis">↺</button></div></div></div><div id="timeWindowReadout" class="control-note"></div></div><!-- Time series chart --><div class="section-card" style="padding:1rem"><div class="chart-header"><span class="chart-title">Time series</span><span class="chart-meta">Aligned observations</span></div><div id="timeSeriesChart" class="chart-container"></div></div><!-- Scatter chart --><div class="section-card" style="padding:1rem"><div class="chart-header"><span class="chart-title">Scatter: radiation vs temperature</span><span class="chart-meta" id="resolutionBadge">Monthly pairs</span></div><div id="scatterChart" class="chart-container"></div><div id="scatterNote" class="chart-footnote"></div></div><!-- Correlation analysis --><div class="section-card"><div class="section-heading">Correlation analysis</div><div class="metric-grid"><div class="metric-card"><div class="metric-label">Pearson r</div><div id="pearsonR" class="metric-value accent">—</div></div><div class="metric-card"><div class="metric-label">r² (explained variance)</div><div id="rSquared" class="metric-value">—</div></div><div class="metric-card"><div class="metric-label">p-value (approx)</div><div id="pValue" class="metric-value success">—</div></div></div><div class="contribution-box"><div class="contribution-label">Contribution score</div><div id="contributionScore" class="contribution-value">—</div><div class="contribution-note">Sunshine explains a portion of temperature variance. Clouds, circulation, albedo, land/sea effects, and station exposure also play major roles.</div></div></div></div><!-- /#labContent --><!-- Data sources & methodology — always at the foot --><details class="expander sources-expander"><summary>Data sources &amp; methodology</summary><div class="expander-body"><dl class="sources-list"><dt>Temperature — GHCN-Monthly v4</dt><dd>Global Historical Climatology Network Monthly (GHCNm v4) dataset, served via klymot.com. Raw and Adjusted (homogenised) records. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018</a>.</dd><dt>Homogenisation</dt><dd>Adjusted records use pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009</a>.</dd><dt>Shortwave radiation</dt><dd>Monthly totals of global horizontal irradiance (MJ/m²) — total downwelling shortwave radiation at the surface, the quantity measured by a pyranometer.</dd><dt>Station network history</dt><dd>Cumulative station counts derived from the <a href="https://github.com/AssessingSolar/solarstations" target="_blank" rel="noopener">AssessingSolar/solarstations</a> catalog on GitHub. Milestone events curated by hand.</dd></dl><p class="sources-footer">This is a neutral exploration tool. Correlation does not imply causation.</p></div></details></div></section></main><footer class="site-footer"><div class="container"><p>© Klymot</p></div></footer><!-- Theme toggle + Reset lab wiring --><script>
     (function () {
       var btn = document.getElementById('themeToggle');
       if (btn) {
@@ -39,7 +39,9 @@
       var reset = document.getElementById('resetLab');
       if (reset) {
         reset.addEventListener('click', function () {
-          try { localStorage.removeItem('klymot-station-order-v1'); } catch (_) {}
+          ['klymot-station-order-v1','klymot-res-order-v1','klymot-temp-order-v1','klymot-cmp-order-v1'].forEach(function(k) {
+            try { localStorage.removeItem(k); } catch (_) {}
+          });
           window.location.href = window.location.pathname;
         });
       }
@@ -54,23 +56,25 @@
     function readStateFromUrl() {
       const params = new URLSearchParams(window.location.search);
       return {
-        station: params.get('s') || null,
-        dataType: params.get('t') || null,
-        resolution: params.get('r') || null,
-        lag: params.has('lag') ? parseFloat(params.get('lag')) : null,
-        windowStart: params.has('ws') ? parseInt(params.get('ws'), 10) : null,
-        windowSize: params.has('wz') ? parseInt(params.get('wz'), 10) : null
+        station:    params.get('s')   || null,
+        dataType:   params.get('t')   || null,
+        resolution: params.get('r')   || null,
+        comparison: params.get('cmp') || null,
+        lag:         params.has('lag') ? parseFloat(params.get('lag'))       : null,
+        windowStart: params.has('ws')  ? parseInt(params.get('ws'),  10)     : null,
+        windowSize:  params.has('wz')  ? parseInt(params.get('wz'),  10)     : null
       };
     }
 
     function pushStateToUrl() {
-      if (!currentStation) return;
+      if (!currentStation || !currentResolution || !currentDataType || !currentComparison) return;
       const params = new URLSearchParams();
-      params.set('s', currentStation);
-      params.set('t', currentDataType);
-      params.set('r', currentResolution);
-      if (monthLag !== 0) params.set('lag', String(monthLag));
-      if (timeWindowStart !== 0) params.set('ws', String(timeWindowStart));
+      params.set('s',   currentStation);
+      params.set('t',   currentDataType);
+      params.set('r',   currentResolution);
+      params.set('cmp', currentComparison);
+      if (monthLag !== 0)        params.set('lag', String(monthLag));
+      if (timeWindowStart !== 0) params.set('ws',  String(timeWindowStart));
       if (timeWindowSize !== null) params.set('wz', String(timeWindowSize));
       window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
     }
@@ -89,9 +93,10 @@
     };
 
     let stations = {};
-    let currentStation = null;
-    let currentDataType = 'qcu';
-    let currentResolution = 'monthly';
+    let currentStation    = null;
+    let currentDataType   = null;
+    let currentResolution = null;
+    let currentComparison = null;
     let monthLag = 0;
     let timeWindowStart = 0;
     let timeWindowSize = null;
@@ -266,17 +271,12 @@
       }
     }
 
-    function showLabContent() {
-      const content = document.getElementById('labContent');
-      if (content) content.hidden = false;
-      setPrompt(true);
-    }
-
     function deselectStation() {
-      currentStation = null;
-      const content = document.getElementById('labContent');
-      if (content) content.hidden = true;
-      setPrompt(false);
+      currentStation    = null;
+      currentResolution = null;
+      currentDataType   = null;
+      currentComparison = null;
+      revealToCurrentState();
       renderStationCards();
       updateStationInfo();
       window.history.replaceState(null, '', window.location.pathname);
@@ -284,32 +284,166 @@
 
     async function selectStation(key) {
       if (key === currentStation) { deselectStation(); return; }
-      currentStation = key;
+      currentStation    = key;
+      currentResolution = null;
+      currentDataType   = null;
+      currentComparison = null;
       resetTimeWindow();
-      showLabContent();
       renderStationCards();
       updateStationInfo();
+      revealToCurrentState();
       await ensureCurrentTemperatureLoaded();
-      updateAllVisuals();
-      pushStateToUrl();
     }
 
-    // ── Controls ───────────────────────────────────────────────────
-    function setDataType(type) {
-      currentDataType = type;
-      document.getElementById('btn-qcu').classList.toggle('active', type === 'qcu');
-      document.getElementById('btn-qcf').classList.toggle('active', type === 'qcf');
-      updateAllVisuals();
-      pushStateToUrl();
+    // ── Blocking choice constants ──────────────────────────────────
+    const RESOLUTION_OPTIONS = [
+      { value: 'monthly', name: 'Monthly', desc: 'Compare radiation and temperature month by month. The shared seasonal cycle — both peak in summer, dip in winter — makes the correlation immediately visible. Be aware that what you\'re mostly seeing is the season, not year-to-year climate variation.' },
+      { value: 'yearly',  name: 'Annual',  desc: 'Average each year into a single value. The seasonal cycle disappears, leaving only year-to-year variation. This is a harder test — without the seasonal scaffold, you\'ll need to think carefully about what\'s left.' }
+    ];
+
+    const TEMP_OPTIONS = [
+      { value: 'qcu', name: 'Raw (unadjusted)', desc: 'The station\'s original measured values. These may include non-climatic jumps from station relocations, instrument changes, or shifts in observation time.' },
+      { value: 'qcf', name: 'PHA-adjusted',      desc: 'The pairwise homogeneity algorithm (PHA) compares each station against its neighbours and flags apparent non-climatic breakpoints. Adjustments are automated — the algorithm assigns corrections based on the majority of neighbouring stations.' }
+    ];
+
+    const COMP_OPTIONS = [
+      { value: 'direct',  name: 'Direct',  desc: 'Compare the actual measured values. In monthly data the seasonal cycle dominates and the radiation–temperature relationship is clear. In annual data the seasonal scaffold is gone — direct annual values often show a weaker or noisier relationship because year-to-year swings are small compared to the seasonal range.' },
+      { value: 'anomaly', name: 'Anomaly', desc: 'Each value is expressed as its departure from the long-term average for that calendar month (e.g. January 2020 minus the mean of all Januarys in the loaded record). This removes the seasonal cycle. In annual data, anomalies often reveal the year-to-year radiation–temperature link that direct comparison obscures.' }
+    ];
+
+    function getChoiceOrder(lsKey, items) {
+      try {
+        const stored = localStorage.getItem(lsKey);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const vals = items.map(i => i.value);
+          if (Array.isArray(parsed) && parsed.length === vals.length && vals.every(v => parsed.includes(v))) {
+            return parsed;
+          }
+        }
+      } catch (_) {}
+      const order = shuffleArray(items.map(i => i.value));
+      try { localStorage.setItem(lsKey, JSON.stringify(order)); } catch (_) {}
+      return order;
     }
 
-    function setResolution(type) {
-      currentResolution = type;
-      resetTimeWindow();
-      document.getElementById('btn-monthly').classList.toggle('active', type === 'monthly');
-      document.getElementById('btn-yearly').classList.toggle('active', type === 'yearly');
-      updateAllVisuals();
-      pushStateToUrl();
+    function renderChoiceGrid(gridId, options, lsKey, currentValue, onSelect) {
+      const grid = document.getElementById(gridId);
+      if (!grid) return;
+      const order = getChoiceOrder(lsKey, options);
+      grid.innerHTML = '';
+      order.forEach(function(value) {
+        const opt = options.find(o => o.value === value);
+        if (!opt) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'station-card' + (value === currentValue ? ' active' : '');
+        btn.setAttribute('aria-pressed', value === currentValue ? 'true' : 'false');
+        btn.innerHTML = '<span class="sc-name">' + opt.name + '</span><span class="sc-caveat">' + opt.desc + '</span>';
+        btn.addEventListener('click', function() { onSelect(value); });
+        grid.appendChild(btn);
+      });
+    }
+
+    function setResolutionPrompt(chosen) {
+      const el = document.getElementById('resolutionPrompt');
+      if (!el) return;
+      const labels = { monthly: 'Monthly', yearly: 'Annual' };
+      if (chosen && labels[chosen]) {
+        el.textContent = 'You chose: ' + labels[chosen];
+        el.setAttribute('data-chosen', '');
+      } else {
+        el.textContent = 'Choose one.';
+        el.removeAttribute('data-chosen');
+      }
+    }
+
+    function setTempPrompt(chosen) {
+      const el = document.getElementById('tempPrompt');
+      if (!el) return;
+      const labels = { qcu: 'Raw (unadjusted)', qcf: 'PHA-adjusted' };
+      if (chosen && labels[chosen]) {
+        el.textContent = 'You chose: ' + labels[chosen];
+        el.setAttribute('data-chosen', '');
+      } else {
+        el.textContent = 'Choose one.';
+        el.removeAttribute('data-chosen');
+      }
+    }
+
+    function setCompPrompt(chosen) {
+      const el = document.getElementById('compPrompt');
+      if (!el) return;
+      const labels = { direct: 'Direct measurements', anomaly: 'Anomalies' };
+      if (chosen && labels[chosen]) {
+        el.textContent = 'You chose: ' + labels[chosen];
+        el.setAttribute('data-chosen', '');
+      } else {
+        el.textContent = 'Choose one.';
+        el.removeAttribute('data-chosen');
+      }
+    }
+
+    function revealToCurrentState() {
+      const cmpSection = document.getElementById('compareSection');
+      const labContent = document.getElementById('labContent');
+
+      if (!currentStation) {
+        if (cmpSection) cmpSection.hidden = true;
+        if (labContent) labContent.hidden = true;
+        setPrompt(false);
+        return;
+      }
+
+      setPrompt(true);
+
+      if (cmpSection) cmpSection.hidden = false;
+      renderChoiceGrid('resolutionGrid', RESOLUTION_OPTIONS, 'klymot-res-order-v1', currentResolution, selectResolution);
+      setResolutionPrompt(currentResolution);
+      renderChoiceGrid('tempGrid', TEMP_OPTIONS, 'klymot-temp-order-v1', currentDataType, selectDataType);
+      setTempPrompt(currentDataType);
+      renderChoiceGrid('compGrid', COMP_OPTIONS, 'klymot-cmp-order-v1', currentComparison, selectComparison);
+      setCompPrompt(currentComparison);
+
+      if (labContent) labContent.hidden = !(currentResolution && currentDataType && currentComparison);
+    }
+
+    function selectResolution(value) {
+      if (value === currentResolution) {
+        currentResolution = null;
+      } else {
+        currentResolution = value;
+        resetTimeWindow();
+      }
+      revealToCurrentState();
+      if (currentResolution && currentDataType && currentComparison) {
+        updateAllVisuals();
+        pushStateToUrl();
+      } else {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    }
+
+    function selectDataType(value) {
+      currentDataType = (value === currentDataType) ? null : value;
+      revealToCurrentState();
+      if (currentResolution && currentDataType && currentComparison) {
+        updateAllVisuals();
+        pushStateToUrl();
+      } else {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    }
+
+    function selectComparison(value) {
+      currentComparison = (value === currentComparison) ? null : value;
+      revealToCurrentState();
+      if (currentResolution && currentDataType && currentComparison) {
+        updateAllVisuals();
+        pushStateToUrl();
+      } else {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
     }
 
     function shiftLag(delta) {
@@ -365,6 +499,7 @@
     }
 
     function aggregateYearly(monthlyRows) {
+      const isAnomaly = currentComparison === 'anomaly';
       const byYear = new Map();
       monthlyRows.forEach(row => {
         if (!byYear.has(row.year)) byYear.set(row.year, []);
@@ -374,10 +509,38 @@
         key: String(year),
         label: String(year),
         year,
-        temp: mean(rows.map(r => r.temp)),
-        shortwave: rows.reduce((s, r) => s + (r.shortwave || 0), 0),
+        temp:      mean(rows.map(r => r.temp)),
+        shortwave: isAnomaly
+          ? mean(rows.map(r => r.shortwave))
+          : rows.reduce((s, r) => s + (r.shortwave || 0), 0),
         monthCount: rows.length
       })).filter(r => r.monthCount >= 9 && Number.isFinite(r.temp) && Number.isFinite(r.shortwave));
+    }
+
+    function computeMonthlyClimatology(rows) {
+      const swSums  = new Array(13).fill(0), swCounts  = new Array(13).fill(0);
+      const tSums   = new Array(13).fill(0), tCounts   = new Array(13).fill(0);
+      rows.forEach(function(row) {
+        const m = row.month;
+        if (!m) return;
+        swSums[m] += row.shortwave; swCounts[m]++;
+        tSums[m]  += row.temp;      tCounts[m]++;
+      });
+      return {
+        shortwave: swSums.map(function(s, i) { return swCounts[i] ? s / swCounts[i] : 0; }),
+        temp:      tSums.map(function(s, i)  { return tCounts[i]  ? s / tCounts[i]  : 0; })
+      };
+    }
+
+    function applyComparison(monthlyRows) {
+      if (currentComparison !== 'anomaly') return monthlyRows;
+      const clim = computeMonthlyClimatology(monthlyRows);
+      return monthlyRows.map(function(row) {
+        return Object.assign({}, row, {
+          shortwave: row.shortwave - (clim.shortwave[row.month] || 0),
+          temp:      row.temp      - (clim.temp[row.month]      || 0)
+        });
+      });
     }
 
     function ensureTimeWindow(rows) {
@@ -445,12 +608,13 @@
     function getCurrentData() {
       const s = stations[currentStation];
       if (!s || !s.temperature) return { labels: [], sunshine: [], rows: [], station: s };
-      const monthly = alignMonthlyData(s);
-      const rows = currentResolution === 'monthly' ? monthly : aggregateYearly(monthly);
+      const monthly   = alignMonthlyData(s);
+      const processed = applyComparison(monthly);
+      const rows      = currentResolution === 'monthly' ? processed : aggregateYearly(processed);
       updateControlsReadout(rows);
       return {
-        labels: rows.map(r => r.label),
-        sunshine: rows.map(r => r.shortwave), // always shortwave
+        labels:   rows.map(r => r.label),
+        sunshine: rows.map(r => r.shortwave),
         rows,
         station: s
       };
@@ -470,13 +634,14 @@
         return;
       }
 
+      const isAnomalyTS = currentComparison === 'anomaly';
       timeSeriesChart = new KlymotChart.DualAxisChart(container);
       timeSeriesChart.load({
         labels:      rows.map(r => r.label),
         leftData:    rows.map(r => r.temp),
         rightData:   rows.map(r => r.shortwave),
-        leftLabel:   'Temp °C',
-        rightLabel:  'MJ/m²',
+        leftLabel:   isAnomalyTS ? 'Temp anomaly (°C)'    : 'Temp (°C)',
+        rightLabel:  isAnomalyTS ? 'SW anomaly (MJ/m²)'   : 'MJ/m²',
         leftColor:   cssVar('--success'),
         rightColor:  cssVar('--accent-primary'),
         labelFilter: (label, index) => timeAxisLabel(rows[index], rows)
@@ -497,12 +662,13 @@
       }));
       const fit = regressionFit(points);
 
+      const isAnomalySC = currentComparison === 'anomaly';
       scatterChart = new KlymotChart.ScatterChart(container);
       scatterChart.load({
         points,
         fitLine:    fit.points.length >= 2 ? { points: fit.points } : null,
-        xLabel:     'Shortwave radiation (MJ/m²)',
-        yLabel:     'Temperature (°C)',
+        xLabel:     isAnomalySC ? 'Shortwave anomaly (MJ/m²)' : 'Shortwave radiation (MJ/m²)',
+        yLabel:     isAnomalySC ? 'Temperature anomaly (°C)'  : 'Temperature (°C)',
         pointColor: cssVar('--accent-primary'),
         fitColor:   cssVar('--success')
       });
@@ -513,7 +679,10 @@
       }
 
       const badge = document.getElementById('resolutionBadge');
-      if (badge) badge.textContent = currentResolution === 'monthly' ? 'Monthly pairs' : 'Annual means';
+      if (badge) {
+        const modeLabel = currentComparison === 'anomaly' ? 'anomalies' : 'pairs';
+        badge.textContent = currentResolution === 'monthly' ? ('Monthly ' + modeLabel) : ('Annual ' + modeLabel);
+      }
     }
 
     function regressionFit(points) {
@@ -789,15 +958,10 @@
       if (urlState.station) currentStation = urlState.station;
       if (urlState.dataType === 'qcu' || urlState.dataType === 'qcf') currentDataType = urlState.dataType;
       if (urlState.resolution === 'monthly' || urlState.resolution === 'yearly') currentResolution = urlState.resolution;
+      if (urlState.comparison === 'direct' || urlState.comparison === 'anomaly') currentComparison = urlState.comparison;
       if (urlState.lag !== null && Number.isFinite(urlState.lag)) monthLag = clamp(Math.round(urlState.lag * 4) / 4, -2, 2);
       if (urlState.windowStart !== null && Number.isFinite(urlState.windowStart)) timeWindowStart = Math.max(0, urlState.windowStart);
       if (urlState.windowSize !== null && Number.isFinite(urlState.windowSize)) timeWindowSize = Math.max(1, urlState.windowSize);
-
-      // Apply initial control active states
-      document.getElementById('btn-qcu')?.classList.toggle('active', currentDataType === 'qcu');
-      document.getElementById('btn-qcf')?.classList.toggle('active', currentDataType === 'qcf');
-      document.getElementById('btn-monthly')?.classList.toggle('active', currentResolution === 'monthly');
-      document.getElementById('btn-yearly')?.classList.toggle('active', currentResolution === 'yearly');
 
       // Network chart runs in parallel with station loading
       loadAndDrawNetworkChart();
@@ -835,8 +999,10 @@
       updateStationInfo();
 
       if (currentStation) {
-        showLabContent();
         await ensureCurrentTemperatureLoaded();
+      }
+      revealToCurrentState();
+      if (currentStation && currentResolution && currentDataType && currentComparison) {
         updateAllVisuals();
         pushStateToUrl();
       } else {

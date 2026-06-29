@@ -724,6 +724,31 @@ import '../../styles/theme.css';
     }
 
     canvas { filter: saturate(0.93); }
+
+    .choice-heading {
+      font-family: var(--font-display);
+      font-size: var(--step-1, 1.1rem);
+      font-weight: 600;
+      color: var(--text);
+      margin-block: 2rem 0.4rem;
+    }
+    .choice-intro {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-block: 0 0.75rem;
+      max-width: 60ch;
+    }
+    .choice-subheading {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-block: 1.75rem 0.25rem;
+    }
+    .choice-subheading:first-of-type {
+      margin-block-start: 0.75rem;
+    }
   </style>
 </head>
 <body>
@@ -895,32 +920,44 @@ import '../../styles/theme.css';
         <!-- Dynamic prompt: "select" or "you chose" -->
         <p id="selectPrompt" class="select-prompt">Select a station above to explore the data.</p>
 
-        <!-- Lab content — hidden until a station is selected -->
-        <div id="labContent" hidden>
+        <!-- Blocking choice: what to compare (all three axes shown together) -->
+        <div id="compareSection" hidden>
+          <h3 class="choice-heading">What do you want to compare?</h3>
+          <p class="choice-intro">Set all three axes. You can change any of them at any time — changing one won't reset the others.</p>
 
-          <!-- Data controls -->
-          <div class="section-card">
-            <div class="controls-grid">
-              <div class="control-group">
-                <div class="control-label">Temperature data</div>
-                <div class="toggle-row">
-                  <button onclick="setDataType('qcu')" id="btn-qcu" class="toggle-btn active">Raw</button>
-                  <button onclick="setDataType('qcf')" id="btn-qcf" class="toggle-btn">Adjusted</button>
-                </div>
-              </div>
-              <div class="control-group">
-                <div class="control-label">Aggregation</div>
-                <div class="toggle-row">
-                  <button onclick="setResolution('monthly')" id="btn-monthly" class="toggle-btn active">Monthly</button>
-                  <button onclick="setResolution('yearly')" id="btn-yearly" class="toggle-btn">Yearly</button>
-                </div>
-              </div>
+          <p class="choice-subheading">Time resolution</p>
+          <p class="random-order-note">Options shown in a random order.</p>
+          <div class="station-grid" id="resolutionGrid" role="group" aria-label="Choose time resolution"></div>
+          <p id="resolutionPrompt" class="select-prompt">Choose one.</p>
+
+          <p class="choice-subheading">Temperature record</p>
+          <p class="random-order-note">Options shown in a random order.</p>
+          <div class="station-grid" id="tempGrid" role="group" aria-label="Choose temperature data"></div>
+          <p id="tempPrompt" class="select-prompt">Choose one.</p>
+
+          <p class="choice-subheading">Comparison type</p>
+          <p class="random-order-note">Options shown in a random order.</p>
+          <div class="station-grid" id="compGrid" role="group" aria-label="Choose comparison type"></div>
+          <p id="compPrompt" class="select-prompt">Choose one.</p>
+
+          <details class="expander" style="margin-top:1.25rem">
+            <summary>How are anomalies calculated?</summary>
+            <div class="expander-body">
+              <p>Each month's value has its long-term monthly mean subtracted — so every January is compared only against other Januarys in the loaded record, every July against other Julys, and so on. The baseline is the mean of the full loaded record for this station; no external reference period is used.</p>
+              <p>For annual values, the anomaly is the average of the 12 monthly anomalies for that year — not the departure of the annual mean from an annual mean baseline.</p>
             </div>
-            <div class="control-note">
-              <strong>Shortwave radiation (MJ/m²)</strong> — monthly total incoming solar energy (direct + diffuse).
-              Raw temperature is unadjusted monthly GHCN; Adjusted is homogenised.
+          </details>
+          <details class="expander">
+            <summary>Does the baseline period matter?</summary>
+            <div class="expander-body">
+              <p>For correlation purposes, no. Subtracting a constant (the long-term monthly mean) from every value shifts all numbers by the same amount, but correlation measures the shape of the relationship — not the absolute level. If you used a different baseline, every January value would shift by the same offset, so the pattern of departures and the r value would be identical.</p>
+              <p>The baseline affects the zero line on the chart but nothing about the statistical relationship. We use the mean of the full loaded record simply because it is the natural centre of the data you are looking at.</p>
             </div>
-          </div>
+          </details>
+        </div>
+
+        <!-- Lab content — hidden until all three comparison axes are chosen -->
+        <div id="labContent" hidden>
 
           <!-- Time controls -->
           <div class="section-card">
@@ -1040,7 +1077,9 @@ import '../../styles/theme.css';
       var reset = document.getElementById('resetLab');
       if (reset) {
         reset.addEventListener('click', function () {
-          try { localStorage.removeItem('klymot-station-order-v1'); } catch (_) {}
+          ['klymot-station-order-v1','klymot-res-order-v1','klymot-temp-order-v1','klymot-cmp-order-v1'].forEach(function(k) {
+            try { localStorage.removeItem(k); } catch (_) {}
+          });
           window.location.href = window.location.pathname;
         });
       }
@@ -1057,23 +1096,25 @@ import '../../styles/theme.css';
     function readStateFromUrl() {
       const params = new URLSearchParams(window.location.search);
       return {
-        station: params.get('s') || null,
-        dataType: params.get('t') || null,
-        resolution: params.get('r') || null,
-        lag: params.has('lag') ? parseFloat(params.get('lag')) : null,
-        windowStart: params.has('ws') ? parseInt(params.get('ws'), 10) : null,
-        windowSize: params.has('wz') ? parseInt(params.get('wz'), 10) : null
+        station:    params.get('s')   || null,
+        dataType:   params.get('t')   || null,
+        resolution: params.get('r')   || null,
+        comparison: params.get('cmp') || null,
+        lag:         params.has('lag') ? parseFloat(params.get('lag'))       : null,
+        windowStart: params.has('ws')  ? parseInt(params.get('ws'),  10)     : null,
+        windowSize:  params.has('wz')  ? parseInt(params.get('wz'),  10)     : null
       };
     }
 
     function pushStateToUrl() {
-      if (!currentStation) return;
+      if (!currentStation || !currentResolution || !currentDataType || !currentComparison) return;
       const params = new URLSearchParams();
-      params.set('s', currentStation);
-      params.set('t', currentDataType);
-      params.set('r', currentResolution);
-      if (monthLag !== 0) params.set('lag', String(monthLag));
-      if (timeWindowStart !== 0) params.set('ws', String(timeWindowStart));
+      params.set('s',   currentStation);
+      params.set('t',   currentDataType);
+      params.set('r',   currentResolution);
+      params.set('cmp', currentComparison);
+      if (monthLag !== 0)        params.set('lag', String(monthLag));
+      if (timeWindowStart !== 0) params.set('ws',  String(timeWindowStart));
       if (timeWindowSize !== null) params.set('wz', String(timeWindowSize));
       window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
     }
@@ -1092,9 +1133,10 @@ import '../../styles/theme.css';
     };
 
     let stations = {};
-    let currentStation = null;
-    let currentDataType = 'qcu';
-    let currentResolution = 'monthly';
+    let currentStation    = null;
+    let currentDataType   = null;
+    let currentResolution = null;
+    let currentComparison = null;
     let monthLag = 0;
     let timeWindowStart = 0;
     let timeWindowSize = null;
@@ -1269,17 +1311,12 @@ import '../../styles/theme.css';
       }
     }
 
-    function showLabContent() {
-      const content = document.getElementById('labContent');
-      if (content) content.hidden = false;
-      setPrompt(true);
-    }
-
     function deselectStation() {
-      currentStation = null;
-      const content = document.getElementById('labContent');
-      if (content) content.hidden = true;
-      setPrompt(false);
+      currentStation    = null;
+      currentResolution = null;
+      currentDataType   = null;
+      currentComparison = null;
+      revealToCurrentState();
       renderStationCards();
       updateStationInfo();
       window.history.replaceState(null, '', window.location.pathname);
@@ -1287,32 +1324,166 @@ import '../../styles/theme.css';
 
     async function selectStation(key) {
       if (key === currentStation) { deselectStation(); return; }
-      currentStation = key;
+      currentStation    = key;
+      currentResolution = null;
+      currentDataType   = null;
+      currentComparison = null;
       resetTimeWindow();
-      showLabContent();
       renderStationCards();
       updateStationInfo();
+      revealToCurrentState();
       await ensureCurrentTemperatureLoaded();
-      updateAllVisuals();
-      pushStateToUrl();
     }
 
-    // ── Controls ───────────────────────────────────────────────────
-    function setDataType(type) {
-      currentDataType = type;
-      document.getElementById('btn-qcu').classList.toggle('active', type === 'qcu');
-      document.getElementById('btn-qcf').classList.toggle('active', type === 'qcf');
-      updateAllVisuals();
-      pushStateToUrl();
+    // ── Blocking choice constants ──────────────────────────────────
+    const RESOLUTION_OPTIONS = [
+      { value: 'monthly', name: 'Monthly', desc: 'Compare radiation and temperature month by month. The shared seasonal cycle — both peak in summer, dip in winter — makes the correlation immediately visible. Be aware that what you\'re mostly seeing is the season, not year-to-year climate variation.' },
+      { value: 'yearly',  name: 'Annual',  desc: 'Average each year into a single value. The seasonal cycle disappears, leaving only year-to-year variation. This is a harder test — without the seasonal scaffold, you\'ll need to think carefully about what\'s left.' }
+    ];
+
+    const TEMP_OPTIONS = [
+      { value: 'qcu', name: 'Raw (unadjusted)', desc: 'The station\'s original measured values. These may include non-climatic jumps from station relocations, instrument changes, or shifts in observation time.' },
+      { value: 'qcf', name: 'PHA-adjusted',      desc: 'The pairwise homogeneity algorithm (PHA) compares each station against its neighbours and flags apparent non-climatic breakpoints. Adjustments are automated — the algorithm assigns corrections based on the majority of neighbouring stations.' }
+    ];
+
+    const COMP_OPTIONS = [
+      { value: 'direct',  name: 'Direct',  desc: 'Compare the actual measured values. In monthly data the seasonal cycle dominates and the radiation–temperature relationship is clear. In annual data the seasonal scaffold is gone — direct annual values often show a weaker or noisier relationship because year-to-year swings are small compared to the seasonal range.' },
+      { value: 'anomaly', name: 'Anomaly', desc: 'Each value is expressed as its departure from the long-term average for that calendar month (e.g. January 2020 minus the mean of all Januarys in the loaded record). This removes the seasonal cycle. In annual data, anomalies often reveal the year-to-year radiation–temperature link that direct comparison obscures.' }
+    ];
+
+    function getChoiceOrder(lsKey, items) {
+      try {
+        const stored = localStorage.getItem(lsKey);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const vals = items.map(i => i.value);
+          if (Array.isArray(parsed) && parsed.length === vals.length && vals.every(v => parsed.includes(v))) {
+            return parsed;
+          }
+        }
+      } catch (_) {}
+      const order = shuffleArray(items.map(i => i.value));
+      try { localStorage.setItem(lsKey, JSON.stringify(order)); } catch (_) {}
+      return order;
     }
 
-    function setResolution(type) {
-      currentResolution = type;
-      resetTimeWindow();
-      document.getElementById('btn-monthly').classList.toggle('active', type === 'monthly');
-      document.getElementById('btn-yearly').classList.toggle('active', type === 'yearly');
-      updateAllVisuals();
-      pushStateToUrl();
+    function renderChoiceGrid(gridId, options, lsKey, currentValue, onSelect) {
+      const grid = document.getElementById(gridId);
+      if (!grid) return;
+      const order = getChoiceOrder(lsKey, options);
+      grid.innerHTML = '';
+      order.forEach(function(value) {
+        const opt = options.find(o => o.value === value);
+        if (!opt) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'station-card' + (value === currentValue ? ' active' : '');
+        btn.setAttribute('aria-pressed', value === currentValue ? 'true' : 'false');
+        btn.innerHTML = '<span class="sc-name">' + opt.name + '</span><span class="sc-caveat">' + opt.desc + '</span>';
+        btn.addEventListener('click', function() { onSelect(value); });
+        grid.appendChild(btn);
+      });
+    }
+
+    function setResolutionPrompt(chosen) {
+      const el = document.getElementById('resolutionPrompt');
+      if (!el) return;
+      const labels = { monthly: 'Monthly', yearly: 'Annual' };
+      if (chosen && labels[chosen]) {
+        el.textContent = 'You chose: ' + labels[chosen];
+        el.setAttribute('data-chosen', '');
+      } else {
+        el.textContent = 'Choose one.';
+        el.removeAttribute('data-chosen');
+      }
+    }
+
+    function setTempPrompt(chosen) {
+      const el = document.getElementById('tempPrompt');
+      if (!el) return;
+      const labels = { qcu: 'Raw (unadjusted)', qcf: 'PHA-adjusted' };
+      if (chosen && labels[chosen]) {
+        el.textContent = 'You chose: ' + labels[chosen];
+        el.setAttribute('data-chosen', '');
+      } else {
+        el.textContent = 'Choose one.';
+        el.removeAttribute('data-chosen');
+      }
+    }
+
+    function setCompPrompt(chosen) {
+      const el = document.getElementById('compPrompt');
+      if (!el) return;
+      const labels = { direct: 'Direct measurements', anomaly: 'Anomalies' };
+      if (chosen && labels[chosen]) {
+        el.textContent = 'You chose: ' + labels[chosen];
+        el.setAttribute('data-chosen', '');
+      } else {
+        el.textContent = 'Choose one.';
+        el.removeAttribute('data-chosen');
+      }
+    }
+
+    function revealToCurrentState() {
+      const cmpSection = document.getElementById('compareSection');
+      const labContent = document.getElementById('labContent');
+
+      if (!currentStation) {
+        if (cmpSection) cmpSection.hidden = true;
+        if (labContent) labContent.hidden = true;
+        setPrompt(false);
+        return;
+      }
+
+      setPrompt(true);
+
+      if (cmpSection) cmpSection.hidden = false;
+      renderChoiceGrid('resolutionGrid', RESOLUTION_OPTIONS, 'klymot-res-order-v1', currentResolution, selectResolution);
+      setResolutionPrompt(currentResolution);
+      renderChoiceGrid('tempGrid', TEMP_OPTIONS, 'klymot-temp-order-v1', currentDataType, selectDataType);
+      setTempPrompt(currentDataType);
+      renderChoiceGrid('compGrid', COMP_OPTIONS, 'klymot-cmp-order-v1', currentComparison, selectComparison);
+      setCompPrompt(currentComparison);
+
+      if (labContent) labContent.hidden = !(currentResolution && currentDataType && currentComparison);
+    }
+
+    function selectResolution(value) {
+      if (value === currentResolution) {
+        currentResolution = null;
+      } else {
+        currentResolution = value;
+        resetTimeWindow();
+      }
+      revealToCurrentState();
+      if (currentResolution && currentDataType && currentComparison) {
+        updateAllVisuals();
+        pushStateToUrl();
+      } else {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    }
+
+    function selectDataType(value) {
+      currentDataType = (value === currentDataType) ? null : value;
+      revealToCurrentState();
+      if (currentResolution && currentDataType && currentComparison) {
+        updateAllVisuals();
+        pushStateToUrl();
+      } else {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    }
+
+    function selectComparison(value) {
+      currentComparison = (value === currentComparison) ? null : value;
+      revealToCurrentState();
+      if (currentResolution && currentDataType && currentComparison) {
+        updateAllVisuals();
+        pushStateToUrl();
+      } else {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
     }
 
     function shiftLag(delta) {
@@ -1368,6 +1539,7 @@ import '../../styles/theme.css';
     }
 
     function aggregateYearly(monthlyRows) {
+      const isAnomaly = currentComparison === 'anomaly';
       const byYear = new Map();
       monthlyRows.forEach(row => {
         if (!byYear.has(row.year)) byYear.set(row.year, []);
@@ -1377,10 +1549,38 @@ import '../../styles/theme.css';
         key: String(year),
         label: String(year),
         year,
-        temp: mean(rows.map(r => r.temp)),
-        shortwave: rows.reduce((s, r) => s + (r.shortwave || 0), 0),
+        temp:      mean(rows.map(r => r.temp)),
+        shortwave: isAnomaly
+          ? mean(rows.map(r => r.shortwave))
+          : rows.reduce((s, r) => s + (r.shortwave || 0), 0),
         monthCount: rows.length
       })).filter(r => r.monthCount >= 9 && Number.isFinite(r.temp) && Number.isFinite(r.shortwave));
+    }
+
+    function computeMonthlyClimatology(rows) {
+      const swSums  = new Array(13).fill(0), swCounts  = new Array(13).fill(0);
+      const tSums   = new Array(13).fill(0), tCounts   = new Array(13).fill(0);
+      rows.forEach(function(row) {
+        const m = row.month;
+        if (!m) return;
+        swSums[m] += row.shortwave; swCounts[m]++;
+        tSums[m]  += row.temp;      tCounts[m]++;
+      });
+      return {
+        shortwave: swSums.map(function(s, i) { return swCounts[i] ? s / swCounts[i] : 0; }),
+        temp:      tSums.map(function(s, i)  { return tCounts[i]  ? s / tCounts[i]  : 0; })
+      };
+    }
+
+    function applyComparison(monthlyRows) {
+      if (currentComparison !== 'anomaly') return monthlyRows;
+      const clim = computeMonthlyClimatology(monthlyRows);
+      return monthlyRows.map(function(row) {
+        return Object.assign({}, row, {
+          shortwave: row.shortwave - (clim.shortwave[row.month] || 0),
+          temp:      row.temp      - (clim.temp[row.month]      || 0)
+        });
+      });
     }
 
     function ensureTimeWindow(rows) {
@@ -1448,12 +1648,13 @@ import '../../styles/theme.css';
     function getCurrentData() {
       const s = stations[currentStation];
       if (!s || !s.temperature) return { labels: [], sunshine: [], rows: [], station: s };
-      const monthly = alignMonthlyData(s);
-      const rows = currentResolution === 'monthly' ? monthly : aggregateYearly(monthly);
+      const monthly   = alignMonthlyData(s);
+      const processed = applyComparison(monthly);
+      const rows      = currentResolution === 'monthly' ? processed : aggregateYearly(processed);
       updateControlsReadout(rows);
       return {
-        labels: rows.map(r => r.label),
-        sunshine: rows.map(r => r.shortwave), // always shortwave
+        labels:   rows.map(r => r.label),
+        sunshine: rows.map(r => r.shortwave),
         rows,
         station: s
       };
@@ -1473,13 +1674,14 @@ import '../../styles/theme.css';
         return;
       }
 
+      const isAnomalyTS = currentComparison === 'anomaly';
       timeSeriesChart = new KlymotChart.DualAxisChart(container);
       timeSeriesChart.load({
         labels:      rows.map(r => r.label),
         leftData:    rows.map(r => r.temp),
         rightData:   rows.map(r => r.shortwave),
-        leftLabel:   'Temp °C',
-        rightLabel:  'MJ/m²',
+        leftLabel:   isAnomalyTS ? 'Temp anomaly (°C)'    : 'Temp (°C)',
+        rightLabel:  isAnomalyTS ? 'SW anomaly (MJ/m²)'   : 'MJ/m²',
         leftColor:   cssVar('--success'),
         rightColor:  cssVar('--accent-primary'),
         labelFilter: (label, index) => timeAxisLabel(rows[index], rows)
@@ -1500,12 +1702,13 @@ import '../../styles/theme.css';
       }));
       const fit = regressionFit(points);
 
+      const isAnomalySC = currentComparison === 'anomaly';
       scatterChart = new KlymotChart.ScatterChart(container);
       scatterChart.load({
         points,
         fitLine:    fit.points.length >= 2 ? { points: fit.points } : null,
-        xLabel:     'Shortwave radiation (MJ/m²)',
-        yLabel:     'Temperature (°C)',
+        xLabel:     isAnomalySC ? 'Shortwave anomaly (MJ/m²)' : 'Shortwave radiation (MJ/m²)',
+        yLabel:     isAnomalySC ? 'Temperature anomaly (°C)'  : 'Temperature (°C)',
         pointColor: cssVar('--accent-primary'),
         fitColor:   cssVar('--success')
       });
@@ -1516,7 +1719,10 @@ import '../../styles/theme.css';
       }
 
       const badge = document.getElementById('resolutionBadge');
-      if (badge) badge.textContent = currentResolution === 'monthly' ? 'Monthly pairs' : 'Annual means';
+      if (badge) {
+        const modeLabel = currentComparison === 'anomaly' ? 'anomalies' : 'pairs';
+        badge.textContent = currentResolution === 'monthly' ? ('Monthly ' + modeLabel) : ('Annual ' + modeLabel);
+      }
     }
 
     function regressionFit(points) {
@@ -1792,15 +1998,10 @@ import '../../styles/theme.css';
       if (urlState.station) currentStation = urlState.station;
       if (urlState.dataType === 'qcu' || urlState.dataType === 'qcf') currentDataType = urlState.dataType;
       if (urlState.resolution === 'monthly' || urlState.resolution === 'yearly') currentResolution = urlState.resolution;
+      if (urlState.comparison === 'direct' || urlState.comparison === 'anomaly') currentComparison = urlState.comparison;
       if (urlState.lag !== null && Number.isFinite(urlState.lag)) monthLag = clamp(Math.round(urlState.lag * 4) / 4, -2, 2);
       if (urlState.windowStart !== null && Number.isFinite(urlState.windowStart)) timeWindowStart = Math.max(0, urlState.windowStart);
       if (urlState.windowSize !== null && Number.isFinite(urlState.windowSize)) timeWindowSize = Math.max(1, urlState.windowSize);
-
-      // Apply initial control active states
-      document.getElementById('btn-qcu')?.classList.toggle('active', currentDataType === 'qcu');
-      document.getElementById('btn-qcf')?.classList.toggle('active', currentDataType === 'qcf');
-      document.getElementById('btn-monthly')?.classList.toggle('active', currentResolution === 'monthly');
-      document.getElementById('btn-yearly')?.classList.toggle('active', currentResolution === 'yearly');
 
       // Network chart runs in parallel with station loading
       loadAndDrawNetworkChart();
@@ -1838,8 +2039,10 @@ import '../../styles/theme.css';
       updateStationInfo();
 
       if (currentStation) {
-        showLabContent();
         await ensureCurrentTemperatureLoaded();
+      }
+      revealToCurrentState();
+      if (currentStation && currentResolution && currentDataType && currentComparison) {
         updateAllVisuals();
         pushStateToUrl();
       } else {
