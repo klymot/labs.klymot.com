@@ -673,6 +673,59 @@ import '../../styles/theme.css';
 
     .chart-tooltip[hidden] { display: none; }
 
+    /* ── Chart toolbar & legend ─────────────────────────────────── */
+    .chart-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+    .toolbar-sep {
+      width: 1px;
+      height: 1.25rem;
+      background: var(--border);
+      margin-inline: 0.2rem;
+      flex-shrink: 0;
+    }
+    .toolbar-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .chart-legend {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .legend-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 0.2rem 0.45rem;
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      transition: opacity 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .legend-btn:hover { border-color: var(--border); }
+    .legend-btn.series-off { opacity: 0.32; }
+    .legend-swatch {
+      display: block;
+      width: 1.4rem;
+      height: 2.5px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
     .sources-card { margin-top: 1rem; }
 
     .sources-heading {
@@ -955,38 +1008,35 @@ import '../../styles/theme.css';
         <!-- Lab content — hidden until all three comparison axes are chosen -->
         <div id="labContent" hidden>
 
-          <!-- Time controls -->
-          <div class="section-card">
-            <div class="controls-grid">
-              <div class="control-group">
-                <div class="control-label">Sunshine lag</div>
-                <div class="control-row-tight">
-                  <button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Shift lag earlier">−</button>
-                  <span id="lagReadout" class="control-readout">0 mo</span>
-                  <button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Shift lag later">+</button>
-                </div>
-              </div>
-              <div class="control-group">
-                <div class="control-label">Time axis</div>
-                <div class="control-row-tight">
-                  <button onclick="panTime(-1)" class="mini-tool" aria-label="Pan earlier">‹</button>
-                  <button onclick="zoomTime(1)" class="mini-tool" aria-label="Zoom in">+</button>
-                  <button onclick="zoomTime(-1)" class="mini-tool" aria-label="Zoom out">−</button>
-                  <button onclick="panTime(1)" class="mini-tool" aria-label="Pan later">›</button>
-                  <button onclick="resetTimeAxis()" class="mini-tool" aria-label="Reset time axis">↺</button>
-                </div>
-              </div>
-            </div>
-            <div id="timeWindowReadout" class="control-note"></div>
-          </div>
-
-          <!-- Time series chart -->
+          <!-- Time series chart + controls -->
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
               <span class="chart-title">Time series</span>
-              <span class="chart-meta">Aligned observations</span>
+              <div class="chart-toolbar">
+                <span class="toolbar-label">Lag</span>
+                <button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Shift lag earlier" type="button">−</button>
+                <span id="lagReadout" class="control-readout">0 mo</span>
+                <button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Shift lag later" type="button">+</button>
+                <span class="toolbar-sep"></span>
+                <button onclick="panTime(-1)" class="mini-tool" aria-label="Pan earlier" type="button">‹</button>
+                <button onclick="zoomTime(1)" class="mini-tool" aria-label="Zoom in" type="button">+</button>
+                <button onclick="zoomTime(-1)" class="mini-tool" aria-label="Zoom out" type="button">−</button>
+                <button onclick="panTime(1)" class="mini-tool" aria-label="Pan later" type="button">›</button>
+                <button onclick="resetTimeAxis()" class="mini-tool" aria-label="Reset view" type="button">↺</button>
+              </div>
             </div>
+            <div id="timeWindowReadout" class="control-note" style="margin-bottom:0.4rem;font-size:0.68rem"></div>
             <div id="timeSeriesChart" class="chart-container"></div>
+            <div class="chart-legend">
+              <button class="legend-btn" id="legendTemp" onclick="toggleSeries('temp')" type="button">
+                <span class="legend-swatch" style="background:var(--success)"></span>
+                Temperature
+              </button>
+              <button class="legend-btn" id="legendSolar" onclick="toggleSeries('solar')" type="button">
+                <span class="legend-swatch" style="background:var(--accent-primary)"></span>
+                Solar radiation
+              </button>
+            </div>
           </div>
 
           <!-- Scatter chart -->
@@ -1141,6 +1191,8 @@ import '../../styles/theme.css';
     let timeWindowSize = null;
     let timeSeriesChart = null;
     let scatterChart = null;
+    let showTemp  = true;
+    let showSolar = true;
 
     // ── Utilities ──────────────────────────────────────────────────
     function setStatus(msg) {
@@ -1639,6 +1691,19 @@ import '../../styles/theme.css';
       };
     }
 
+    // ── Series toggle ──────────────────────────────────────────────
+    function syncLegendButtons() {
+      document.getElementById('legendTemp')?.classList.toggle('series-off',  !showTemp);
+      document.getElementById('legendSolar')?.classList.toggle('series-off', !showSolar);
+    }
+
+    function toggleSeries(which) {
+      if (which === 'temp')  showTemp  = !showTemp;
+      if (which === 'solar') showSolar = !showSolar;
+      syncLegendButtons();
+      updateTimeSeriesChart();
+    }
+
     // ── Chart rendering ────────────────────────────────────────────
     function updateTimeSeriesChart() {
       const container = document.getElementById('timeSeriesChart');
@@ -1650,21 +1715,24 @@ import '../../styles/theme.css';
 
       if (!rows.length) {
         container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:2rem;font-size:.85rem">No overlapping data in this view.</p>';
+        syncLegendButtons();
         return;
       }
 
       const isAnomalyTS = currentComparison === 'anomaly';
+      const nulls = rows.map(() => null);
       timeSeriesChart = new KlymotChart.DualAxisChart(container);
       timeSeriesChart.load({
         labels:      rows.map(r => r.label),
-        leftData:    rows.map(r => r.temp),
-        rightData:   rows.map(r => r.shortwave),
+        leftData:    showTemp  ? rows.map(r => r.temp)      : nulls,
+        rightData:   showSolar ? rows.map(r => r.shortwave) : nulls,
         leftLabel:   isAnomalyTS ? 'Temp anomaly (°C)'    : 'Temp (°C)',
         rightLabel:  isAnomalyTS ? 'SW anomaly (MJ/m²)'   : 'MJ/m²',
-        leftColor:   cssVar('--success'),
-        rightColor:  cssVar('--accent-primary'),
+        leftColor:   showTemp  ? cssVar('--success')        : 'transparent',
+        rightColor:  showSolar ? cssVar('--accent-primary') : 'transparent',
         labelFilter: (label, index) => timeAxisLabel(rows[index], rows)
       });
+      syncLegendButtons();
     }
 
     function updateScatterChart() {
