@@ -284,6 +284,64 @@ import '../../styles/theme.css';
       white-space: normal;
     }
 
+    /* ── Station selection cards ─────────────────────────────────── */
+    .station-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin-block: 1rem;
+    }
+
+    .station-card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.3rem;
+      padding: 0.9rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      transition: border-color 0.12s;
+    }
+
+    .station-card:hover:not(.pending) {
+      border-color: var(--border-strong);
+    }
+
+    .station-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .station-card.pending {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .sc-since {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .sc-name {
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .sc-caveat {
+      font-size: 0.76rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
     /* ── Lab controls (Section 3) ─────────────────────────────────── */
     .chart-container {
       position: relative;
@@ -769,20 +827,9 @@ import '../../styles/theme.css';
         </div>
 
         <!-- Station selection -->
-        <div class="section-card">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div class="control-label">Location</div>
-            <span class="meta-note" id="loadStatus"></span>
-          </div>
-          <select id="stationSelect" onchange="updateStation()"></select>
-          <div id="stationInfo" class="station-pills"></div>
-        </div>
-
-        <!-- Caveats -->
-        <div class="section-card caveat-card">
-          <div class="caveat-heading">Important caveats</div>
-          <div id="stationCaveats" class="caveat-body"></div>
-        </div>
+        <div class="station-grid" id="stationGrid" role="group" aria-label="Select a measurement station"></div>
+        <div id="stationInfo" class="station-pills"></div>
+        <span id="loadStatus" class="meta-note" style="display:block;margin-block-end:0.5rem"></span>
 
         <!-- Data controls -->
         <div class="section-card">
@@ -952,6 +999,17 @@ import '../../styles/theme.css';
 
     // ── Globals ────────────────────────────────────────────────────
     const KLYMOT_DATA_BASE = 'https://www.klymot.com/data';
+
+    const STATION_META = {
+      DAV: { name: 'Davos, Switzerland',            since: 1909, caveat: 'High-altitude site (1590 m); temperature is paired to the nearest long-span station, not Davos itself.' },
+      TOK: { name: 'Tokyo, Japan',                  since: 1931, caveat: 'Strong urban heat island signal, especially in minimum temperatures.' },
+      POT: { name: 'Potsdam, Germany',              since: 1937, caveat: 'Near the Berlin conurbation; urban land-use change affects temperature trends independently of sunshine.' },
+      UCL: { name: 'Uccle, Belgium',                since: 1951, caveat: 'Urban Brussels location; RMIB national reference station.' },
+      VAL: { name: 'Valentia Observatory, Ireland', since: 1954, caveat: 'Atlantic maritime climate; sea-surface temperatures partially decouple local temperature from sunshine variability.' },
+      DBL: { name: 'De Bilt, Netherlands',          since: 1957, caveat: 'KNMI national reference station; open flat terrain representative of temperate maritime lowland.' },
+      STO: { name: 'Stockholm, Sweden',             since: 1960, caveat: 'Urban station with a growing heat island signal; radiation records before the 1960s are from a different site.' },
+    };
+
     let stations = {};
     let currentStation = 'VAL';
     let currentDataType = 'qcu';
@@ -1060,17 +1118,23 @@ import '../../styles/theme.css';
     }
 
     // ── Station UI ─────────────────────────────────────────────────
-    function populateStationSelect() {
-      const sel = document.getElementById('stationSelect');
-      if (!sel) return;
-      sel.innerHTML = '';
-      Object.values(stations).forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.key;
-        opt.textContent = s.name;
-        sel.appendChild(opt);
+    function renderStationCards() {
+      const grid = document.getElementById('stationGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      const order = ['DAV', 'TOK', 'POT', 'UCL', 'VAL', 'DBL', 'STO'];
+      order.forEach(key => {
+        const meta = STATION_META[key];
+        if (!meta) return;
+        const loaded = !!stations[key];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = ['station-card', key === currentStation ? 'active' : '', !loaded ? 'pending' : ''].filter(Boolean).join(' ');
+        btn.setAttribute('aria-pressed', key === currentStation ? 'true' : 'false');
+        btn.innerHTML = `<span class="sc-since">from ${meta.since}</span><span class="sc-name">${meta.name}</span><span class="sc-caveat">${loaded ? meta.caveat : 'Data not yet available — will be loaded on next refresh.'}</span>`;
+        if (loaded) btn.addEventListener('click', () => selectStation(key));
+        grid.appendChild(btn);
       });
-      sel.value = currentStation;
     }
 
     function updateStationInfo() {
@@ -1078,56 +1142,13 @@ import '../../styles/theme.css';
       const s = stations[currentStation];
       if (!el || !s) return;
       const dist = Number(s.tempStation.distance_km || 0).toFixed(1);
-      el.innerHTML = `
-        <span class="station-pill">${s.tempStation.id}</span>
-        <span class="station-pill">shortwave radiation</span>
-        <span class="station-dist">${s.tempStation.name}, ${dist} km</span>
-      `;
-      updateStationCaveats();
+      el.innerHTML = `<span class="station-pill">${s.tempStation.id}</span><span class="station-dist">${s.tempStation.name}, ${dist} km</span>`;
     }
 
-    function stationCaveatItems(station) {
-      const items = [];
-      const dist = Number(station.tempStation.distance_km || 0);
-      const elev = Number(station.tempStation.elevation_m);
-      if (dist > 25) {
-        items.push(`<strong>Station pairing:</strong> sunshine is for ${station.name}, but the covering temperature station is ${station.tempStation.name}, ${dist.toFixed(1)} km away.`);
-      }
-      if (Number.isFinite(elev) && elev > 1000) {
-        items.push(`<strong>High elevation:</strong> ${station.tempStation.name} is at ${elev.toFixed(0)} m; lapse-rate effects may dominate local temperature.`);
-      }
-      if (/TOKYO/i.test(station.name) || /TOKYO/i.test(station.tempStation.name)) {
-        items.push('<strong>Urban heat island:</strong> Tokyo has strong UHI exposure, especially in minimum temperatures.');
-      }
-      if (/POTSDAM/i.test(station.name) || /POTSDAM/i.test(station.tempStation.name)) {
-        items.push('<strong>Urban influence:</strong> Potsdam is near the Berlin urban region; land-use change and UHI affect temperature independently of sunshine.');
-      }
-      if (/STOCKHOLM/i.test(station.name) || /STOCKHOLM/i.test(station.tempStation.name)) {
-        items.push('<strong>Urban influence:</strong> Stockholm has a meaningful UHI signal, especially in recent decades.');
-      }
-      if (/STOCKHOLM/i.test(station.name) || /POTSDAM/i.test(station.name)) {
-        items.push('<strong>Seasonal snow:</strong> winter albedo and cloudiness weaken direct sunshine-temperature coupling.');
-      }
-      if (/VALENTIA/i.test(station.name)) {
-        items.push('<strong>Maritime:</strong> Atlantic circulation and sea-surface temperatures mute local sunshine-temperature changes.');
-      }
-      if (/DAVOS/i.test(station.name)) {
-        items.push('<strong>Davos pairing:</strong> Davos sunshine is paired to Säntis because the Davos temperature record does not cover the full span.');
-      }
-      items.push('<strong>Lag control:</strong> offsetting shortwave by ±2 months tests delayed thermal response rather than same-month correlation.');
-      return items;
-    }
-
-    function updateStationCaveats() {
-      const el = document.getElementById('stationCaveats');
-      const s = stations[currentStation];
-      if (!el || !s) return;
-      el.innerHTML = stationCaveatItems(s).map(i => `<div>• ${i}</div>`).join('');
-    }
-
-    async function updateStation() {
-      currentStation = document.getElementById('stationSelect').value;
+    async function selectStation(key) {
+      currentStation = key;
       resetTimeWindow();
+      renderStationCards();
       updateStationInfo();
       await ensureCurrentTemperatureLoaded();
       updateAllVisuals();
@@ -1670,7 +1691,7 @@ import '../../styles/theme.css';
 
       if (!stations[currentStation]) currentStation = Object.keys(stations)[0];
 
-      populateStationSelect();
+      renderStationCards();
       updateStationInfo();
 
       await ensureCurrentTemperatureLoaded();

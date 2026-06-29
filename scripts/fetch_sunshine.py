@@ -128,6 +128,20 @@ DEFAULT_LOCATIONS = [
         "lon": 9.85,
         "start_date": "1940-01-01",
     },
+    {
+        "key": "UCL",
+        "name": "Uccle, Belgium",
+        "lat": 50.7984,
+        "lon": 4.3583,
+        "start_date": "1951-01-01",
+    },
+    {
+        "key": "DBL",
+        "name": "De Bilt, Netherlands",
+        "lat": 52.1017,
+        "lon": 5.1783,
+        "start_date": "1957-01-01",
+    },
 ]
 
 
