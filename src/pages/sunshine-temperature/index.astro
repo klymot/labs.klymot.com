@@ -717,17 +717,11 @@ import '../../styles/theme.css';
       user-select: none;
     }
     .legend-btn.series-off {
-      opacity: 0.38;
-      border-color: transparent !important;
+      opacity: 0.55;
+      border-color: var(--border) !important;
+      color: var(--muted) !important;
     }
-    .legend-btn.series-off:hover { border-color: var(--border) !important; opacity: 0.55; }
-    .legend-swatch {
-      display: block;
-      width: 1.4rem;
-      height: 2.5px;
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
+    .legend-btn.series-off:hover { opacity: 0.75; }
 
     .sources-card { margin-top: 1rem; }
 
@@ -1031,14 +1025,8 @@ import '../../styles/theme.css';
             <div id="timeWindowReadout" class="control-note" style="margin-bottom:0.4rem;font-size:0.68rem"></div>
             <div id="timeSeriesChart" class="chart-container"></div>
             <div class="chart-legend">
-              <button class="legend-btn" id="legendTemp" onclick="toggleSeries('temp')" type="button">
-                <span class="legend-swatch" style="background:var(--success)"></span>
-                Temperature
-              </button>
-              <button class="legend-btn" id="legendSolar" onclick="toggleSeries('solar')" type="button">
-                <span class="legend-swatch" style="background:var(--accent-primary)"></span>
-                Solar radiation
-              </button>
+              <button class="legend-btn" id="legendTemp" onclick="toggleSeries('temp')" type="button">Temperature</button>
+              <button class="legend-btn" id="legendSolar" onclick="toggleSeries('solar')" type="button">Solar radiation</button>
             </div>
           </div>
 
@@ -1700,8 +1688,8 @@ import '../../styles/theme.css';
       const solarBtn = document.getElementById('legendSolar');
       if (tempBtn) {
         tempBtn.classList.toggle('series-off', !showTemp);
-        tempBtn.style.borderColor  = showTemp  ? cssVar('--success')        : '';
-        tempBtn.style.color        = showTemp  ? cssVar('--success')        : '';
+        tempBtn.style.borderColor = showTemp  ? cssVar('--success')        : '';
+        tempBtn.style.color       = showTemp  ? cssVar('--success')        : '';
       }
       if (solarBtn) {
         solarBtn.classList.toggle('series-off', !showSolar);
