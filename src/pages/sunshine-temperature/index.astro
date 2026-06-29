@@ -439,7 +439,7 @@ import '../../styles/theme.css';
 
     .toggle-row {
       display: flex;
-      background: rgba(15, 32, 71, 0.5);
+      background: var(--bg-secondary);
       border-radius: 8px;
       padding: 3px;
       gap: 2px;
@@ -512,7 +512,7 @@ import '../../styles/theme.css';
     }
 
     .station-pill {
-      background: rgba(15, 32, 71, 0.92);
+      background: var(--btn-bg);
       color: var(--text-secondary);
       border: 1px solid var(--border);
       padding: 2px 10px;
@@ -580,7 +580,7 @@ import '../../styles/theme.css';
       justify-content: center;
       border: 1px solid var(--border);
       border-radius: 6px;
-      background: rgba(10, 22, 40, 0.22);
+      background: var(--bg);
       color: var(--text-secondary);
       font-size: 0.72rem;
       font-family: var(--font-mono);
@@ -626,7 +626,7 @@ import '../../styles/theme.css';
     .metric-value.success { color: var(--success); }
 
     .contribution-box {
-      background: rgba(15, 32, 71, 0.45);
+      background: var(--bg-secondary);
       border-radius: 8px;
       padding: 0.75rem 1rem;
     }
@@ -1037,6 +1037,7 @@ import '../../styles/theme.css';
               <span id="lagReadout" class="control-readout">0 mo</span>
               <button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Shift lag later" type="button">+</button>
             </div>
+            <p id="lagDesc" style="font-size:0.8rem;color:var(--muted);margin-block:0.5rem 0;line-height:1.5">No offset — solar and temperature compared at the same month.</p>
             <details class="expander" style="margin-top:1rem">
               <summary>Why does solar radiation lead temperature?</summary>
               <div class="expander-body">
@@ -1685,9 +1686,25 @@ import '../../styles/theme.css';
       return String(row.year);
     }
 
+    function lagToWords(lag) {
+      if (lag === 0) return 'No offset — solar and temperature compared at the same month.';
+      const weeks = Math.round(lag * 4);
+      const absWeeks = Math.abs(weeks);
+      const duration = absWeeks % 4 === 0
+        ? `${absWeeks / 4} month${absWeeks / 4 !== 1 ? 's' : ''}`
+        : absWeeks < 4
+          ? `${absWeeks} week${absWeeks !== 1 ? 's' : ''}`
+          : `${Math.floor(absWeeks / 4)} month${Math.floor(absWeeks / 4) !== 1 ? 's' : ''} ${absWeeks % 4} week${absWeeks % 4 !== 1 ? 's' : ''}`;
+      return lag > 0
+        ? `Solar shifted ${duration} earlier — testing whether temperature responds ${duration} after radiation peaks.`
+        : `Solar shifted ${duration} later — testing whether radiation peaks ${duration} after temperature.`;
+    }
+
     function updateControlsReadout(rows) {
       const lagEl = document.getElementById('lagReadout');
       if (lagEl) lagEl.textContent = monthLag === 0 ? '0 mo' : `${monthLag > 0 ? '+' : ''}${monthLag} mo`;
+      const descEl = document.getElementById('lagDesc');
+      if (descEl) descEl.textContent = lagToWords(monthLag);
       const readout = document.getElementById('timeWindowReadout');
       if (!readout || !rows.length) return;
       const visible = visibleTimeRows(rows);
