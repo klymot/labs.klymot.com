@@ -44,49 +44,42 @@ SOLARSTATIONS_RAW_URL = (
     "https://raw.githubusercontent.com/AssessingSolar/solarstations/main/solarstations.csv"
 )
 
-# Start-year overrides for individual stations.
-#
-# When a station's name appears here the override start year is used instead of
-# whatever the catalog "Time period" field says.  This serves two purposes:
-#
-#   1. Stations with a missing period ('?' or '-') — the catalog omits their start
-#      date; we supply it from independent research.
-#   2. Stations whose catalog period reflects only the *modern* instrument era but
-#      where the *same site* has a documented earlier start (e.g. Stockholm: the
-#      catalog records the SMHI digital network from 1983, but the Ångström
-#      pyrheliometer at Stockholm began in 1893 — the true origin of the network).
-#
-# The override replaces only the start year; the catalog end year is preserved.
-# Confirmed entries carry a source URL in the comment.
-# Unconfirmed entries fall back to 1976 (earliest year in the rest of the catalog).
+# Start-year overrides applied before the catalog "Time period" is parsed.
+# Used for two cases:
+#   1. Stations with a missing period ('?' or '-'): catalog omits start date;
+#      we supply it from independent research (source URL in comment).
+#   2. Stations whose catalog period reflects only the modern instrument/data-
+#      submission era, but whose *site* has a confirmed earlier measurement start.
+#      The override replaces the start year; the catalog end year is preserved.
+# Stations with a '?' period and NO confirmed start year are absent from this dict
+# and will be skipped (not counted) per user policy.
 STATION_START_OVERRIDES: dict[str, int] = {
-    # Historical origin override:
-    # Norrköping is the SMHI national radiation reference station (still active).
-    # The catalog records its modern start (1983); we extend it to 1893 to represent
-    # the unbroken Swedish solar-radiation tradition that began with Ångström's
-    # pyrheliometer in Stockholm.  This anchors the chart X-axis at the network origin
-    # without needing a separate synthetic data point.
-    "Norrköping":            1893,
-    # Confirmed missing-period stations:
-    "Valentia Observatory":  1954,  # https://www.met.ie/science/valentia/solar-radiation
-    "Terra Nova Bay":        1987,  # Italian National Antarctic Program, first expedition 1986–87
-    "Dongsha Atoll":         2010,  # NOAA GML DSI station, first sample date 2010-03-05
-    "Summit Station":        2010,  # ICECAPS project, spring 2010 (NOAA/ARM)
-    "Poprad-Ganovce":        1999,  # Slovak Hydrometeorological Institute (SHMI)
-    "Zagreb-Maksimir":       2003,  # DHMZ Croatia systematic global-radiation monitoring
-    # Unconfirmed missing-period stations — 1976 as conservative baseline:
-    "Kishinev":      1976,
-    "Heraklion":     1976,
-    "Marguele":      1976,
-    "Burgos":        1976,
-    "Dobele":        1976,
-    "Silutes":       1976,
-    "Kauno":         1976,
-    "Tajoura":       1976,
-    "ENEA Casaccia": 1976,
-    "ENEA Portici":  1976,
-    "RSE Piacenza":  1976,
+    # Historical-era overrides (catalog records only modern data-submission start):
+    "Norrköping":       1893,  # Ångström pyrheliometer, Stockholm 1893; Norrköping is SMHI national reference, still active
+    "Davos":            1909,  # PMOD/WRC pyrheliometer operational from 1909; https://www.pmodwrc.ch/en/institute/pmod-wrc/
+    "Tateno;Tsukuba":   1931,  # JMA solar radiation since 1931; Tateno is the JMA radiation reference; https://www.data.jma.go.jp/env/radiation/en/know_std_rad_e.html
+    "Uccle":            1951,  # RMIB uninterrupted 30-min measurements from 1951; https://ui.adsabs.harvard.edu/abs/2010ems..confE..36J
+    # Confirmed missing-period ('?' or '-') stations:
+    "Valentia Observatory": 1954,  # https://www.met.ie/science/valentia/solar-radiation
+    "Terra Nova Bay":       1987,  # Italian National Antarctic Program, first expedition 1986–87
+    "Dongsha Atoll":        2010,  # NOAA GML DSI station, first sample date 2010-03-05
+    "Summit Station":       2010,  # ICECAPS project, spring 2010 (NOAA/ARM)
+    "Poprad-Ganovce":       1999,  # Slovak Hydrometeorological Institute (SHMI)
+    "Zagreb-Maksimir":      2003,  # DHMZ Croatia systematic global-radiation monitoring
+    # Remaining '?' stations: no confirmed start date — omitted (skipped by the fetch loop).
 }
+
+# Historical stations not present in the solarstations.org catalog at all but with
+# documented measurement records.  These are appended to the catalog station list
+# before computing annual counts.  Source URLs in comments.
+EXTRA_HISTORICAL_STATIONS: list[dict] = [
+    # Potsdam (DWD): global, diffuse and direct radiation since 1937.
+    # https://pubmed.ncbi.nlm.nih.gov/17318610/ — UV reconstruction from 1893 references 1937 start
+    {"name": "Potsdam (DWD)", "start": 1937, "end": None},
+    # De Bilt (KNMI): solar radiation measurements from 1957.
+    # https://dataplatform.knmi.nl/group/sunshine-and-radiation
+    {"name": "De Bilt (KNMI)", "start": 1957, "end": None},
+]
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "public" / "sunshine-temperature" / "data"
 
@@ -432,6 +425,14 @@ def fetch_pyranometer_network_counts(output_dir: Path) -> None:
             file=sys.stderr,
         )
 
+    # Append historical stations absent from the catalog entirely.
+    for extra in EXTRA_HISTORICAL_STATIONS:
+        stations.append({"start": extra["start"], "end": extra["end"]})
+    print(
+        f"Added {len(EXTRA_HISTORICAL_STATIONS)} extra historical station(s) not in catalog",
+        file=sys.stderr,
+    )
+
     current_year = dt.date.today().year
     series: list[dict] = []
     prev_count = -1
@@ -449,18 +450,19 @@ def fetch_pyranometer_network_counts(output_dir: Path) -> None:
         "source_url": pinned_url,
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "methodology": (
-            "Active station count per year from the AssessingSolar/solarstations catalog. "
-            "A station is active in year Y if start_year ≤ Y and end_year (if present) ≥ Y. "
-            "STATION_START_OVERRIDES in scripts/fetch_sunshine.py supplies researched start years "
-            "for stations whose catalog period is missing or historically incomplete. "
-            "Norrköping (SMHI national reference, still active) carries the 1893 origin to "
-            "represent the Swedish radiation-measurement tradition beginning with Ångström."
+            "Active station count per year from the AssessingSolar/solarstations catalog, "
+            "supplemented by EXTRA_HISTORICAL_STATIONS (stations absent from the catalog with "
+            "documented measurement records) and STATION_START_OVERRIDES (catalog stations whose "
+            "period reflects only the modern data-submission era, corrected to the confirmed "
+            "measurement start). A station is active in year Y if start_year ≤ Y and "
+            "end_year (if present) ≥ Y. See scripts/fetch_sunshine.py for sources."
         ),
         "note": (
-            "The catalog covers stations documented by AssessingSolar; it is not exhaustive. "
-            "The gap 1893–1954 (count=1) reflects the lone Norrköping/Ångström origin point "
-            "before Valentia Observatory joins in 1954. The 1977–1980 spike reflects "
-            "US NOAA/WEST regional campaigns that ended in 1980."
+            "The solarstations.org catalog is not exhaustive and under-represents historical "
+            "stations (it tracks data submissions, not measurement origins). Key corrections: "
+            "Norrköping→1893 (Ångström origin), Davos→1909 (PMOD), Tateno→1931 (JMA), "
+            "Potsdam 1937 and De Bilt 1957 added as extra stations, Uccle→1951. "
+            "The 1977–1980 spike reflects US NOAA/WEST regional campaigns that ended in 1980."
         ),
         "series": series,
     }
