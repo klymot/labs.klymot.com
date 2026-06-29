@@ -710,10 +710,9 @@ import '../../styles/theme.css';
       <div class="container">
         <div class="prose">
           <h2 id="network-heading">A global measurement network</h2>
-          <p>The first systematic shortwave radiation measurements began in the 1890s with Knut Ångström's work in Sweden. Over the following century, the Baseline Surface Radiation Network (BSRN) established rigorous international standards; today several hundred stations worldwide make continuous radiation measurements. Hover over — or long-press on mobile — the dashed lines to read milestone events.</p>
         </div>
 
-        <div class="chart-bleed" style="margin-top:1.25rem">
+        <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
               <span class="chart-title">Active pyranometer stations, 1893–present</span>
@@ -725,6 +724,38 @@ import '../../styles/theme.css';
               <p class="chart-loading" id="networkChartLoading">Loading…</p>
             </div>
           </div>
+        </div>
+
+        <div class="prose" style="margin-top:1.5rem">
+          <p>From a single instrument in Stockholm in 1893, the global network has grown to over 500 active stations today — hover the dashed milestone lines to read key events.</p>
+
+          <details class="expander">
+            <summary>Why the spike around 1977–1980?</summary>
+            <div class="expander-body">
+              <p>The sharp rise to around 100 stations in the late 1970s was driven by two large US-funded field campaigns: NOAA's Regional Energy/Climate Studies programme and the WEST Associates solar resource surveys, which temporarily deployed dense networks of pyranometers across the American Southwest and Great Plains to assess solar energy potential. Most of these campaign stations were decommissioned once the surveys ended, which explains the sharp drop back down in the early 1980s.</p>
+            </div>
+          </details>
+
+          <details class="expander">
+            <summary>What is the BSRN?</summary>
+            <div class="expander-body">
+              <p>The Baseline Surface Radiation Network, established in 1992 by the World Climate Research Programme, operates around 60 stations with tightly standardised instruments, calibration schedules, and data-quality procedures. BSRN stations report at 1-minute resolution and are considered the global reference for surface radiation measurements. The steady growth from the early 1990s onward largely reflects BSRN expansion and the formalisation of national radiation networks to BSRN standards.</p>
+            </div>
+          </details>
+
+          <details class="expander">
+            <summary>Why does the count start with just one station?</summary>
+            <div class="expander-body">
+              <p>Knut Ångström made the first systematic solar radiation measurements in Stockholm from 1893 using an instrument of his own design — the Ångström pyrheliometer. Routine monitoring elsewhere only followed once international instrument standards were established, first by the International Pyrheliometric Scale (IPS) in 1924 and later refined by the World Radiometric Reference (WRR) in 1979. The early count reflects only stations with confirmed, uninterrupted measurement records that survive in modern catalogs.</p>
+            </div>
+          </details>
+
+          <details class="expander">
+            <summary>Are all stations measuring the same thing?</summary>
+            <div class="expander-body">
+              <p>All stations shown measure global horizontal irradiance (GHI) — total downwelling shortwave radiation on a horizontal surface. Instrument types vary (thermopile pyranometers, silicon-cell sensors, rotating shadowband radiometers) and calibration standards have changed over time, which is one reason long-term consistency requires careful quality control. The WRR, maintained by the Physical Meteorological Observatory Davos (PMOD/WRC) in Switzerland, is the current international reference against which all pyranometers are calibrated.</p>
+            </div>
+          </details>
         </div>
       </div>
     </section>
