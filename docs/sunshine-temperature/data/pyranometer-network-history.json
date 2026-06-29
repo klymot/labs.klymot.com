@@ -1,0 +1,75 @@
+{
+  "description": "Hand-curated milestone events in the history of solar radiation measurement. Station count data is in pyranometer-network-counts.json, computed by scripts/fetch_sunshine.py from the solarstations.org catalog.",
+  "sources": [
+    {
+      "name": "solarstations.org station catalog",
+      "url": "https://solarstations.org/_downloads/f85f41dda48ab008055bbfad91e578b2/SolarStationsOrg-station-catalog.csv",
+      "note": "Machine-readable catalog of global solar radiation monitoring stations with start/stop dates. Used by fetch script to compute annual active-station counts."
+    },
+    {
+      "name": "BSRN station list (PANGAEA wiki)",
+      "url": "https://wiki.pangaea.de/wiki/BSRN",
+      "note": "Baseline Surface Radiation Network station metadata including first-dataset dates."
+    },
+    {
+      "name": "WMO CIMO Guide — Measurement of Radiation (Chapter 7)",
+      "url": "https://library.wmo.int/records/item/68695-guide-to-instruments-and-methods-of-observation",
+      "note": "Authoritative WMO reference on the history and standards of radiation instrumentation."
+    },
+    {
+      "name": "Ohmura et al. (1998) BSRN founding paper",
+      "url": "https://doi.org/10.1175/1520-0477(1998)079<2115:BSRNBW>2.0.CO;2",
+      "note": "Baseline Surface Radiation Network (BSRN/WCRP): New Precision Radiometry for Climate Research. Bull. Am. Meteorol. Soc. 79(10):2115-2136."
+    }
+  ],
+  "milestones": [
+    {
+      "year": 1893,
+      "event": "Knut Ångström invents the compensation pyrheliometer in Stockholm — the first instrument to measure direct solar irradiance with a thermopile balance."
+    },
+    {
+      "year": 1905,
+      "event": "Ångström-type pyrheliometers enter routine use at a small number of observatories in Europe and North America."
+    },
+    {
+      "year": 1923,
+      "event": "Moll–Gorczynski thermopile pyranometer developed (Netherlands) — the first instrument measuring global horizontal irradiance including diffuse sky radiation."
+    },
+    {
+      "year": 1924,
+      "event": "First International Pyrheliometric Conference, Davos. The International Pyrheliometric Scale (IPS 1924) is adopted, establishing a common reference standard."
+    },
+    {
+      "year": 1957,
+      "event": "International Geophysical Year (1957–58): coordinated global radiation observations at approximately 50 stations across all continents and Antarctica."
+    },
+    {
+      "year": 1970,
+      "event": "WMO establishes the World Radiation Data Centre (WRDC) in St. Petersburg to archive global solar radiation data from national networks."
+    },
+    {
+      "year": 1979,
+      "event": "World Radiation Reference (WRR) established at PMOD/WRC Davos. Replaces earlier pyrheliometric scales and remains the primary SI-traceable standard for solar radiation."
+    },
+    {
+      "year": 1992,
+      "event": "Baseline Surface Radiation Network (BSRN) founded by WCRP. Eight founding stations begin continuous high-quality broadband radiation measurements."
+    },
+    {
+      "year": 1996,
+      "event": "BSRN passes 20 active stations; network spans all major climate zones."
+    },
+    {
+      "year": 2003,
+      "event": "BSRN data archive opens public access via PANGAEA data publisher."
+    },
+    {
+      "year": 2010,
+      "event": "Rapid expansion of photovoltaic industry drives growth in commercial and research-grade radiation monitoring networks worldwide."
+    },
+    {
+      "year": 2024,
+      "event": "solarstations.org catalog documents 799 stations globally with shortwave radiation measurements; 558 active in 2024."
+    }
+  ]
+}

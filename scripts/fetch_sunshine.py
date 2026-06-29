@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""Fetch QC sunshine data and pair each location with a covering Klymot station.
+"""Fetch shortwave radiation data and pair each location with a covering Klymot station.
 
-Default source: Open-Meteo Historical Weather API, starting in 1940.
+Source: Open-Meteo Historical Weather API (ERA5 reanalysis), starting in 1940.
 
-The output is consumed by docs/sunshine-temperature/index.html. For every configured sunshine location,
-the script chooses the nearest Klymot temperature station whose GHCN record covers
-the requested sunshine time span. Valentia is pinned to EI000003953.
+For every configured location the script:
+- Fetches monthly shortwave_radiation_sum (MJ/m²) from Open-Meteo.
+- Pairs the location with the nearest Klymot GHCN temperature station covering the full date range.
+- Writes a per-station JSON file ({key}.json) to the output directory.
+- Writes manifest.json listing all station keys.
+
+Output files are consumed by the sunshine-temperature lab.
 """
 
 from __future__ import annotations
@@ -13,6 +17,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import io
 import json
 import math
 import sys
@@ -26,8 +31,33 @@ from pathlib import Path
 
 KLYMOT_INDEX_URL = "https://www.klymot.com/data/index.json"
 OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+SOLARSTATIONS_CATALOG_URL = (
+    "https://solarstations.org/_downloads/"
+    "f85f41dda48ab008055bbfad91e578b2/SolarStationsOrg-station-catalog.csv"
+)
+
+# Pre-catalog seed: single origin point for the first documented pyranometer-class
+# instrument (Ångström pyrheliometer, Stockholm 1893). The solarstations.org catalog
+# only covers stations from 1976 onward; the chart uses this seed so the X-axis starts
+# at the true network origin. The gap between 1893 and 1976 reflects absent catalog data,
+# not a period of no measurement activity.
+PRE_CATALOG_SEEDS = [
+    {"year": 1893, "active_stations": 1},
+]
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT = REPO_ROOT / "public" / "sunshine-temperature" / "data" / "sunshine-qc.json"
+DEFAULT_OUTPUT_DIR = REPO_ROOT / "public" / "sunshine-temperature" / "data"
+
+SOURCE = "Open-Meteo Historical Weather API (ERA5 reanalysis)"
+SHORTWAVE_UNIT = (
+    "monthly sum of daily shortwave_radiation_sum (MJ/m²); "
+    "ERA5 downwelling shortwave radiation at the surface — "
+    "equivalent to global horizontal irradiance as measured by a pyranometer"
+)
+STATION_PAIRING_RULE = (
+    "Choose the nearest Klymot temperature station whose GHCN record starts no later "
+    "than the sunshine start year and ends no earlier than the sunshine end year. "
+    "Valentia is fixed to EI000003953."
+)
 
 DEFAULT_LOCATIONS = [
     {
@@ -37,7 +67,6 @@ DEFAULT_LOCATIONS = [
         "lon": -10.2219,
         "start_date": "1940-01-01",
         "fixed_temp_station_id": "EI000003953",
-        "sunshine_source": "Open-Meteo historical",
     },
     {
         "key": "POT",
@@ -45,7 +74,6 @@ DEFAULT_LOCATIONS = [
         "lat": 52.3833,
         "lon": 13.0639,
         "start_date": "1940-01-01",
-        "sunshine_source": "Open-Meteo historical",
     },
     {
         "key": "TOK",
@@ -53,7 +81,6 @@ DEFAULT_LOCATIONS = [
         "lat": 35.683,
         "lon": 139.767,
         "start_date": "1940-01-01",
-        "sunshine_source": "Open-Meteo historical",
     },
     {
         "key": "STO",
@@ -61,7 +88,6 @@ DEFAULT_LOCATIONS = [
         "lat": 59.3293,
         "lon": 18.0686,
         "start_date": "1940-01-01",
-        "sunshine_source": "Open-Meteo historical",
     },
     {
         "key": "DAV",
@@ -69,7 +95,6 @@ DEFAULT_LOCATIONS = [
         "lat": 46.8167,
         "lon": 9.85,
         "start_date": "1940-01-01",
-        "sunshine_source": "Open-Meteo historical",
     },
 ]
 
@@ -104,7 +129,7 @@ def parse_year(date_string: str) -> int:
 def choose_temperature_station(location: dict, stations: list[dict], start_year: int, end_year: int) -> dict:
     fixed_id = location.get("fixed_temp_station_id")
     if fixed_id:
-        match = next((station for station in stations if station.get("id") == fixed_id), None)
+        match = next((s for s in stations if s.get("id") == fixed_id), None)
         if not match:
             raise RuntimeError(f"Fixed station {fixed_id} for {location['key']} is not in Klymot index")
         if match.get("ghcn_first_year", 9999) > start_year or match.get("ghcn_last_year", 0) < end_year:
@@ -117,144 +142,100 @@ def choose_temperature_station(location: dict, stations: list[dict], start_year:
         return station
 
     covering = [
-        station
-        for station in stations
-        if station.get("category") == "station"
-        and station.get("ghcn_first_year", 9999) <= start_year
-        and station.get("ghcn_last_year", 0) >= end_year
-        and "lat" in station
-        and "lng" in station
-        and "id" in station
+        s for s in stations
+        if s.get("category") == "station"
+        and s.get("ghcn_first_year", 9999) <= start_year
+        and s.get("ghcn_last_year", 0) >= end_year
+        and "lat" in s and "lng" in s and "id" in s
     ]
     if not covering:
-        raise RuntimeError(f"No Klymot station covers {location['key']} sunshine span {start_year}-{end_year}")
+        raise RuntimeError(f"No Klymot station covers {location['key']} span {start_year}-{end_year}")
 
-    best = min(
-        covering,
-        key=lambda station: haversine_km(location["lat"], location["lon"], station["lat"], station["lng"]),
-    )
+    best = min(covering, key=lambda s: haversine_km(location["lat"], location["lon"], s["lat"], s["lng"]))
     station = dict(best)
     station["distance_km"] = haversine_km(location["lat"], location["lon"], station["lat"], station["lng"])
     return station
 
 
-def fetch_open_meteo_sunshine(location: dict, start_date: str, end_date: str) -> tuple[list[dict], list[dict]]:
+def fetch_open_meteo_shortwave(location: dict, start_date: str, end_date: str) -> list[dict]:
     params = {
         "latitude": location["lat"],
         "longitude": location["lon"],
         "start_date": start_date,
         "end_date": end_date,
-        # sunshine_duration: seconds of bright sunshine per day (threshold ~120 W/m², Campbell-Stokes equivalent)
-        # shortwave_radiation_sum: daily total downwelling shortwave radiation in MJ/m² (ERA5 reanalysis;
-        #   equivalent to what a pyranometer records as global horizontal irradiance)
-        "daily": "sunshine_duration,shortwave_radiation_sum",
+        # shortwave_radiation_sum: daily total downwelling shortwave in MJ/m²
+        # (ERA5 reanalysis; equivalent to global horizontal irradiance from a pyranometer)
+        "daily": "shortwave_radiation_sum",
         "timezone": "UTC",
     }
     url = f"{OPEN_METEO_ARCHIVE_URL}?{urllib.parse.urlencode(params)}"
     data = fetch_json(url)
     daily = data.get("daily", {})
     dates = daily.get("time", [])
-    sunshine_seconds = daily.get("sunshine_duration", [])
     radiation = daily.get("shortwave_radiation_sum", [])
 
-    daily_rows = []
-    monthly = defaultdict(lambda: {"sunshine_hours": 0.0, "shortwave_mj_m2": 0.0, "days": 0})
-    for date_string, seconds, mj in zip(dates, sunshine_seconds, radiation):
-        if seconds is None and mj is None:
+    monthly: dict[str, dict] = defaultdict(lambda: {"shortwave_mj_m2": 0.0, "days": 0})
+    for date_string, mj in zip(dates, radiation):
+        if mj is None:
             continue
-        sunshine_hours = (seconds or 0) / 3600
-        shortwave_mj_m2 = mj or 0
-        daily_rows.append(
-            {
-                "date": date_string,
-                "sunshine_hours": round(sunshine_hours, 2),
-                "shortwave_mj_m2": round(shortwave_mj_m2, 2),
-            }
-        )
         month_key = date_string[:7]
-        bucket = monthly[month_key]
-        bucket["sunshine_hours"] += sunshine_hours
-        bucket["shortwave_mj_m2"] += shortwave_mj_m2
-        bucket["days"] += 1
+        monthly[month_key]["shortwave_mj_m2"] += mj
+        monthly[month_key]["days"] += 1
 
     monthly_rows = []
     for month_key in sorted(monthly):
         year, month = month_key.split("-")
-        item = monthly[month_key]
+        bucket = monthly[month_key]
         monthly_rows.append(
             {
                 "year": int(year),
                 "month": int(month),
-                "sunshine_hours": round(item["sunshine_hours"], 2),
-                "shortwave_mj_m2": round(item["shortwave_mj_m2"], 2),
-                "days": item["days"],
+                "shortwave_mj_m2": round(bucket["shortwave_mj_m2"], 2),
+                "days": bucket["days"],
             }
         )
-    return monthly_rows, daily_rows
+    return monthly_rows
 
 
-def write_csv(output_json: Path, records: list[dict]) -> None:
-    csv_path = output_json.with_suffix(".csv")
-    with csv_path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.writer(handle)
-        writer.writerow(
-            [
-                "station_key",
-                "year",
-                "month",
-                "sunshine_hours",
-                "shortwave_mj_m2",
-                "days",
-                "temperature_station_id",
-            ]
-        )
-        for record in records:
-            station_id = record["temperature_station"]["id"]
-            for row in record["monthly"]:
-                writer.writerow(
-                    [
-                        record["key"],
-                        row["year"],
-                        row["month"],
-                        row["sunshine_hours"],
-                        row["shortwave_mj_m2"],
-                        row["days"],
-                        station_id,
-                    ]
-                )
-
-
-def reusable_existing_records(output: Path, end_date: str) -> dict[str, dict]:
-    if not output.exists():
-        return {}
-    try:
-        payload = json.loads(output.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return {}
-
-    reusable = {}
-    for record in payload.get("stations", []):
-        if record.get("end_date") == end_date and record.get("monthly") and record.get("daily"):
+def reusable_existing_records(output_dir: Path, end_date: str) -> dict[str, dict]:
+    """Load per-station files from a previous run that already have the requested end_date."""
+    reusable: dict[str, dict] = {}
+    for json_file in output_dir.glob("*.json"):
+        if json_file.stem == "manifest":
+            continue
+        try:
+            record = json.loads(json_file.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if record.get("end_date") == end_date and record.get("monthly"):
             reusable[record["key"]] = record
     return reusable
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", default=str(DEFAULT_OUTPUT), help="Output JSON path")
+    parser.add_argument(
+        "--output",
+        default=str(DEFAULT_OUTPUT_DIR),
+        help="Output directory for per-station JSON files and manifest.json",
+    )
     parser.add_argument("--locations", help="Optional JSON file of sunshine locations")
     parser.add_argument("--start-date", help="Override all configured start dates, YYYY-MM-DD")
     parser.add_argument("--end-date", help="End date, YYYY-MM-DD. Defaults to yesterday UTC.")
     parser.add_argument("--sleep", type=float, default=0.8, help="Seconds to sleep between API calls")
-    parser.add_argument("--refresh-existing", action="store_true", help="Refetch stations already present in the output")
+    parser.add_argument(
+        "--refresh-existing",
+        action="store_true",
+        help="Refetch stations already present in the output directory",
+    )
     args = parser.parse_args()
 
     today = dt.date.today()
     end_date = args.end_date or (today - dt.timedelta(days=1)).isoformat()
     end_year = parse_year(end_date)
 
-    output = Path(args.output)
-    existing = {} if args.refresh_existing else reusable_existing_records(output, end_date)
+    output_dir = Path(args.output)
+    existing = {} if args.refresh_existing else reusable_existing_records(output_dir, end_date)
     locations = DEFAULT_LOCATIONS
     if args.locations:
         locations = json.loads(Path(args.locations).read_text(encoding="utf-8"))
@@ -263,85 +244,138 @@ def main() -> int:
     station_index = fetch_json(KLYMOT_INDEX_URL)
     stations = station_index["locations"]
 
-    records = []
+    generated_at = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    station_keys: list[str] = []
+
     for location in locations:
         start_date = args.start_date or location["start_date"]
         start_year = parse_year(start_date)
         temp_station = choose_temperature_station(location, stations, start_year, end_year)
         print(
-            f"{location['key']}: sunshine {start_date}..{end_date}; "
+            f"{location['key']}: shortwave {start_date}..{end_date}; "
             f"temperature {temp_station['id']} {temp_station['name']} "
             f"({temp_station['ghcn_first_year']}-{temp_station['ghcn_last_year']}), "
             f"{temp_station['distance_km']:.1f} km",
             file=sys.stderr,
         )
+
         existing_record = existing.get(location["key"])
         if existing_record and existing_record.get("start_date") == start_date:
             monthly = existing_record["monthly"]
-            daily = existing_record["daily"]
-            print(f"{location['key']}: reused existing monthly sunshine data", file=sys.stderr)
+            print(f"{location['key']}: reused existing monthly shortwave data", file=sys.stderr)
         else:
-            monthly, daily = fetch_open_meteo_sunshine(location, start_date, end_date)
-        records.append(
-            {
-                "key": location["key"],
-                "name": location["name"],
-                "lat": location["lat"],
-                "lon": location["lon"],
-                "source": location["sunshine_source"],
-                "qc": True,
-                "start_date": start_date,
-                "end_date": end_date,
-                "temperature_station": {
-                    "id": temp_station["id"],
-                    "name": temp_station["name"],
-                    "lat": temp_station["lat"],
-                    "lon": temp_station["lng"],
-                    "elevation_m": temp_station.get("elevation_m"),
-                    "first_year": temp_station.get("ghcn_first_year"),
-                    "last_year": temp_station.get("ghcn_last_year"),
-                    "distance_km": round(temp_station["distance_km"], 2),
-                },
-                "monthly": monthly,
-                "daily": daily,
-            }
+            monthly = fetch_open_meteo_shortwave(location, start_date, end_date)
+            time.sleep(args.sleep)
+
+        record = {
+            "key": location["key"],
+            "name": location["name"],
+            "lat": location["lat"],
+            "lon": location["lon"],
+            "source": SOURCE,
+            "generated_at": generated_at,
+            "start_date": start_date,
+            "end_date": end_date,
+            "temperature_station": {
+                "id": temp_station["id"],
+                "name": temp_station["name"],
+                "lat": temp_station["lat"],
+                "lon": temp_station["lng"],
+                "elevation_m": temp_station.get("elevation_m"),
+                "first_year": temp_station.get("ghcn_first_year"),
+                "last_year": temp_station.get("ghcn_last_year"),
+                "distance_km": round(temp_station["distance_km"], 2),
+            },
+            "units": {
+                "shortwave_mj_m2": SHORTWAVE_UNIT,
+            },
+            "monthly": monthly,
+        }
+
+        output_dir.mkdir(parents=True, exist_ok=True)
+        station_file = output_dir / f"{location['key']}.json"
+        station_file.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+        print(f"Wrote {station_file}", file=sys.stderr)
+        station_keys.append(location["key"])
+
+    manifest = {
+        "generated_at": generated_at,
+        "source": SOURCE,
+        "station_pairing_rule": STATION_PAIRING_RULE,
+        "stations": station_keys,
+    }
+    manifest_file = output_dir / "manifest.json"
+    manifest_file.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    print(f"Wrote {manifest_file}", file=sys.stderr)
+
+    fetch_pyranometer_network_counts(output_dir)
+    return 0
+
+
+def fetch_pyranometer_network_counts(output_dir: Path) -> None:
+    """Download the solarstations.org catalog and write pyranometer-network-counts.json."""
+    print(f"Fetching solarstations.org catalog from {SOLARSTATIONS_CATALOG_URL}", file=sys.stderr)
+    try:
+        with urllib.request.urlopen(SOLARSTATIONS_CATALOG_URL, timeout=60) as response:
+            raw = response.read().decode("utf-8")
+    except Exception as exc:
+        print(f"Warning: could not fetch solarstations.org catalog: {exc}", file=sys.stderr)
+        return
+
+    stations: list[dict] = []
+    reader = csv.DictReader(io.StringIO(raw))
+    for row in reader:
+        period = row.get("Time period", "").strip()
+        if not period:
+            continue
+        parts = period.split("-")
+        try:
+            start_year = int(parts[0])
+        except ValueError:
+            continue
+        end_year: int | None = None
+        if len(parts) > 1 and parts[1].strip():
+            try:
+                end_year = int(parts[1].strip())
+            except ValueError:
+                pass
+        stations.append({"start": start_year, "end": end_year})
+
+    current_year = dt.date.today().year
+    series: list[dict] = []
+    prev_count = -1
+    for year in range(min(s["start"] for s in stations), current_year + 1):
+        count = sum(
+            1 for s in stations
+            if s["start"] <= year and (s["end"] is None or s["end"] >= year)
         )
-        time.sleep(args.sleep)
+        if count != prev_count:
+            series.append({"year": year, "active_stations": count})
+            prev_count = count
+
+    full_series = PRE_CATALOG_SEEDS + series
 
     payload = {
+        "source": "solarstations.org station catalog",
+        "source_url": SOLARSTATIONS_CATALOG_URL,
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
-        "source": "Open-Meteo Historical Weather API (ERA5 reanalysis)",
-        "units": {
-            "sunshine_hours": "monthly sum of daily sunshine duration (hours); bright-sunshine threshold ~120 W/m²",
-            "shortwave_mj_m2": (
-                "monthly sum of daily shortwave_radiation_sum (MJ/m²); ERA5 downwelling shortwave radiation "
-                "at the surface — equivalent to global horizontal irradiance as measured by a pyranometer"
-            ),
-        },
-        "variable_notes": {
-            "sunshine_hours": (
-                "Derived from ERA5 sunshine_duration. Counts hours of 'bright' sunshine (direct irradiance "
-                "above ~120 W/m²). Does not capture diffuse radiation on overcast days."
-            ),
-            "shortwave_mj_m2": (
-                "Derived from ERA5 shortwave_radiation_sum. Represents total incoming solar energy "
-                "(direct + diffuse) at the surface per day. This is the physically meaningful energy-balance "
-                "quantity and is what a pyranometer measures."
-            ),
-        },
-        "station_pairing_rule": (
-            "Choose the nearest Klymot temperature station whose record starts no later "
-            "than the sunshine start year and ends no earlier than the sunshine end year. "
-            "Valentia is fixed to EI000003953."
+        "methodology": (
+            "Series begins with a hard-coded seed for the first documented pyranometer-class "
+            "instrument (Ångström pyrheliometer, Stockholm 1893). From 1976 onward, counts are "
+            "derived from the solarstations.org catalog: a station is active in year Y if "
+            "start_year <= Y and end_year (if present) >= Y."
         ),
-        "stations": records,
+        "note": (
+            "The solarstations.org catalog covers stations documented by solarstations.org; "
+            "it does not claim to be exhaustive. The gap between 1893 and 1976 reflects absent "
+            "catalog data, not a period of no measurement activity. The 1977-1980 spike reflects "
+            "US NOAA/WEST regional measurement campaigns that ended in 1980."
+        ),
+        "series": full_series,
     }
-
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    write_csv(output, records)
-    print(f"Wrote {output} and {output.with_suffix('.csv')}", file=sys.stderr)
-    return 0
+    counts_file = output_dir / "pyranometer-network-counts.json"
+    counts_file.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print(f"Wrote {counts_file} ({len(stations)} stations, {len(series)} change-points)", file=sys.stderr)
 
 
 if __name__ == "__main__":

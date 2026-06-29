@@ -29,42 +29,50 @@ Labs is a sub‑brand, not a new brand. It should feel like the same hand drew i
 
 ### 1.1 Colour
 
-Anchor everything in the existing Klymot teal. These hexes come from the live
-logo and are the source of truth for brand colour:
+The Klymot palette is **navy and gold** — confirmed from `klymot.com/docs/css/style.css`
+(source of truth). Dark mode is the default; light is opt‑in.
 
-| Token | Hex | Role |
-|---|---|---|
-| `teal-900` | `#085041` | Deepest brand / light‑mode display text |
-| `teal-700` | `#0F6E56` | Light‑mode primary / links / accents |
-| `teal-500` | `#1D9E75` | Mid teal / fills |
-| `teal-300` | `#5DCAA5` | Dark‑mode primary / accents |
-| `teal-100` | `#E1F5EE` | Light tint / dark‑mode body text |
-| `neutral-500` | `#5F5E5A` | Muted captions, taglines |
+| Token | Dark hex | Light hex | Role |
+|---|---|---|---|
+| `--bg` | `#0a1628` | `#f4f0e8` | Page background |
+| `--bg-secondary` | `#0f2047` | `#ede7d6` | Header / elevated surfaces |
+| `--surface` | `#152c4a` | `#ffffff` | Cards / panels |
+| `--text` | `#e8e4d8` | `#2a2218` | Primary body text |
+| `--text-secondary` | `#a8a090` | `#6b5d48` | Secondary body text |
+| `--muted` | `#5a6880` | `#9a8a70` | Captions, taglines |
+| `--border` | `rgba(212,168,85,0.20)` | `rgba(122,95,32,0.20)` | Subtle dividers |
+| `--border-strong` | `rgba(212,168,85,0.42)` | `rgba(122,95,32,0.42)` | Focused / hover borders |
+| `--accent` | `#d4a855` | `#7a5f20` | Gold — links, icons, CTAs |
+| `--accent-hover` | `#e0bc72` | `#5a4518` | Accent hover state |
 
-Build the page from semantic tokens, themed for both modes. The brand teals
-above are fixed; the **background/surface values below should be confirmed
-against the main site's chrome** and adjusted to match exactly:
+Semantic token block (dark is the `:root` default; light is `:root[data-theme="light"]`):
 
 ```css
-:root {              /* light (default) */
-  --bg:        #ffffff;
-  --surface:   #f6f8f7;
-  --text:      #11201c;
-  --muted:     #5f5e5a;
-  --border:    #e1e7e4;
-  --accent:    #0f6e56;   /* teal-700 */
-  --accent-strong: #085041;
-  --link:      #0f6e56;
+:root {              /* dark default — matches klymot.com */
+  --bg:            #0a1628;
+  --bg-secondary:  #0f2047;
+  --surface:       #152c4a;
+  --text:          #e8e4d8;
+  --text-secondary:#a8a090;
+  --muted:         #5a6880;
+  --border:        rgba(212, 168, 85, 0.20);
+  --border-strong: rgba(212, 168, 85, 0.42);
+  --accent:        #d4a855;
+  --accent-hover:  #e0bc72;
+  --link:          #d4a855;
 }
-:root[data-theme="dark"] {
-  --bg:        #0c1512;
-  --surface:   #12211c;
-  --text:      #e1f5ee;   /* teal-100 */
-  --muted:     #8a938f;
-  --border:    #1f2d28;
-  --accent:    #5dcaa5;   /* teal-300 */
-  --accent-strong: #1d9e75;
-  --link:      #5dcaa5;
+:root[data-theme="light"] {
+  --bg:            #f4f0e8;
+  --bg-secondary:  #ede7d6;
+  --surface:       #ffffff;
+  --text:          #2a2218;
+  --text-secondary:#6b5d48;
+  --muted:         #9a8a70;
+  --border:        rgba(122, 95, 32, 0.20);
+  --border-strong: rgba(122, 95, 32, 0.42);
+  --accent:        #7a5f20;
+  --accent-hover:  #5a4518;
+  --link:          #7a5f20;
 }
 ```
 
