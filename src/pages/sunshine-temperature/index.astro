@@ -341,6 +341,19 @@ import '../../styles/theme.css';
       cursor: default;
     }
 
+    .station-card:disabled,
+    .station-card.disabled {
+      background: var(--bg);
+      border-color: var(--border);
+      color: var(--muted);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .station-card:disabled:hover,
+    .station-card.disabled:hover {
+      border-color: var(--border);
+    }
+
     .sc-since {
       font-size: 0.68rem;
       font-weight: 600;
@@ -593,10 +606,45 @@ import '../../styles/theme.css';
     }
 
     .control-readout.wide {
-      min-width: 14rem;
+      flex: 1;
+      height: 3rem;
+      align-items: center;
       font-family: var(--font-sans);
       font-size: 0.8rem;
-      padding-inline: 0.6rem;
+      padding: 0.3rem 0.6rem;
+      white-space: normal;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    #lagControls .mini-tool {
+      height: 3rem;
+    }
+
+    [hidden] { display: none !important; }
+
+    .lag-progress {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .lag-progress-track {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .lag-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.08s linear;
+    }
+    .lag-progress-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
     }
 
     .meta-note {
@@ -1042,10 +1090,18 @@ import '../../styles/theme.css';
           <!-- Lag -->
           <div class="section-card">
             <div class="section-heading">Lag</div>
-            <div class="control-row-tight">
+            <div id="lagControls" class="control-row-tight">
               <button onclick="shiftLag(-1)" class="mini-tool" aria-label="Shift lag earlier" type="button">−</button>
               <span id="lagReadout" class="control-readout wide">No offset</span>
               <button onclick="shiftLag(1)" class="mini-tool" aria-label="Shift lag later" type="button">+</button>
+              <button onclick="resetLag()" class="mini-tool" aria-label="Reset lag to zero" type="button" style="margin-left:0.3rem">0</button>
+              <button onclick="autoLag()" class="mini-tool" aria-label="Find lag that maximises correlation" type="button">Auto</button>
+            </div>
+            <div id="lagProgress" class="lag-progress" hidden>
+              <div class="lag-progress-track">
+                <div class="lag-progress-fill" id="lagProgressFill"></div>
+              </div>
+              <span class="lag-progress-label" id="lagProgressLabel">Searching…</span>
             </div>
             <details class="expander" style="margin-top:0.75rem">
               <summary>Why use lag in a time series correlation?</summary>
@@ -1061,8 +1117,8 @@ import '../../styles/theme.css';
                   <summary>Why might I try a non-zero lag?</summary>
                   <div class="expander-body">
                     <p>The interesting question is what physical story you want to test. Two opposite hypotheses are worth exploring:</p>
-                    <p><strong>Solar drives temperature</strong> — accumulated sunlight warms the land and air over weeks, so temperature might peak after radiation. Try shifting solar earlier (positive offset) and watch whether the scatter tightens.</p>
-                    <p><strong>Temperature drives cloud cover</strong> — warmer air increases evaporation and convective cloud formation, which reduces incoming radiation. In that case temperature might lead radiation; try a negative offset.</p>
+                    <p><strong>Solar drives temperature</strong> — accumulated sunlight warms the land and air over weeks, so temperature might peak after radiation. To test this, step the offset negative (readout shows <em>Temperature X later</em>): each solar reading is then paired with the temperature from that many days/months later. Watch whether r rises as you go negative.</p>
+                    <p><strong>Temperature drives cloud cover</strong> — warmer air increases evaporation and convective cloud formation, which reduces incoming radiation. To test this, step positive (readout shows <em>Solar X later</em>): each temperature reading is then paired with solar from that many days/months later.</p>
                     <p>There is no single right answer — it varies by station, season, and climate regime. Watch the Pearson r as you shift and let the data tell you which direction the relationship leans at this location.</p>
                   </div>
                 </details>
@@ -1325,6 +1381,7 @@ import '../../styles/theme.css';
         lon: record.lon,
         source: record.source || 'shortwave radiation',
         sunshineDaily: record.daily || [],
+        has_daily_temp: !!record.has_daily_temp,
         tempStation: record.temperature_station,
         temperature: null
       };
@@ -1449,7 +1506,8 @@ import '../../styles/theme.css';
     // ── Blocking choice constants ──────────────────────────────────
     const RESOLUTION_OPTIONS = [
       { value: 'monthly', name: 'Monthly', desc: 'Compare radiation and temperature month by month. The shared seasonal cycle — both peak in summer, dip in winter — makes the correlation immediately visible. Be aware that what you\'re mostly seeing is the season, not year-to-year climate variation.' },
-      { value: 'yearly',  name: 'Annual',  desc: 'Average each year into a single value. The seasonal cycle disappears, leaving only year-to-year variation. This is a harder test — without the seasonal scaffold, you\'ll need to think carefully about what\'s left.' }
+      { value: 'yearly',  name: 'Annual',  desc: 'Average each year into a single value. The seasonal cycle disappears, leaving only year-to-year variation. This is a harder test — without the seasonal scaffold, you\'ll need to think carefully about what\'s left.' },
+      { value: 'daily',   name: 'Daily',   desc: 'Raw measured values day by day. Temperature is (TMAX + TMIN) / 2 from GHCN-Daily; only available for stations with daily temperature records. PHA adjustment is not available at daily resolution.' }
     ];
 
     const TEMP_OPTIONS = [
@@ -1486,12 +1544,15 @@ import '../../styles/theme.css';
       order.forEach(function(value) {
         const opt = options.find(o => o.value === value);
         if (!opt) return;
+        const isDisabled = !!opt.disabled;
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'station-card' + (value === currentValue ? ' active' : '');
+        btn.className = 'station-card' + (value === currentValue ? ' active' : '') + (isDisabled ? ' disabled' : '');
         btn.setAttribute('aria-pressed', value === currentValue ? 'true' : 'false');
+        btn.setAttribute('aria-disabled', String(isDisabled));
+        btn.disabled = isDisabled;
         btn.innerHTML = '<span class="sc-name">' + opt.name + '</span><span class="sc-caveat">' + opt.desc + '</span>';
-        btn.addEventListener('click', function() { onSelect(value); });
+        if (!isDisabled) btn.addEventListener('click', function() { onSelect(value); });
         grid.appendChild(btn);
       });
     }
@@ -1499,7 +1560,7 @@ import '../../styles/theme.css';
     function updateComparePrompt() {
       const el = document.getElementById('comparePrompt');
       if (!el) return;
-      const resLabels = { monthly: 'Monthly', yearly: 'Annual' };
+      const resLabels = { monthly: 'Monthly', yearly: 'Annual', daily: 'Daily' };
       const tmpLabels = { qcu: 'Raw (unadjusted)', qcf: 'PHA-adjusted' };
       const cmpLabels = { direct: 'Direct measurements', anomaly: 'Anomalies' };
 
@@ -1544,9 +1605,23 @@ import '../../styles/theme.css';
       setPrompt(true);
 
       if (cmpSection) cmpSection.hidden = false;
-      renderChoiceGrid('resolutionGrid', RESOLUTION_OPTIONS, 'klymot-res-order-v1', currentResolution, selectResolution);
-      renderChoiceGrid('tempGrid', TEMP_OPTIONS, 'klymot-temp-order-v1', currentDataType, selectDataType);
-      renderChoiceGrid('compGrid', COMP_OPTIONS, 'klymot-cmp-order-v1', currentComparison, selectComparison);
+
+      const stationHasDailyTemp = !!stations[currentStation]?.has_daily_temp;
+      const resolutionOptions = RESOLUTION_OPTIONS.map(o =>
+        o.value === 'daily' ? Object.assign({}, o, { disabled: !stationHasDailyTemp }) : o
+      );
+      const tempOptions = TEMP_OPTIONS.map(o =>
+        o.value === 'qcf' && currentResolution === 'daily' ? Object.assign({}, o, { disabled: true }) : o
+      );
+      const compOptions = currentResolution === 'daily'
+        ? COMP_OPTIONS.map(o => o.value === 'anomaly'
+            ? Object.assign({}, o, { desc: 'Each day\'s departure from the long-term mean for that day of year, smoothed over a 7-day window centred on the same date across all recorded years. Removes the seasonal cycle without forcing calendar-month boundaries.' })
+            : o)
+        : COMP_OPTIONS;
+
+      renderChoiceGrid('resolutionGrid', resolutionOptions, 'klymot-res-order-v1', currentResolution, selectResolution);
+      renderChoiceGrid('tempGrid', tempOptions, 'klymot-temp-order-v1', currentDataType, selectDataType);
+      renderChoiceGrid('compGrid', compOptions, 'klymot-cmp-order-v1', currentComparison, selectComparison);
       updateComparePrompt();
 
       if (labContent) labContent.hidden = !(currentResolution && currentDataType && currentComparison);
@@ -1558,6 +1633,7 @@ import '../../styles/theme.css';
       } else {
         currentResolution = value;
         resetTimeWindow();
+        if (value === 'daily' && currentDataType === 'qcf') currentDataType = 'qcu';
       }
       revealToCurrentState();
       if (currentResolution && currentDataType && currentComparison) updateAllVisuals();
@@ -1582,6 +1658,52 @@ import '../../styles/theme.css';
       lagDays = clamp(lagDays + delta, -60, 60);
       updateAllVisuals();
       pushStateToUrl();
+    }
+
+    function resetLag() {
+      lagDays = 0;
+      updateAllVisuals();
+      pushStateToUrl();
+    }
+
+    function autoLag() {
+      const LAG_MIN = -60, LAG_MAX = 60, CHUNK = 8;
+      const total = LAG_MAX - LAG_MIN + 1;
+      const controls = document.getElementById('lagControls');
+      const progress = document.getElementById('lagProgress');
+      const fill     = document.getElementById('lagProgressFill');
+      const label    = document.getElementById('lagProgressLabel');
+
+      controls.hidden = true;
+      progress.hidden = false;
+      fill.style.width = '0%';
+      label.textContent = 'Searching…';
+
+      let l = LAG_MIN, bestLag = 0, bestR = -Infinity;
+
+      function step() {
+        const end = Math.min(l + CHUNK, LAG_MAX + 1);
+        for (; l < end; l++) {
+          lagDays = l;
+          const r = calculateCorrelation().r;
+          if (Number.isFinite(r) && r > bestR) { bestR = r; bestLag = l; }
+        }
+        const pct = Math.round(((l - LAG_MIN) / total) * 100);
+        fill.style.width = pct + '%';
+        label.textContent = `Searching… ${pct}%`;
+
+        if (l <= LAG_MAX) {
+          requestAnimationFrame(step);
+        } else {
+          lagDays = bestLag;
+          controls.hidden = false;
+          progress.hidden = true;
+          updateAllVisuals();
+          pushStateToUrl();
+        }
+      }
+
+      requestAnimationFrame(step);
     }
 
     function resetTimeWindow() {
@@ -1683,11 +1805,81 @@ import '../../styles/theme.css';
       });
     }
 
+    function getDOY(dateStr) {
+      const d = new Date(dateStr + 'T12:00:00Z');
+      const jan0 = Date.UTC(d.getUTCFullYear(), 0, 0);
+      return Math.floor((d.getTime() - jan0) / 86400000);
+    }
+
+    function alignDailyData(station) {
+      const tempByDate = new Map();
+      station.sunshineDaily.forEach(row => {
+        if (Number.isFinite(row.tavg_c)) tempByDate.set(row.date, row.tavg_c);
+      });
+      const result = [];
+      station.sunshineDaily.forEach(row => {
+        if (!Number.isFinite(row.shortwave_mj_m2)) return;
+        const shifted = new Date(row.date + 'T12:00:00Z');
+        shifted.setUTCDate(shifted.getUTCDate() - lagDays);
+        const tempDate = shifted.toISOString().slice(0, 10);
+        const temp = tempByDate.get(tempDate);
+        if (!Number.isFinite(temp)) return;
+        const d = new Date(row.date + 'T12:00:00Z');
+        result.push({
+          key:       row.date,
+          label:     row.date,
+          date:      row.date,
+          year:      d.getUTCFullYear(),
+          month:     d.getUTCMonth() + 1,
+          day:       d.getUTCDate(),
+          doy:       getDOY(row.date),
+          shortwave: row.shortwave_mj_m2,
+          temp
+        });
+      });
+      return result;
+    }
+
+    function computeDailyClimatology(rows) {
+      const halfW = 3;
+      const swByDOY = Array.from({ length: 367 }, () => []);
+      const tByDOY  = Array.from({ length: 367 }, () => []);
+      rows.forEach(row => {
+        swByDOY[row.doy].push(row.shortwave);
+        if (Number.isFinite(row.temp)) tByDOY[row.doy].push(row.temp);
+      });
+      const swClim = new Array(367).fill(0);
+      const tClim  = new Array(367).fill(0);
+      for (let d = 1; d <= 366; d++) {
+        let swVals = [], tVals = [];
+        for (let k = -halfW; k <= halfW; k++) {
+          const dd = ((d - 1 + k + 366) % 366) + 1;
+          swVals = swVals.concat(swByDOY[dd]);
+          tVals  = tVals.concat(tByDOY[dd]);
+        }
+        swClim[d] = swVals.length ? swVals.reduce((a, b) => a + b, 0) / swVals.length : 0;
+        tClim[d]  = tVals.length  ? tVals.reduce((a, b) => a + b, 0)  / tVals.length  : 0;
+      }
+      return { shortwave: swClim, temp: tClim };
+    }
+
+    function applyDailyComparison(rows) {
+      if (currentComparison !== 'anomaly') return rows;
+      const clim = computeDailyClimatology(rows);
+      return rows.map(row => Object.assign({}, row, {
+        shortwave: row.shortwave - clim.shortwave[row.doy],
+        temp:      row.temp      - clim.temp[row.doy]
+      }));
+    }
+
     function ensureTimeWindow(rows) {
       if (!rows.length) { timeWindowStart = 0; timeWindowSize = 0; return; }
-      const defaultSize = currentResolution === 'monthly' ? Math.min(rows.length, 12 * 20) : Math.min(rows.length, 40);
+      const defaultSize = currentResolution === 'monthly' ? Math.min(rows.length, 12 * 20)
+                        : currentResolution === 'daily'   ? Math.min(rows.length, 365 * 3)
+                        : Math.min(rows.length, 40);
+      const minSize = currentResolution === 'monthly' ? 24 : currentResolution === 'daily' ? 30 : 10;
       if (!timeWindowSize || timeWindowSize > rows.length) timeWindowSize = defaultSize;
-      timeWindowSize = clamp(timeWindowSize, currentResolution === 'monthly' ? 24 : 10, rows.length);
+      timeWindowSize = clamp(timeWindowSize, minSize, rows.length);
       timeWindowStart = clamp(timeWindowStart, 0, Math.max(0, rows.length - timeWindowSize));
     }
 
@@ -1697,7 +1889,7 @@ import '../../styles/theme.css';
       if (!total) return;
       ensureTimeWindow(data.rows);
       const factor = direction > 0 ? 0.7 : 1.4;
-      const minSize = currentResolution === 'monthly' ? 24 : 10;
+      const minSize = currentResolution === 'monthly' ? 24 : currentResolution === 'daily' ? 30 : 10;
       const center = timeWindowStart + timeWindowSize / 2;
       timeWindowSize = clamp(Math.round(timeWindowSize * factor), minSize, total);
       timeWindowStart = clamp(Math.round(center - timeWindowSize / 2), 0, Math.max(0, total - timeWindowSize));
@@ -1729,6 +1921,12 @@ import '../../styles/theme.css';
 
     function timeAxisLabel(row, rows) {
       if (!row) return '';
+      if (currentResolution === 'daily') {
+        if (row.month !== 1 || row.day !== 1) return '';
+        const step = yearTickStep(rows);
+        const firstYear = rows[0]?.year || row.year;
+        return (row.year - firstYear) % step === 0 ? String(row.year) : '';
+      }
       const step = yearTickStep(rows);
       const firstYear = rows[0]?.year || row.year;
       if ((row.year - firstYear) % step !== 0) return '';
@@ -1755,7 +1953,7 @@ import '../../styles/theme.css';
           ? `${w} week${w !== 1 ? 's' : ''}`
           : `${w} week${w !== 1 ? 's' : ''} ${rem} day${rem !== 1 ? 's' : ''}`;
       }
-      return days > 0 ? `Solar ${duration} ahead` : `Temperature ${duration} ahead`;
+      return days > 0 ? `Temperature vs Solar ${duration} later` : `Solar vs Temperature ${duration} later`;
     }
 
     function updateControlsReadout(rows) {
@@ -1769,7 +1967,15 @@ import '../../styles/theme.css';
 
     function getCurrentData() {
       const s = stations[currentStation];
-      if (!s || !s.temperature) return { labels: [], sunshine: [], rows: [], station: s };
+      if (!s) return { labels: [], sunshine: [], rows: [], station: s };
+
+      if (currentResolution === 'daily') {
+        const rows = applyDailyComparison(alignDailyData(s));
+        updateControlsReadout(rows);
+        return { labels: rows.map(r => r.label), sunshine: rows.map(r => r.shortwave), rows, station: s };
+      }
+
+      if (!s.temperature) return { labels: [], sunshine: [], rows: [], station: s };
       const monthly   = alignMonthlyData(s);
       const processed = applyComparison(monthly);
       const rows      = currentResolution === 'monthly' ? processed : aggregateYearly(processed);
@@ -1854,11 +2060,12 @@ import '../../styles/theme.css';
       scatterChart = new KlymotChart.ScatterChart(container);
       scatterChart.load({
         points,
-        fitLine:    fit.points.length >= 2 ? { points: fit.points } : null,
-        xLabel:     isAnomalySC ? 'Shortwave anomaly (MJ/m²/day)' : 'Shortwave radiation (MJ/m²/day)',
-        yLabel:     isAnomalySC ? 'Temperature anomaly (°C)'  : 'Temperature (°C)',
-        pointColor: cssVar('--accent-primary'),
-        fitColor:   cssVar('--success')
+        fitLine:        fit.points.length >= 2 ? { points: fit.points } : null,
+        xLabel:         isAnomalySC ? 'Shortwave anomaly (MJ/m²/day)' : 'Shortwave radiation (MJ/m²/day)',
+        yLabel:         isAnomalySC ? 'Temperature anomaly (°C)'  : 'Temperature (°C)',
+        pointColor:     cssVar('--accent-primary'),
+        fitColor:       cssVar('--success'),
+        pointFillAlpha: currentResolution === 'daily' ? 0.18 : null
       });
 
       const noteEl = document.getElementById('scatterNote');
@@ -1869,7 +2076,9 @@ import '../../styles/theme.css';
       const badge = document.getElementById('resolutionBadge');
       if (badge) {
         const modeLabel = currentComparison === 'anomaly' ? 'anomalies' : 'pairs';
-        badge.textContent = currentResolution === 'monthly' ? ('Monthly ' + modeLabel) : ('Annual ' + modeLabel);
+        badge.textContent = currentResolution === 'monthly' ? ('Monthly ' + modeLabel)
+                          : currentResolution === 'daily'   ? ('Daily ' + modeLabel)
+                          : ('Annual ' + modeLabel);
       }
     }
 
@@ -2145,7 +2354,7 @@ import '../../styles/theme.css';
       const urlState = readStateFromUrl();
       if (urlState.station) currentStation = urlState.station;
       if (urlState.dataType === 'qcu' || urlState.dataType === 'qcf') currentDataType = urlState.dataType;
-      if (urlState.resolution === 'monthly' || urlState.resolution === 'yearly') currentResolution = urlState.resolution;
+      if (urlState.resolution === 'monthly' || urlState.resolution === 'yearly' || urlState.resolution === 'daily') currentResolution = urlState.resolution;
       if (urlState.comparison === 'direct' || urlState.comparison === 'anomaly') currentComparison = urlState.comparison;
       if (urlState.lag !== null && Number.isFinite(urlState.lag)) lagDays = clamp(Math.round(urlState.lag), -60, 60);
       if (urlState.windowStart !== null && Number.isFinite(urlState.windowStart)) timeWindowStart = Math.max(0, urlState.windowStart);

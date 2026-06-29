@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import gzip
 import io as io_module
 import json
 import math
@@ -38,6 +39,7 @@ from pathlib import Path
 
 KLYMOT_INDEX_URL = "https://www.klymot.com/data/index.json"
 OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+GHCN_DAILY_BASE_URL = "https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station"
 
 # Catalog source: AssessingSolar/solarstations on GitHub.
 SOLARSTATIONS_GITHUB_REPO = "AssessingSolar/solarstations"
@@ -314,6 +316,65 @@ def fetch_open_meteo_shortwave(location: dict, start_date: str, end_date: str) -
     return rows
 
 
+# ── GHCN daily temperature ──────────────────────────────────────────────────
+
+def fetch_ghcn_daily_temperature(station_id: str, start_date: str, end_date: str) -> dict[str, dict]:
+    """Download GHCN-Daily CSV.gz for station_id and return {date_iso: {tmax_c, tmin_c, tavg_c}}.
+
+    Values in the raw file are in tenths of °C; missing values are -9999.
+    tavg_c is computed as (tmax_c + tmin_c) / 2 for consistency across stations.
+    """
+    url = f"{GHCN_DAILY_BASE_URL}/{station_id}.csv.gz"
+    print(f"  Downloading GHCN daily temperature {station_id}...", file=sys.stderr)
+    req = urllib.request.Request(url, headers={"User-Agent": "fetch_sunshine.py"})
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        gz_bytes = resp.read()
+
+    content = gzip.decompress(gz_bytes).decode("utf-8")
+    start_dt = dt.date.fromisoformat(start_date)
+    end_dt = dt.date.fromisoformat(end_date)
+
+    tmax: dict[str, float] = {}
+    tmin: dict[str, float] = {}
+
+    for line in content.splitlines():
+        parts = line.split(",")
+        if len(parts) < 4:
+            continue
+        element = parts[2].strip()
+        if element not in ("TMAX", "TMIN"):
+            continue
+        val_str = parts[3].strip()
+        if not val_str or val_str == "-9999":
+            continue
+        try:
+            date = dt.datetime.strptime(parts[1].strip(), "%Y%m%d").date()
+        except ValueError:
+            continue
+        if date < start_dt or date > end_dt:
+            continue
+        try:
+            val = round(int(val_str) / 10.0, 1)
+        except ValueError:
+            continue
+        date_iso = date.isoformat()
+        if element == "TMAX":
+            tmax[date_iso] = val
+        else:
+            tmin[date_iso] = val
+
+    result: dict[str, dict] = {}
+    for date_iso in set(tmax) | set(tmin):
+        mx = tmax.get(date_iso)
+        mn = tmin.get(date_iso)
+        result[date_iso] = {
+            "tmax_c": mx,
+            "tmin_c": mn,
+            "tavg_c": round((mx + mn) / 2.0, 1) if mx is not None and mn is not None else None,
+        }
+    return result
+
+
 # ── Utilities ───────────────────────────────────────────────────────────────
 
 def fetch_json(url: str, timeout: int = 90, retries: int = 4) -> dict:
@@ -435,7 +496,8 @@ def main() -> int:
         existing_record = existing.get(location["key"])
         if (existing_record
                 and existing_record.get("start_date") == start_date
-                and existing_record.get("source_type") == source_type):
+                and existing_record.get("source_type") == source_type
+                and existing_record.get("has_daily_temp")):
             daily = existing_record["daily"]
             print(f"  {location['key']}: reused existing data", file=sys.stderr)
         else:
@@ -448,6 +510,18 @@ def main() -> int:
             else:
                 daily = fetch_open_meteo_shortwave(location, start_date, end_date)
                 time.sleep(args.sleep)
+
+            temp_data = fetch_ghcn_daily_temperature(temp_station["id"], start_date, end_date)
+            for row in daily:
+                t = temp_data.get(row["date"])
+                if t:
+                    if t["tmax_c"] is not None:
+                        row["tmax_c"] = t["tmax_c"]
+                    if t["tmin_c"] is not None:
+                        row["tmin_c"] = t["tmin_c"]
+                    if t["tavg_c"] is not None:
+                        row["tavg_c"] = t["tavg_c"]
+            print(f"  {location['key']}: {len(temp_data)} temperature days merged", file=sys.stderr)
 
         print(f"  {location['key']}: {len(daily)} daily rows", file=sys.stderr)
 
@@ -472,8 +546,12 @@ def main() -> int:
                 "last_year": temp_station.get("ghcn_last_year"),
                 "distance_km": round(temp_station["distance_km"], 2),
             },
+            "has_daily_temp": any("tmax_c" in row or "tmin_c" in row for row in daily),
             "units": {
                 "shortwave_mj_m2": SHORTWAVE_UNIT,
+                "tmax_c": "daily maximum temperature (°C), GHCN-Daily TMAX ÷ 10",
+                "tmin_c": "daily minimum temperature (°C), GHCN-Daily TMIN ÷ 10",
+                "tavg_c": "daily mean temperature (°C), computed as (TMAX + TMIN) / 2",
             },
             "daily": daily,
         }
