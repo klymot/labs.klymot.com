@@ -1029,6 +1029,7 @@ import '../../styles/theme.css';
     }
 
     function pushStateToUrl() {
+      if (!currentStation) return;
       const params = new URLSearchParams();
       params.set('s', currentStation);
       params.set('t', currentDataType);
@@ -1053,7 +1054,7 @@ import '../../styles/theme.css';
     };
 
     let stations = {};
-    let currentStation = 'VAL';
+    let currentStation = null;
     let currentDataType = 'qcu';
     let currentResolution = 'monthly';
     let monthLag = 0;
@@ -1761,14 +1762,19 @@ import '../../styles/theme.css';
         return;
       }
 
-      if (!stations[currentStation]) currentStation = Object.keys(stations)[0];
+      // Only fall back if a URL-specified station doesn't exist in the manifest
+      if (currentStation && !stations[currentStation]) currentStation = null;
 
       renderStationCards();
       updateStationInfo();
 
-      await ensureCurrentTemperatureLoaded();
-      updateAllVisuals();
-      pushStateToUrl();
+      if (currentStation) {
+        await ensureCurrentTemperatureLoaded();
+        updateAllVisuals();
+        pushStateToUrl();
+      } else {
+        setStatus('');
+      }
 
       console.log('%c[Sunshine-Temp Lab] initialized.', 'color:#a8a090');
     }
