@@ -3,7 +3,7 @@
 
 Default source: Open-Meteo Historical Weather API, starting in 1940.
 
-The output is consumed by ../index.html. For every configured sunshine location,
+The output is consumed by docs/sunshine-temperature/index.html. For every configured sunshine location,
 the script chooses the nearest Klymot temperature station whose GHCN record covers
 the requested sunshine time span. Valentia is pinned to EI000003953.
 """
@@ -26,6 +26,8 @@ from pathlib import Path
 
 KLYMOT_INDEX_URL = "https://www.klymot.com/data/index.json"
 OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_OUTPUT = REPO_ROOT / "docs" / "sunshine-temperature" / "data" / "sunshine-qc.json"
 
 DEFAULT_LOCATIONS = [
     {
@@ -239,7 +241,7 @@ def reusable_existing_records(output: Path, end_date: str) -> dict[str, dict]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", default="data/sunshine-qc.json", help="Output JSON path")
+    parser.add_argument("--output", default=str(DEFAULT_OUTPUT), help="Output JSON path")
     parser.add_argument("--locations", help="Optional JSON file of sunshine locations")
     parser.add_argument("--start-date", help="Override all configured start dates, YYYY-MM-DD")
     parser.add_argument("--end-date", help="End date, YYYY-MM-DD. Defaults to yesterday UTC.")
