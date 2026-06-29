@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Fetch shortwave radiation data and pair each location with a covering Klymot station.
+"""Fetch shortwave radiation data and pair each location with a covering GHCN station.
 
 Source: Open-Meteo Historical Weather API, starting in 1940. Note: current data source is a placeholder pending integration of actual station measurement records.
 
 For every configured location the script:
 - Fetches monthly shortwave_radiation_sum (MJ/m²) from Open-Meteo.
-- Pairs the location with the nearest Klymot GHCN temperature station covering the full date range.
+- Pairs the location with the nearest GHCN temperature station (served via klymot.com) covering the full date range.
 - Writes a per-station JSON file ({key}.json) to the output directory.
 - Writes manifest.json listing all station keys.
 
@@ -86,7 +86,7 @@ DEFAULT_OUTPUT_DIR = REPO_ROOT / "public" / "sunshine-temperature" / "data"
 SOURCE = "Open-Meteo Historical Weather API (placeholder — to be replaced with actual station records)"
 SHORTWAVE_UNIT = "monthly sum of daily shortwave_radiation_sum (MJ/m²); global horizontal irradiance"
 STATION_PAIRING_RULE = (
-    "Choose the nearest Klymot temperature station whose GHCN record starts no later "
+    "Choose the nearest GHCN temperature station whose record starts no later "
     "than the sunshine start year and ends no earlier than the sunshine end year. "
     "Valentia is fixed to EI000003953."
 )
@@ -177,7 +177,7 @@ def choose_temperature_station(location: dict, stations: list[dict], start_year:
     if fixed_id:
         match = next((s for s in stations if s.get("id") == fixed_id), None)
         if not match:
-            raise RuntimeError(f"Fixed station {fixed_id} for {location['key']} is not in Klymot index")
+            raise RuntimeError(f"Fixed station {fixed_id} for {location['key']} is not in GHCN index")
         if match.get("ghcn_first_year", 9999) > start_year or match.get("ghcn_last_year", 0) < end_year:
             raise RuntimeError(
                 f"Fixed station {fixed_id} does not cover {start_year}-{end_year}: "
@@ -195,7 +195,7 @@ def choose_temperature_station(location: dict, stations: list[dict], start_year:
         and "lat" in s and "lng" in s and "id" in s
     ]
     if not covering:
-        raise RuntimeError(f"No Klymot station covers {location['key']} span {start_year}-{end_year}")
+        raise RuntimeError(f"No GHCN station covers {location['key']} span {start_year}-{end_year}")
 
     best = min(covering, key=lambda s: haversine_km(location["lat"], location["lon"], s["lat"], s["lng"]))
     station = dict(best)
@@ -285,7 +285,7 @@ def main() -> int:
     if args.locations:
         locations = json.loads(Path(args.locations).read_text(encoding="utf-8"))
 
-    print(f"Fetching Klymot station index from {KLYMOT_INDEX_URL}", file=sys.stderr)
+    print(f"Fetching GHCN station index from {KLYMOT_INDEX_URL}", file=sys.stderr)
     station_index = fetch_json(KLYMOT_INDEX_URL)
     stations = station_index["locations"]
 
