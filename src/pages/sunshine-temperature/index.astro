@@ -928,17 +928,14 @@ import '../../styles/theme.css';
           <p class="choice-subheading">Time resolution</p>
           <p class="random-order-note">Options shown in a random order.</p>
           <div class="station-grid" id="resolutionGrid" role="group" aria-label="Choose time resolution"></div>
-          <p id="resolutionPrompt" class="select-prompt">Choose one.</p>
 
           <p class="choice-subheading">Temperature record</p>
           <p class="random-order-note">Options shown in a random order.</p>
           <div class="station-grid" id="tempGrid" role="group" aria-label="Choose temperature data"></div>
-          <p id="tempPrompt" class="select-prompt">Choose one.</p>
 
           <p class="choice-subheading">Comparison type</p>
           <p class="random-order-note">Options shown in a random order.</p>
           <div class="station-grid" id="compGrid" role="group" aria-label="Choose comparison type"></div>
-          <p id="compPrompt" class="select-prompt">Choose one.</p>
 
           <details class="expander" style="margin-top:1.25rem">
             <summary>How are anomalies calculated?</summary>
@@ -954,6 +951,8 @@ import '../../styles/theme.css';
               <p>The baseline affects the zero line on the chart but nothing about the statistical relationship. We use the mean of the full loaded record simply because it is the natural centre of the data you are looking at.</p>
             </div>
           </details>
+
+          <p id="comparePrompt" class="select-prompt">Choose one time resolution, one temperature record, and one comparison type to continue.</p>
         </div>
 
         <!-- Lab content — hidden until all three comparison axes are chosen -->
@@ -1385,42 +1384,37 @@ import '../../styles/theme.css';
       });
     }
 
-    function setResolutionPrompt(chosen) {
-      const el = document.getElementById('resolutionPrompt');
+    function updateComparePrompt() {
+      const el = document.getElementById('comparePrompt');
       if (!el) return;
-      const labels = { monthly: 'Monthly', yearly: 'Annual' };
-      if (chosen && labels[chosen]) {
-        el.textContent = 'You chose: ' + labels[chosen];
-        el.setAttribute('data-chosen', '');
-      } else {
-        el.textContent = 'Choose one.';
-        el.removeAttribute('data-chosen');
-      }
-    }
+      const resLabels = { monthly: 'Monthly', yearly: 'Annual' };
+      const tmpLabels = { qcu: 'Raw (unadjusted)', qcf: 'PHA-adjusted' };
+      const cmpLabels = { direct: 'Direct measurements', anomaly: 'Anomalies' };
 
-    function setTempPrompt(chosen) {
-      const el = document.getElementById('tempPrompt');
-      if (!el) return;
-      const labels = { qcu: 'Raw (unadjusted)', qcf: 'PHA-adjusted' };
-      if (chosen && labels[chosen]) {
-        el.textContent = 'You chose: ' + labels[chosen];
+      if (currentResolution && currentDataType && currentComparison) {
+        el.textContent = 'You chose: ' + resLabels[currentResolution] + ' · ' + tmpLabels[currentDataType] + ' · ' + cmpLabels[currentComparison];
         el.setAttribute('data-chosen', '');
-      } else {
-        el.textContent = 'Choose one.';
-        el.removeAttribute('data-chosen');
+        return;
       }
-    }
 
-    function setCompPrompt(chosen) {
-      const el = document.getElementById('compPrompt');
-      if (!el) return;
-      const labels = { direct: 'Direct measurements', anomaly: 'Anomalies' };
-      if (chosen && labels[chosen]) {
-        el.textContent = 'You chose: ' + labels[chosen];
-        el.setAttribute('data-chosen', '');
+      el.removeAttribute('data-chosen');
+
+      const chosen = [];
+      if (currentResolution) chosen.push(resLabels[currentResolution]);
+      if (currentDataType)   chosen.push(tmpLabels[currentDataType]);
+      if (currentComparison) chosen.push(cmpLabels[currentComparison]);
+
+      const missing = [];
+      if (!currentResolution) missing.push('a time resolution');
+      if (!currentDataType)   missing.push('a temperature record');
+      if (!currentComparison) missing.push('a comparison type');
+
+      if (chosen.length === 0) {
+        el.textContent = 'Choose one time resolution, one temperature record, and one comparison type to continue.';
       } else {
-        el.textContent = 'Choose one.';
-        el.removeAttribute('data-chosen');
+        const chosenStr  = 'You chose: ' + chosen.join(' · ') + '.';
+        const missingStr = 'Still need: ' + missing.join(', ') + '.';
+        el.textContent   = chosenStr + ' ' + missingStr;
       }
     }
 
@@ -1439,11 +1433,9 @@ import '../../styles/theme.css';
 
       if (cmpSection) cmpSection.hidden = false;
       renderChoiceGrid('resolutionGrid', RESOLUTION_OPTIONS, 'klymot-res-order-v1', currentResolution, selectResolution);
-      setResolutionPrompt(currentResolution);
       renderChoiceGrid('tempGrid', TEMP_OPTIONS, 'klymot-temp-order-v1', currentDataType, selectDataType);
-      setTempPrompt(currentDataType);
       renderChoiceGrid('compGrid', COMP_OPTIONS, 'klymot-cmp-order-v1', currentComparison, selectComparison);
-      setCompPrompt(currentComparison);
+      updateComparePrompt();
 
       if (labContent) labContent.hidden = !(currentResolution && currentDataType && currentComparison);
     }
