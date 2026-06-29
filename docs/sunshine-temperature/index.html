@@ -195,17 +195,33 @@
       return a;
     }
 
-    let stationCardOrder = null;
+    const STATION_KEYS = ['DAV', 'TOK', 'POT', 'UCL', 'VAL', 'DBL', 'STO'];
+    const LS_ORDER_KEY = 'klymot-station-order-v1';
+
+    function getStationOrder() {
+      try {
+        const stored = localStorage.getItem(LS_ORDER_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length === STATION_KEYS.length &&
+              STATION_KEYS.every(k => parsed.includes(k))) {
+            return parsed;
+          }
+        }
+      } catch (_) {}
+      const order = shuffleArray(STATION_KEYS);
+      try { localStorage.setItem(LS_ORDER_KEY, JSON.stringify(order)); } catch (_) {}
+      return order;
+    }
+
+    const stationCardOrder = getStationOrder();
 
     function renderStationCards() {
       const grid = document.getElementById('stationGrid');
       if (!grid) return;
-      // Shuffle only once per session; subsequent calls just update active state
-      if (!stationCardOrder) {
-        stationCardOrder = shuffleArray(['DAV', 'TOK', 'POT', 'UCL', 'VAL', 'DBL', 'STO']);
-      }
       grid.innerHTML = '';
       stationCardOrder.forEach(key => {
+
         const meta = STATION_META[key];
         if (!meta) return;
         const loaded = !!stations[key];
