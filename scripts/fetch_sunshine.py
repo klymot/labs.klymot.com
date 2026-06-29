@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fetch shortwave radiation data and pair each location with a covering Klymot station.
 
-Source: Open-Meteo Historical Weather API (ERA5 reanalysis), starting in 1940.
+Source: Open-Meteo Historical Weather API, starting in 1940. Note: current data source is a placeholder pending integration of actual station measurement records.
 
 For every configured location the script:
 - Fetches monthly shortwave_radiation_sum (MJ/m²) from Open-Meteo.
@@ -83,12 +83,8 @@ EXTRA_HISTORICAL_STATIONS: list[dict] = [
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "public" / "sunshine-temperature" / "data"
 
-SOURCE = "Open-Meteo Historical Weather API (ERA5 reanalysis)"
-SHORTWAVE_UNIT = (
-    "monthly sum of daily shortwave_radiation_sum (MJ/m²); "
-    "ERA5 downwelling shortwave radiation at the surface — "
-    "equivalent to global horizontal irradiance as measured by a pyranometer"
-)
+SOURCE = "Open-Meteo Historical Weather API (placeholder — to be replaced with actual station records)"
+SHORTWAVE_UNIT = "monthly sum of daily shortwave_radiation_sum (MJ/m²); global horizontal irradiance"
 STATION_PAIRING_RULE = (
     "Choose the nearest Klymot temperature station whose GHCN record starts no later "
     "than the sunshine start year and ends no earlier than the sunshine end year. "
@@ -199,8 +195,7 @@ def fetch_open_meteo_shortwave(location: dict, start_date: str, end_date: str) -
         "longitude": location["lon"],
         "start_date": start_date,
         "end_date": end_date,
-        # shortwave_radiation_sum: daily total downwelling shortwave in MJ/m²
-        # (ERA5 reanalysis; equivalent to global horizontal irradiance from a pyranometer)
+        # shortwave_radiation_sum: daily total downwelling shortwave in MJ/m² (global horizontal irradiance)
         "daily": "shortwave_radiation_sum",
         "timezone": "UTC",
     }

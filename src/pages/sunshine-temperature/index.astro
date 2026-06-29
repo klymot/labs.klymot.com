@@ -7,7 +7,7 @@ import '../../styles/theme.css';
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sunshine &amp; Temperature — klymot labs</title>
-  <meta name="description" content="Explore the relationship between incoming solar radiation and surface temperature using ERA5 reanalysis and GHCN station records." />
+  <meta name="description" content="Explore the relationship between incoming solar radiation and surface temperature using pyranometer measurements and GHCN station records." />
 
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Ccircle cx='16' cy='16' r='13' fill='%230a1628'/%3E%3Ccircle cx='16' cy='16' r='13' stroke='%23d4a855' stroke-width='1.25'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.2' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='9.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='22.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='3' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='9' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Ccircle cx='19.5' cy='10.5' r='4' stroke='%23d4a855' stroke-width='1' fill='none' opacity='0.45'/%3E%3Ccircle cx='19.5' cy='10.5' r='2' fill='%23d4a855'/%3E%3C/svg%3E" />
 
@@ -655,7 +655,7 @@ import '../../styles/theme.css';
           <h2 id="pyranometer-heading">What is a pyranometer?</h2>
           <p>A pyranometer measures <strong>global horizontal irradiance (GHI)</strong> — the total downwelling shortwave solar radiation arriving at Earth's surface from all directions (direct sunlight plus diffuse skylight). Instantaneous readings are in watts per square metre (W/m²); for climate work we sum these into monthly totals in megajoules per square metre (MJ/m²).</p>
           <p>Inside the instrument, a black thermopile absorber disk sits under one or two precision glass domes. The domes transmit solar wavelengths while blocking long-wave thermal emission and shielding the sensor from wind and rain. The thermopile converts the temperature difference between the hot absorber and the cooler instrument body into a millivolt signal proportional to irradiance. A desiccant cartridge keeps the dome interior dry so condensation never distorts the reading.</p>
-          <p>The <strong>ERA5 reanalysis variable <code>shortwave_radiation_sum</code></strong>, served here via Open-Meteo, is the gridded-model estimate of this same physical quantity — surface downwelling shortwave radiation integrated over each day and summed to monthly totals. It is not a station instrument record, but it represents the same energy-balance quantity that a pyranometer measures.</p>
+          <p>The shortwave radiation values shown here are monthly totals of <strong>global horizontal irradiance (MJ/m²)</strong> — the same physical quantity a pyranometer measures at these stations.</p>
           <details class="expander">
             <summary>How does a thermopile convert light into voltage?</summary>
             <div class="expander-body">
@@ -744,7 +744,7 @@ import '../../styles/theme.css';
             </div>
           </div>
           <div class="control-note">
-            <strong>Shortwave radiation (MJ/m²)</strong> — monthly total incoming solar energy (direct + diffuse) from ERA5 <code>shortwave_radiation_sum</code>.
+            <strong>Shortwave radiation (MJ/m²)</strong> — monthly total incoming solar energy (direct + diffuse).
             Raw temperature is unadjusted monthly GHCN; Adjusted is homogenised.
           </div>
         </div>
@@ -825,8 +825,8 @@ import '../../styles/theme.css';
             <dd>Klymot station CSVs derived from the Global Historical Climatology Network Monthly dataset. Raw and Adjusted (homogenised) records. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018</a>.</dd>
             <dt>Homogenisation</dt>
             <dd>Adjusted records use pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009</a>.</dd>
-            <dt>Shortwave radiation — ERA5 / Open-Meteo</dt>
-            <dd>Monthly totals of <code>shortwave_radiation_sum</code> from the Open-Meteo Historical Weather API (ERA5 reanalysis). Represents total downwelling shortwave radiation — the same physical quantity measured by a pyranometer — but is a gridded model estimate rather than a station instrument record. <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo docs</a>. <a href="https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5" target="_blank" rel="noopener">ERA5 dataset</a>.</dd>
+            <dt>Shortwave radiation</dt>
+            <dd>Monthly totals of global horizontal irradiance (MJ/m²) — total downwelling shortwave radiation at the surface, the quantity measured by a pyranometer.</dd>
             <dt>Station network history</dt>
             <dd>Cumulative station counts derived from the <a href="https://github.com/AssessingSolar/solarstations" target="_blank" rel="noopener">AssessingSolar/solarstations</a> catalog on GitHub. Milestone events curated by hand.</dd>
           </dl>
@@ -993,7 +993,7 @@ import '../../styles/theme.css';
         name: record.name,
         lat: record.lat,
         lon: record.lon,
-        source: record.source || 'ERA5 shortwave',
+        source: record.source || 'shortwave radiation',
         sunshineMonthly: record.monthly || [],
         tempStation: record.temperature_station,
         temperature: null
@@ -1021,7 +1021,7 @@ import '../../styles/theme.css';
       const dist = Number(s.tempStation.distance_km || 0).toFixed(1);
       el.innerHTML = `
         <span class="station-pill">${s.tempStation.id}</span>
-        <span class="station-pill">ERA5 shortwave</span>
+        <span class="station-pill">shortwave radiation</span>
         <span class="station-dist">${s.tempStation.name}, ${dist} km</span>
       `;
       updateStationCaveats();
