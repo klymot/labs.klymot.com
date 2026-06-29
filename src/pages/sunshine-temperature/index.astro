@@ -378,8 +378,13 @@ import '../../styles/theme.css';
       font-style: italic;
     }
 
+    .select-prompt[data-chosen] {
+      font-style: normal;
+      color: var(--text);
+    }
+
     .sources-expander {
-      margin-block: 0.75rem 0;
+      margin-block: 2rem 0;
     }
 
     .sources-expander > summary {
@@ -887,26 +892,8 @@ import '../../styles/theme.css';
         <div id="stationInfo" class="station-pills"></div>
         <span id="loadStatus" class="meta-note" style="display:block;margin-block-end:0.5rem"></span>
 
-        <!-- Shown until a station is chosen -->
+        <!-- Dynamic prompt: "select" or "you chose" -->
         <p id="selectPrompt" class="select-prompt">Select a station above to explore the data.</p>
-
-        <!-- Data sources — always visible -->
-        <details class="expander sources-expander">
-          <summary>Data sources &amp; methodology</summary>
-          <div class="expander-body">
-            <dl class="sources-list">
-              <dt>Temperature — GHCN-Monthly v4</dt>
-              <dd>Global Historical Climatology Network Monthly (GHCNm v4) dataset, served via klymot.com. Raw and Adjusted (homogenised) records. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018</a>.</dd>
-              <dt>Homogenisation</dt>
-              <dd>Adjusted records use pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009</a>.</dd>
-              <dt>Shortwave radiation</dt>
-              <dd>Monthly totals of global horizontal irradiance (MJ/m²) — total downwelling shortwave radiation at the surface, the quantity measured by a pyranometer.</dd>
-              <dt>Station network history</dt>
-              <dd>Cumulative station counts derived from the <a href="https://github.com/AssessingSolar/solarstations" target="_blank" rel="noopener">AssessingSolar/solarstations</a> catalog on GitHub. Milestone events curated by hand.</dd>
-            </dl>
-            <p class="sources-footer">This is a neutral exploration tool. Correlation does not imply causation.</p>
-          </div>
-        </details>
 
         <!-- Lab content — hidden until a station is selected -->
         <div id="labContent" hidden>
@@ -1004,6 +991,24 @@ import '../../styles/theme.css';
           </div>
 
         </div><!-- /#labContent -->
+
+        <!-- Data sources & methodology — always at the foot -->
+        <details class="expander sources-expander">
+          <summary>Data sources &amp; methodology</summary>
+          <div class="expander-body">
+            <dl class="sources-list">
+              <dt>Temperature — GHCN-Monthly v4</dt>
+              <dd>Global Historical Climatology Network Monthly (GHCNm v4) dataset, served via klymot.com. Raw and Adjusted (homogenised) records. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018</a>.</dd>
+              <dt>Homogenisation</dt>
+              <dd>Adjusted records use pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009</a>.</dd>
+              <dt>Shortwave radiation</dt>
+              <dd>Monthly totals of global horizontal irradiance (MJ/m²) — total downwelling shortwave radiation at the surface, the quantity measured by a pyranometer.</dd>
+              <dt>Station network history</dt>
+              <dd>Cumulative station counts derived from the <a href="https://github.com/AssessingSolar/solarstations" target="_blank" rel="noopener">AssessingSolar/solarstations</a> catalog on GitHub. Milestone events curated by hand.</dd>
+            </dl>
+            <p class="sources-footer">This is a neutral exploration tool. Correlation does not imply causation.</p>
+          </div>
+        </details>
 
       </div>
     </section>
@@ -1251,14 +1256,37 @@ import '../../styles/theme.css';
       el.innerHTML = `<span class="station-pill">${s.tempStation.id}</span><span class="station-dist">${s.tempStation.name}, ${dist} km</span>`;
     }
 
-    function showLabContent() {
+    function setPrompt(chosen) {
       const prompt = document.getElementById('selectPrompt');
+      if (!prompt) return;
+      if (chosen) {
+        const meta = STATION_META[currentStation];
+        prompt.textContent = `You chose: ${meta ? meta.name : currentStation}`;
+        prompt.setAttribute('data-chosen', '');
+      } else {
+        prompt.textContent = 'Select a station above to explore the data.';
+        prompt.removeAttribute('data-chosen');
+      }
+    }
+
+    function showLabContent() {
       const content = document.getElementById('labContent');
-      if (prompt) prompt.hidden = true;
       if (content) content.hidden = false;
+      setPrompt(true);
+    }
+
+    function deselectStation() {
+      currentStation = null;
+      const content = document.getElementById('labContent');
+      if (content) content.hidden = true;
+      setPrompt(false);
+      renderStationCards();
+      updateStationInfo();
+      window.history.replaceState(null, '', window.location.pathname);
     }
 
     async function selectStation(key) {
+      if (key === currentStation) { deselectStation(); return; }
       currentStation = key;
       resetTimeWindow();
       showLabContent();
