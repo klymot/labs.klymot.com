@@ -84,7 +84,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "public" / "sunshine-temperature" / "data"
 
 SOURCE = "Open-Meteo Historical Weather API (placeholder — to be replaced with actual station records)"
-SHORTWAVE_UNIT = "monthly sum of daily shortwave_radiation_sum (MJ/m²); global horizontal irradiance"
+SHORTWAVE_UNIT = "daily shortwave_radiation_sum (MJ/m²); global horizontal irradiance"
 STATION_PAIRING_RULE = (
     "Choose the nearest GHCN temperature station whose record starts no later "
     "than the sunshine start year and ends no earlier than the sunshine end year. "
@@ -215,31 +215,16 @@ def fetch_open_meteo_shortwave(location: dict, start_date: str, end_date: str) -
     }
     url = f"{OPEN_METEO_ARCHIVE_URL}?{urllib.parse.urlencode(params)}"
     data = fetch_json(url)
-    daily = data.get("daily", {})
-    dates = daily.get("time", [])
-    radiation = daily.get("shortwave_radiation_sum", [])
+    daily_data = data.get("daily", {})
+    dates = daily_data.get("time", [])
+    radiation = daily_data.get("shortwave_radiation_sum", [])
 
-    monthly: dict[str, dict] = defaultdict(lambda: {"shortwave_mj_m2": 0.0, "days": 0})
+    daily_rows = []
     for date_string, mj in zip(dates, radiation):
-        if mj is None:
+        if mj is None or (isinstance(mj, float) and math.isnan(mj)):
             continue
-        month_key = date_string[:7]
-        monthly[month_key]["shortwave_mj_m2"] += mj
-        monthly[month_key]["days"] += 1
-
-    monthly_rows = []
-    for month_key in sorted(monthly):
-        year, month = month_key.split("-")
-        bucket = monthly[month_key]
-        monthly_rows.append(
-            {
-                "year": int(year),
-                "month": int(month),
-                "shortwave_mj_m2": round(bucket["shortwave_mj_m2"], 2),
-                "days": bucket["days"],
-            }
-        )
-    return monthly_rows
+        daily_rows.append({"date": date_string, "shortwave_mj_m2": round(mj, 3)})
+    return daily_rows
 
 
 def reusable_existing_records(output_dir: Path, end_date: str) -> dict[str, dict]:
@@ -252,7 +237,7 @@ def reusable_existing_records(output_dir: Path, end_date: str) -> dict[str, dict
             record = json.loads(json_file.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             continue
-        if record.get("end_date") == end_date and record.get("monthly"):
+        if record.get("end_date") == end_date and record.get("daily"):
             reusable[record["key"]] = record
     return reusable
 
@@ -306,10 +291,10 @@ def main() -> int:
 
         existing_record = existing.get(location["key"])
         if existing_record and existing_record.get("start_date") == start_date:
-            monthly = existing_record["monthly"]
-            print(f"{location['key']}: reused existing monthly shortwave data", file=sys.stderr)
+            daily = existing_record["daily"]
+            print(f"{location['key']}: reused existing daily shortwave data", file=sys.stderr)
         else:
-            monthly = fetch_open_meteo_shortwave(location, start_date, end_date)
+            daily = fetch_open_meteo_shortwave(location, start_date, end_date)
             time.sleep(args.sleep)
 
         record = {
@@ -319,6 +304,7 @@ def main() -> int:
             "lon": location["lon"],
             "source": SOURCE,
             "generated_at": generated_at,
+            "updated": today.isoformat(),
             "start_date": start_date,
             "end_date": end_date,
             "temperature_station": {
@@ -334,7 +320,7 @@ def main() -> int:
             "units": {
                 "shortwave_mj_m2": SHORTWAVE_UNIT,
             },
-            "monthly": monthly,
+            "daily": daily,
         }
 
         output_dir.mkdir(parents=True, exist_ok=True)

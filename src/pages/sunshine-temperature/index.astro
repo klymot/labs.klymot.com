@@ -896,7 +896,7 @@ import '../../styles/theme.css';
           <details class="expander">
             <summary>What units are used here?</summary>
             <div class="expander-body">
-              <p>Instantaneous readings are in W/m². This lab shows <strong>monthly totals in MJ/m²</strong> (megajoules per square metre), which are obtained by integrating the instantaneous readings over each day and summing across the month. 1 MJ/m² ≈ 0.278 kWh/m².</p>
+              <p>Instantaneous readings are in W/m². This lab shows the <strong>daily total in MJ/m²</strong> (megajoules per square metre), obtained by integrating the instantaneous reading over each day. Monthly and annual values in the charts are the mean of the available daily totals for that period. 1 MJ/m²/day ≈ 0.278 kWh/m²/day.</p>
             </div>
           </details>
         </div>
@@ -1036,30 +1036,36 @@ import '../../styles/theme.css';
           <!-- Sunshine lag -->
           <div class="section-card">
             <div class="section-heading">Sunshine lag</div>
-            <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.65;margin-block:0 0.75rem">
-              Sunlight heats the land surface gradually — the temperature response lags peak radiation by days to weeks depending on the season, location, and local thermal mass. Shift the solar series here to explore whether a small offset improves the alignment between the two records.
-            </p>
             <div class="control-row-tight">
               <button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Shift lag earlier" type="button">−</button>
               <span id="lagReadout" class="control-readout wide">No offset</span>
               <button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Shift lag later" type="button">+</button>
             </div>
-            <details class="expander" style="margin-top:1rem">
-              <summary>Why does solar radiation lead temperature?</summary>
+            <details class="expander" style="margin-top:0.75rem">
+              <summary>What is sunshine lag?</summary>
               <div class="expander-body">
-                <p>The land surface, water bodies, and overlying air all have thermal inertia — they absorb incoming radiation and release heat slowly. On seasonal timescales, ocean heat storage can delay the warmest month by four to six weeks relative to peak insolation. The daily version of the same effect means the hottest hour of the day is mid-afternoon, not local solar noon.</p>
-              </div>
-            </details>
-            <details class="expander">
-              <summary>When should I use a non-zero lag?</summary>
-              <div class="expander-body">
-                <p>A lag of zero is often correct for monthly data — monthly averaging already smooths over the within-month diurnal cycle, and the dominant seasonal swing is largely in phase between radiation and temperature. Some stations do show a systematic offset of a week or two, particularly maritime sites where ocean heat storage delays the temperature peak. Try shifting by ±0.25 months and watch whether the scatter plot tightens or the Pearson r improves.</p>
-              </div>
-            </details>
-            <details class="expander">
-              <summary>Why does lag matter less in anomaly mode?</summary>
-              <div class="expander-body">
-                <p>Anomalies are deviations from the long-term mean for each calendar month, so the seasonal cycle is already removed. What remains are year-to-year fluctuations driven by slower processes — large-scale circulation patterns, cloud cover anomalies, ocean–atmosphere coupling — that tend to affect both radiation and temperature on similar monthly timescales. Sub-monthly lag effects average out once you compute monthly means, so the optimal lag in anomaly mode is almost always zero.</p>
+                <p>Sunlight heats the land surface gradually — the temperature response lags peak radiation by days to weeks depending on the season, location, and local thermal mass. Shift the solar series to explore whether a small offset improves the alignment between the two records.</p>
+                <details class="expander">
+                  <summary>Why does solar radiation lead temperature?</summary>
+                  <div class="expander-body">
+                    <p>The land surface, water bodies, and overlying air all have thermal inertia — they absorb incoming radiation and release heat slowly. On seasonal timescales, ocean heat storage can delay the warmest month by four to six weeks relative to peak insolation. The daily version of the same effect means the hottest hour of the day is mid-afternoon, not local solar noon.</p>
+                  </div>
+                </details>
+                <details class="expander">
+                  <summary>Why might I try a non-zero lag?</summary>
+                  <div class="expander-body">
+                    <p>The interesting question is what physical story you want to test. Two opposite hypotheses are worth exploring:</p>
+                    <p><strong>Solar drives temperature</strong> — accumulated sunlight warms the land and air over weeks, so temperature might peak after radiation. Try shifting solar earlier (positive offset) and watch whether the scatter tightens.</p>
+                    <p><strong>Temperature drives cloud cover</strong> — warmer air increases evaporation and convective cloud formation, which reduces incoming radiation. In that case temperature might lead radiation; try a negative offset.</p>
+                    <p>There is no single right answer — it varies by station, season, and climate regime. Watch the Pearson r as you shift and let the data tell you which direction the relationship leans at this location.</p>
+                  </div>
+                </details>
+                <details class="expander">
+                  <summary>Why does lag matter less in anomaly mode?</summary>
+                  <div class="expander-body">
+                    <p>Anomalies are deviations from the long-term mean for each calendar month, so the seasonal cycle is already removed. What remains are year-to-year fluctuations driven by slower processes — large-scale circulation patterns, cloud cover anomalies, ocean–atmosphere coupling — that tend to affect both radiation and temperature on similar monthly timescales. Sub-monthly lag effects average out once you compute monthly means, so the optimal lag in anomaly mode is almost always zero.</p>
+                  </div>
+                </details>
               </div>
             </details>
           </div>
@@ -1110,7 +1116,7 @@ import '../../styles/theme.css';
               <dt>Homogenisation</dt>
               <dd>Adjusted records use pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009</a>.</dd>
               <dt>Shortwave radiation</dt>
-              <dd>Monthly totals of global horizontal irradiance (MJ/m²) — total downwelling shortwave radiation at the surface, the quantity measured by a pyranometer.</dd>
+              <dd>Daily totals of global horizontal irradiance (MJ/m²/day), stored one file per station. Monthly and annual values shown in the charts are the mean of the available daily totals for that period, which handles missing days correctly without undercounting.</dd>
               <dt>Station network history</dt>
               <dd>Cumulative station counts derived from the <a href="https://github.com/AssessingSolar/solarstations" target="_blank" rel="noopener">AssessingSolar/solarstations</a> catalog on GitHub. Milestone events curated by hand.</dd>
             </dl>
@@ -1310,10 +1316,31 @@ import '../../styles/theme.css';
         lat: record.lat,
         lon: record.lon,
         source: record.source || 'shortwave radiation',
-        sunshineMonthly: record.monthly || [],
+        sunshineDaily: record.daily || [],
         tempStation: record.temperature_station,
         temperature: null
       };
+    }
+
+    function aggregateDaily(dailyRows) {
+      const buckets = new Map();
+      dailyRows.forEach(function(row) {
+        const year  = parseInt(row.date.slice(0, 4), 10);
+        const month = parseInt(row.date.slice(5, 7), 10);
+        const key   = year + '-' + String(month).padStart(2, '0');
+        if (!buckets.has(key)) buckets.set(key, { year, month, sum: 0, count: 0 });
+        const b = buckets.get(key);
+        b.sum   += row.shortwave_mj_m2;
+        b.count += 1;
+      });
+      return [...buckets.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1).map(function([, b]) {
+        return {
+          year:             b.year,
+          month:            b.month,
+          shortwave_mj_m2: b.count > 0 ? b.sum / b.count : 0,
+          days:             b.count
+        };
+      });
     }
 
     // ── Station UI ─────────────────────────────────────────────────
@@ -1574,7 +1601,7 @@ import '../../styles/theme.css';
 
     function alignMonthlyData(station) {
       const tempMap = station.temperature[currentDataType];
-      const sunshineByMonth = fallbackLaggedMonthlySunshine(station.sunshineMonthly, monthLag);
+      const sunshineByMonth = fallbackLaggedMonthlySunshine(aggregateDaily(station.sunshineDaily), monthLag);
       const rows = [];
       [...tempMap.keys()].sort().forEach(key => {
         const sw = sunshineByMonth.get(key);
@@ -1595,7 +1622,6 @@ import '../../styles/theme.css';
     }
 
     function aggregateYearly(monthlyRows) {
-      const isAnomaly = currentComparison === 'anomaly';
       const byYear = new Map();
       monthlyRows.forEach(row => {
         if (!byYear.has(row.year)) byYear.set(row.year, []);
@@ -1606,9 +1632,7 @@ import '../../styles/theme.css';
         label: String(year),
         year,
         temp:      mean(rows.map(r => r.temp)),
-        shortwave: isAnomaly
-          ? mean(rows.map(r => r.shortwave))
-          : rows.reduce((s, r) => s + (r.shortwave || 0), 0),
+        shortwave: mean(rows.map(r => r.shortwave)),
         monthCount: rows.length
       })).filter(r => r.monthCount >= 9 && Number.isFinite(r.temp) && Number.isFinite(r.shortwave));
     }
@@ -1773,8 +1797,8 @@ import '../../styles/theme.css';
         labels:      rows.map(r => r.label),
         leftData:    showTemp  ? rows.map(r => r.temp)      : nulls,
         rightData:   showSolar ? rows.map(r => r.shortwave) : nulls,
-        leftLabel:   isAnomalyTS ? 'Temp anomaly (°C)'    : 'Temp (°C)',
-        rightLabel:  isAnomalyTS ? 'SW anomaly (MJ/m²)'   : 'MJ/m²',
+        leftLabel:   isAnomalyTS ? 'Temp anomaly (°C)'         : 'Temp (°C)',
+        rightLabel:  isAnomalyTS ? 'SW anomaly (MJ/m²/day)'   : 'MJ/m²/day',
         leftColor:   showTemp  ? cssVar('--success')        : 'transparent',
         rightColor:  showSolar ? cssVar('--accent-primary') : 'transparent',
         labelFilter: (label, index) => timeAxisLabel(rows[index], rows)
@@ -1801,7 +1825,7 @@ import '../../styles/theme.css';
       scatterChart.load({
         points,
         fitLine:    fit.points.length >= 2 ? { points: fit.points } : null,
-        xLabel:     isAnomalySC ? 'Shortwave anomaly (MJ/m²)' : 'Shortwave radiation (MJ/m²)',
+        xLabel:     isAnomalySC ? 'Shortwave anomaly (MJ/m²/day)' : 'Shortwave radiation (MJ/m²/day)',
         yLabel:     isAnomalySC ? 'Temperature anomaly (°C)'  : 'Temperature (°C)',
         pointColor: cssVar('--accent-primary'),
         fitColor:   cssVar('--success')
