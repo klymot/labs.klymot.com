@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-29T11:42:08+00:00",
-  "source": "Open-Meteo Historical Weather API (placeholder \u2014 to be replaced with actual station records)",
+  "generated_at": "2026-06-29T12:11:34+00:00",
+  "source": "Mixed: DWD (POT), KNMI (DBL), SMHI (STO), Open-Meteo placeholder (VAL, TOK, DAV, UCL)",
   "station_pairing_rule": "Choose the nearest GHCN temperature station whose record starts no later than the sunshine start year and ends no earlier than the sunshine end year. Valentia is fixed to EI000003953.",
   "stations": [
     "VAL",

@@ -1,9 +1,9 @@
 {
   "source": "AssessingSolar/solarstations GitHub catalog",
   "source_url": "https://github.com/AssessingSolar/solarstations/blob/65aad53872a60bc97428a4c5d002b8ca3f378a7b/solarstations.csv",
-  "generated_at": "2026-06-29T11:44:11+00:00",
-  "methodology": "Active station count per year from the AssessingSolar/solarstations catalog, supplemented by EXTRA_HISTORICAL_STATIONS (stations absent from the catalog with documented measurement records) and STATION_START_OVERRIDES (catalog stations whose period reflects only the modern data-submission era, corrected to the confirmed measurement start). A station is active in year Y if start_year \u2264 Y and end_year (if present) \u2265 Y. See scripts/fetch_sunshine.py for sources.",
-  "note": "The solarstations.org catalog is not exhaustive and under-represents historical stations (it tracks data submissions, not measurement origins). Key corrections: Norrk\u00f6ping\u21921893 (\u00c5ngstr\u00f6m origin), Davos\u21921909 (PMOD), Tateno\u21921931 (JMA), Potsdam 1937 and De Bilt 1957 added as extra stations, Uccle\u21921951. The 1977\u20131980 spike reflects US NOAA/WEST regional campaigns that ended in 1980.",
+  "generated_at": "2026-06-29T12:12:07+00:00",
+  "methodology": "Active station count per year from the AssessingSolar/solarstations catalog, supplemented by EXTRA_HISTORICAL_STATIONS and STATION_START_OVERRIDES.",
+  "note": "The solarstations.org catalog is not exhaustive and under-represents historical stations. Key corrections: Norrk\u00f6ping\u21921893, Davos\u21921909, Tateno\u21921931, Potsdam 1937 and De Bilt 1957 added as extra stations, Uccle\u21921951. The 1977\u20131980 spike reflects US NOAA/WEST regional campaigns that ended in 1980.",
   "series": [
     {
       "year": 1893,
