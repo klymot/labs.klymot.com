@@ -1033,22 +1033,22 @@ import '../../styles/theme.css';
             </div>
           </div>
 
-          <!-- Sunshine lag -->
+          <!-- Lag -->
           <div class="section-card">
-            <div class="section-heading">Sunshine lag</div>
+            <div class="section-heading">Lag</div>
             <div class="control-row-tight">
               <button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Shift lag earlier" type="button">−</button>
               <span id="lagReadout" class="control-readout wide">No offset</span>
               <button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Shift lag later" type="button">+</button>
             </div>
             <details class="expander" style="margin-top:0.75rem">
-              <summary>What is sunshine lag?</summary>
+              <summary>Why use lag in a time series correlation?</summary>
               <div class="expander-body">
-                <p>Sunlight heats the land surface gradually — the temperature response lags peak radiation by days to weeks depending on the season, location, and local thermal mass. Shift the solar series to explore whether a small offset improves the alignment between the two records.</p>
+                <p>Two variables can be strongly related even if one responds to the other with a delay. Shifting one series in time before comparing them can reveal that underlying relationship — or expose the direction of influence — in ways a zero-offset correlation misses.</p>
                 <details class="expander">
-                  <summary>Why does solar radiation lead temperature?</summary>
+                  <summary>When might one variable lead the other?</summary>
                   <div class="expander-body">
-                    <p>The land surface, water bodies, and overlying air all have thermal inertia — they absorb incoming radiation and release heat slowly. On seasonal timescales, ocean heat storage can delay the warmest month by four to six weeks relative to peak insolation. The daily version of the same effect means the hottest hour of the day is mid-afternoon, not local solar noon.</p>
+                    <p>Physical systems rarely respond instantly. Heat stored in land, water, or the atmosphere takes time to release. Cloud cover responds to temperature and humidity on timescales from hours to weeks. Large-scale circulation patterns can decouple radiation and temperature for extended periods. Any of these processes can introduce a lag — and the direction and size depends on the station, season, and dominant local physics.</p>
                   </div>
                 </details>
                 <details class="expander">
