@@ -31,16 +31,49 @@ from pathlib import Path
 
 KLYMOT_INDEX_URL = "https://www.klymot.com/data/index.json"
 OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
-SOLARSTATIONS_CATALOG_URL = (
-    "https://solarstations.org/_downloads/"
-    "f85f41dda48ab008055bbfad91e578b2/SolarStationsOrg-station-catalog.csv"
+
+# Catalog source: AssessingSolar/solarstations on GitHub.
+# The script fetches the latest main-branch CSV, resolves the commit hash via the
+# GitHub API, and records the commit-pinned URL in the output JSON for reproducibility.
+SOLARSTATIONS_GITHUB_REPO = "AssessingSolar/solarstations"
+SOLARSTATIONS_GITHUB_API = (
+    "https://api.github.com/repos/AssessingSolar/solarstations/"
+    "commits?path=solarstations.csv&per_page=1"
+)
+SOLARSTATIONS_RAW_URL = (
+    "https://raw.githubusercontent.com/AssessingSolar/solarstations/main/solarstations.csv"
 )
 
-# Pre-catalog seed: single origin point for the first documented pyranometer-class
-# instrument (Ångström pyrheliometer, Stockholm 1893). The solarstations.org catalog
-# only covers stations from 1976 onward; the chart uses this seed so the X-axis starts
-# at the true network origin. The gap between 1893 and 1976 reflects absent catalog data,
-# not a period of no measurement activity.
+# Researched start years for the 17 stations whose "Time period" field in the catalog
+# is missing ('?' or '-').  Confirmed entries carry a source URL in the comment.
+# Unconfirmed entries fall back to 1976 (earliest year in the rest of the catalog).
+STATION_START_OVERRIDES: dict[str, int] = {
+    # Confirmed:
+    "Valentia Observatory": 1954,   # https://www.met.ie/science/valentia/solar-radiation
+    "Terra Nova Bay":        1987,  # Italian National Antarctic Program, first expedition 1986–87
+    "Dongsha Atoll":         2010,  # NOAA GML DSI station, first sample date 2010-03-05
+    "Summit Station":        2010,  # ICECAPS project, spring 2010 (NOAA/ARM)
+    "Poprad-Ganovce":        1999,  # Slovak Hydrometeorological Institute (SHMI)
+    "Zagreb-Maksimir":       2003,  # DHMZ Croatia systematic global-radiation monitoring
+    # Unconfirmed — 1976 used as conservative baseline pending source verification:
+    "Kishinev":     1976,
+    "Heraklion":    1976,
+    "Marguele":     1976,
+    "Burgos":       1976,
+    "Dobele":       1976,
+    "Silutes":      1976,
+    "Kauno":        1976,
+    "Tajoura":      1976,
+    "ENEA Casaccia": 1976,
+    "ENEA Portici":  1976,
+    "RSE Piacenza":  1976,
+}
+
+# Pre-catalog seed: origin point for the first documented pyranometer-class instrument
+# (Ångström pyrheliometer, Stockholm 1893). The catalog's earliest parseable station
+# start year is 1954 (Valentia Observatory, via STATION_START_OVERRIDES); the seed
+# anchors the chart X-axis at the true network origin. The gap 1893→1954 reflects
+# absent catalog data, not a period of no measurement activity.
 PRE_CATALOG_SEEDS = [
     {"year": 1893, "active_stations": 1},
 ]
@@ -312,27 +345,67 @@ def main() -> int:
     return 0
 
 
-def fetch_pyranometer_network_counts(output_dir: Path) -> None:
-    """Download the solarstations.org catalog and write pyranometer-network-counts.json."""
-    print(f"Fetching solarstations.org catalog from {SOLARSTATIONS_CATALOG_URL}", file=sys.stderr)
+def _resolve_catalog_url() -> tuple[str, str]:
+    """Return (raw_fetch_url, commit_pinned_url) for the solarstations catalog.
+
+    Queries the GitHub API for the latest commit that touched solarstations.csv,
+    then constructs a commit-pinned raw URL so the output JSON records exactly
+    which version of the catalog was used.  Falls back to the main-branch URL on
+    any network or parse error.
+    """
     try:
-        with urllib.request.urlopen(SOLARSTATIONS_CATALOG_URL, timeout=60) as response:
+        req = urllib.request.Request(
+            SOLARSTATIONS_GITHUB_API,
+            headers={"Accept": "application/vnd.github+json", "User-Agent": "fetch_sunshine.py"},
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            commits = json.loads(resp.read())
+        sha = commits[0]["sha"]
+        raw_url = (
+            f"https://raw.githubusercontent.com/{SOLARSTATIONS_GITHUB_REPO}/{sha}/solarstations.csv"
+        )
+        pinned_url = (
+            f"https://github.com/{SOLARSTATIONS_GITHUB_REPO}/blob/{sha}/solarstations.csv"
+        )
+        return raw_url, pinned_url
+    except Exception as exc:
+        print(f"Warning: could not resolve catalog commit; using main branch ({exc})", file=sys.stderr)
+        return SOLARSTATIONS_RAW_URL, SOLARSTATIONS_RAW_URL
+
+
+def fetch_pyranometer_network_counts(output_dir: Path) -> None:
+    """Download the AssessingSolar/solarstations catalog and write pyranometer-network-counts.json."""
+    raw_url, pinned_url = _resolve_catalog_url()
+    print(f"Fetching solarstations catalog from {raw_url}", file=sys.stderr)
+    try:
+        req = urllib.request.Request(raw_url, headers={"User-Agent": "fetch_sunshine.py"})
+        with urllib.request.urlopen(req, timeout=60) as response:
             raw = response.read().decode("utf-8")
     except Exception as exc:
-        print(f"Warning: could not fetch solarstations.org catalog: {exc}", file=sys.stderr)
+        print(f"Warning: could not fetch solarstations catalog: {exc}", file=sys.stderr)
         return
 
     stations: list[dict] = []
+    skipped_no_override = 0
     reader = csv.DictReader(io.StringIO(raw))
     for row in reader:
+        name = row.get("Station name", "").strip()
         period = row.get("Time period", "").strip()
-        if not period:
-            continue
         parts = period.split("-")
         try:
             start_year = int(parts[0])
-        except ValueError:
-            continue
+        except (ValueError, IndexError):
+            # Missing start date — use researched override or skip.
+            if name in STATION_START_OVERRIDES:
+                start_year = STATION_START_OVERRIDES[name]
+            else:
+                skipped_no_override += 1
+                print(
+                    f"  Skipping {name!r}: no start date and no override entry",
+                    file=sys.stderr,
+                )
+                continue
+
         end_year: int | None = None
         if len(parts) > 1 and parts[1].strip():
             try:
@@ -340,6 +413,12 @@ def fetch_pyranometer_network_counts(output_dir: Path) -> None:
             except ValueError:
                 pass
         stations.append({"start": start_year, "end": end_year})
+
+    if skipped_no_override:
+        print(
+            f"Warning: {skipped_no_override} station(s) skipped (no start date, not in STATION_START_OVERRIDES)",
+            file=sys.stderr,
+        )
 
     current_year = dt.date.today().year
     series: list[dict] = []
@@ -356,26 +435,29 @@ def fetch_pyranometer_network_counts(output_dir: Path) -> None:
     full_series = PRE_CATALOG_SEEDS + series
 
     payload = {
-        "source": "solarstations.org station catalog",
-        "source_url": SOLARSTATIONS_CATALOG_URL,
+        "source": "AssessingSolar/solarstations GitHub catalog",
+        "source_url": pinned_url,
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "methodology": (
             "Series begins with a hard-coded seed for the first documented pyranometer-class "
-            "instrument (Ångström pyrheliometer, Stockholm 1893). From 1976 onward, counts are "
-            "derived from the solarstations.org catalog: a station is active in year Y if "
-            "start_year <= Y and end_year (if present) >= Y."
+            "instrument (Ångström pyrheliometer, Stockholm 1893). Catalog-derived counts follow: "
+            "a station is active in year Y if start_year ≤ Y and end_year (if present) ≥ Y. "
+            "The 17 catalog stations whose Time Period field is blank use individually researched "
+            "start years (see STATION_START_OVERRIDES in scripts/fetch_sunshine.py)."
         ),
         "note": (
-            "The solarstations.org catalog covers stations documented by solarstations.org; "
-            "it does not claim to be exhaustive. The gap between 1893 and 1976 reflects absent "
-            "catalog data, not a period of no measurement activity. The 1977-1980 spike reflects "
-            "US NOAA/WEST regional measurement campaigns that ended in 1980."
+            "The catalog covers stations documented by AssessingSolar; it is not exhaustive. "
+            "The gap 1893–1954 reflects absent catalog data. The 1977–1980 spike reflects "
+            "US NOAA/WEST regional campaigns that ended in 1980."
         ),
         "series": full_series,
     }
     counts_file = output_dir / "pyranometer-network-counts.json"
     counts_file.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {counts_file} ({len(stations)} stations, {len(series)} change-points)", file=sys.stderr)
+    print(
+        f"Wrote {counts_file} ({len(stations)} stations, {len(series)} change-points, pinned={pinned_url})",
+        file=sys.stderr,
+    )
 
 
 if __name__ == "__main__":

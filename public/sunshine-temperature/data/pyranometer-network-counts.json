@@ -1,52 +1,197 @@
 {
-  "source": "solarstations.org station catalog",
-  "source_url": "https://solarstations.org/_downloads/f85f41dda48ab008055bbfad91e578b2/SolarStationsOrg-station-catalog.csv",
-  "methodology": "Series begins with a hard-coded seed for the first documented pyranometer-class instrument (Ångström pyrheliometer, Stockholm 1893). From 1976 onward, counts are derived from the solarstations.org catalog: a station is active in year Y if start_year <= Y and end_year (if present) >= Y.",
-  "note": "The solarstations.org catalog covers stations documented by solarstations.org; it does not claim to be exhaustive. The gap between 1893 and 1976 reflects absent catalog data, not a period of no measurement activity. The 1977-1980 spike reflects US NOAA/WEST regional measurement campaigns that ended in 1980.",
+  "source": "AssessingSolar/solarstations GitHub catalog",
+  "source_url": "https://github.com/AssessingSolar/solarstations/blob/65aad53872a60bc97428a4c5d002b8ca3f378a7b/solarstations.csv",
+  "generated_at": "2026-06-29T00:00:00+00:00",
+  "methodology": "Series begins with a hard-coded seed for the first documented pyranometer-class instrument (Ångström pyrheliometer, Stockholm 1893). Catalog-derived counts follow: a station is active in year Y if start_year ≤ Y and end_year (if present) ≥ Y. The 17 catalog stations whose Time Period field is blank use individually researched start years (see STATION_START_OVERRIDES in scripts/fetch_sunshine.py).",
+  "note": "The catalog covers stations documented by AssessingSolar; it is not exhaustive. The gap 1893–1954 reflects absent catalog data. The 1977–1980 spike reflects US NOAA/WEST regional campaigns that ended in 1980.",
   "series": [
-    {"year": 1893, "active_stations": 1},
-    {"year": 1976, "active_stations": 15},
-    {"year": 1977, "active_stations": 59},
-    {"year": 1978, "active_stations": 84},
-    {"year": 1979, "active_stations": 90},
-    {"year": 1981, "active_stations": 12},
-    {"year": 1983, "active_stations": 22},
-    {"year": 1985, "active_stations": 24},
-    {"year": 1986, "active_stations": 35},
-    {"year": 1990, "active_stations": 37},
-    {"year": 1991, "active_stations": 38},
-    {"year": 1992, "active_stations": 47},
-    {"year": 1993, "active_stations": 65},
-    {"year": 1994, "active_stations": 72},
-    {"year": 1995, "active_stations": 88},
-    {"year": 1996, "active_stations": 101},
-    {"year": 1997, "active_stations": 103},
-    {"year": 1998, "active_stations": 120},
-    {"year": 1999, "active_stations": 126},
-    {"year": 2000, "active_stations": 133},
-    {"year": 2001, "active_stations": 137},
-    {"year": 2002, "active_stations": 140},
-    {"year": 2003, "active_stations": 147},
-    {"year": 2004, "active_stations": 143},
-    {"year": 2005, "active_stations": 150},
-    {"year": 2006, "active_stations": 158},
-    {"year": 2007, "active_stations": 160},
-    {"year": 2008, "active_stations": 178},
-    {"year": 2009, "active_stations": 186},
-    {"year": 2010, "active_stations": 212},
-    {"year": 2011, "active_stations": 273},
-    {"year": 2012, "active_stations": 295},
-    {"year": 2013, "active_stations": 378},
-    {"year": 2014, "active_stations": 436},
-    {"year": 2015, "active_stations": 471},
-    {"year": 2016, "active_stations": 490},
-    {"year": 2017, "active_stations": 501},
-    {"year": 2018, "active_stations": 512},
-    {"year": 2019, "active_stations": 530},
-    {"year": 2020, "active_stations": 552},
-    {"year": 2021, "active_stations": 569},
-    {"year": 2022, "active_stations": 568},
-    {"year": 2023, "active_stations": 559},
-    {"year": 2024, "active_stations": 558}
+    {
+      "year": 1893,
+      "active_stations": 1
+    },
+    {
+      "year": 1954,
+      "active_stations": 1
+    },
+    {
+      "year": 1976,
+      "active_stations": 27
+    },
+    {
+      "year": 1977,
+      "active_stations": 71
+    },
+    {
+      "year": 1978,
+      "active_stations": 96
+    },
+    {
+      "year": 1979,
+      "active_stations": 102
+    },
+    {
+      "year": 1981,
+      "active_stations": 24
+    },
+    {
+      "year": 1983,
+      "active_stations": 34
+    },
+    {
+      "year": 1985,
+      "active_stations": 36
+    },
+    {
+      "year": 1986,
+      "active_stations": 47
+    },
+    {
+      "year": 1987,
+      "active_stations": 48
+    },
+    {
+      "year": 1990,
+      "active_stations": 50
+    },
+    {
+      "year": 1991,
+      "active_stations": 51
+    },
+    {
+      "year": 1992,
+      "active_stations": 60
+    },
+    {
+      "year": 1993,
+      "active_stations": 80
+    },
+    {
+      "year": 1994,
+      "active_stations": 87
+    },
+    {
+      "year": 1995,
+      "active_stations": 103
+    },
+    {
+      "year": 1996,
+      "active_stations": 116
+    },
+    {
+      "year": 1997,
+      "active_stations": 118
+    },
+    {
+      "year": 1998,
+      "active_stations": 135
+    },
+    {
+      "year": 1999,
+      "active_stations": 142
+    },
+    {
+      "year": 2000,
+      "active_stations": 149
+    },
+    {
+      "year": 2001,
+      "active_stations": 153
+    },
+    {
+      "year": 2002,
+      "active_stations": 156
+    },
+    {
+      "year": 2003,
+      "active_stations": 164
+    },
+    {
+      "year": 2004,
+      "active_stations": 167
+    },
+    {
+      "year": 2005,
+      "active_stations": 176
+    },
+    {
+      "year": 2006,
+      "active_stations": 186
+    },
+    {
+      "year": 2007,
+      "active_stations": 190
+    },
+    {
+      "year": 2008,
+      "active_stations": 209
+    },
+    {
+      "year": 2009,
+      "active_stations": 220
+    },
+    {
+      "year": 2010,
+      "active_stations": 254
+    },
+    {
+      "year": 2011,
+      "active_stations": 315
+    },
+    {
+      "year": 2012,
+      "active_stations": 337
+    },
+    {
+      "year": 2013,
+      "active_stations": 425
+    },
+    {
+      "year": 2014,
+      "active_stations": 477
+    },
+    {
+      "year": 2015,
+      "active_stations": 492
+    },
+    {
+      "year": 2016,
+      "active_stations": 500
+    },
+    {
+      "year": 2017,
+      "active_stations": 502
+    },
+    {
+      "year": 2018,
+      "active_stations": 507
+    },
+    {
+      "year": 2019,
+      "active_stations": 523
+    },
+    {
+      "year": 2020,
+      "active_stations": 538
+    },
+    {
+      "year": 2021,
+      "active_stations": 532
+    },
+    {
+      "year": 2022,
+      "active_stations": 527
+    },
+    {
+      "year": 2023,
+      "active_stations": 522
+    },
+    {
+      "year": 2024,
+      "active_stations": 521
+    },
+    {
+      "year": 2025,
+      "active_stations": 512
+    }
   ]
 }
