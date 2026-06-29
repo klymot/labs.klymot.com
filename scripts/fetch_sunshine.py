@@ -27,7 +27,7 @@ from pathlib import Path
 KLYMOT_INDEX_URL = "https://www.klymot.com/data/index.json"
 OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT = REPO_ROOT / "docs" / "sunshine-temperature" / "data" / "sunshine-qc.json"
+DEFAULT_OUTPUT = REPO_ROOT / "public" / "sunshine-temperature" / "data" / "sunshine-qc.json"
 
 DEFAULT_LOCATIONS = [
     {

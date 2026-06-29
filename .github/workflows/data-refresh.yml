@@ -1,0 +1,46 @@
+name: Refresh Data
+
+on:
+  schedule:
+    # Mondays at 04:00 UTC — outside business hours, well after Open-Meteo's daily update window.
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    name: Fetch & commit updated data
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Fetch sunshine data
+        run: python scripts/fetch_sunshine.py
+
+      - name: Rebuild docs
+        run: npm run build
+
+      - name: Commit if anything changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add public/sunshine-temperature/data/ docs/sunshine-temperature/data/
+          if git diff --cached --quiet; then
+            echo "Data unchanged — nothing to commit"
+          else
+            git commit -m 'chore: refresh sunshine data'
+            git push
+          fi

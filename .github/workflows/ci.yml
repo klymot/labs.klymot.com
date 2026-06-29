@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  js:
+    name: JS build & verify docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run JS tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify docs/ matches committed output
+        run: |
+          # Fail if any tracked file in docs/ differs from the build output.
+          git diff --exit-code -- docs/
+          # Fail if the build produced files that were never committed.
+          new_files=$(git ls-files --others --exclude-standard -- docs/)
+          if [ -n "$new_files" ]; then
+            printf 'New uncommitted files in docs/ — run npm run build and commit the result:\n%s\n' "$new_files"
+            exit 1
+          fi
+
+  python:
+    name: Python tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dev dependencies
+        run: pip install pytest
+
+      - name: Run Python tests
+        run: pytest
