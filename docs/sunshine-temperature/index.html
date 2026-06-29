@@ -287,16 +287,14 @@
 
     async function selectStation(key) {
       if (key === currentStation) { deselectStation(); return; }
-      currentStation    = key;
-      currentResolution = null;
-      currentDataType   = null;
-      currentComparison = null;
+      currentStation = key;
       resetTimeWindow();
       renderStationCards();
       updateStationInfo();
       revealToCurrentState();
       pushStateToUrl();
       await ensureCurrentTemperatureLoaded();
+      if (currentResolution && currentDataType && currentComparison) updateAllVisuals();
     }
 
     // ── Blocking choice constants ──────────────────────────────────
