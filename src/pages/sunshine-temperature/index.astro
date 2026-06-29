@@ -648,31 +648,59 @@ import '../../styles/theme.css';
       </div>
     </div>
 
-    <!-- ── Section 1: What is a pyranometer? ─────────────────────── -->
+    <!-- ── Section 1: Measuring solar radiation ─────────────────── -->
     <section class="lab-section" id="pyranometer" aria-labelledby="pyranometer-heading">
       <div class="container">
         <div class="prose">
-          <h2 id="pyranometer-heading">What is a pyranometer?</h2>
-          <p>A pyranometer measures <strong>global horizontal irradiance (GHI)</strong> — the total downwelling shortwave solar radiation arriving at Earth's surface from all directions (direct sunlight plus diffuse skylight). Instantaneous readings are in watts per square metre (W/m²); for climate work we sum these into monthly totals in megajoules per square metre (MJ/m²).</p>
-          <p>Inside the instrument, a black thermopile absorber disk sits under one or two precision glass domes. The domes transmit solar wavelengths while blocking long-wave thermal emission and shielding the sensor from wind and rain. The thermopile converts the temperature difference between the hot absorber and the cooler instrument body into a millivolt signal proportional to irradiance. A desiccant cartridge keeps the dome interior dry so condensation never distorts the reading.</p>
-          <p>The shortwave radiation values shown here are monthly totals of <strong>global horizontal irradiance (MJ/m²)</strong> — the same physical quantity a pyranometer measures at these stations.</p>
+          <h2 id="pyranometer-heading">Measuring solar radiation</h2>
+
+          <div class="diagram-wrap">
+            <img
+              src="/sunshine-temperature/pyranometer-diagram.svg"
+              alt="Cross-section diagram of a thermopile pyranometer showing outer and inner glass domes, thermopile absorber disk, desiccant cartridge, instrument body, and voltage output"
+              class="pyranometer-diagram"
+              width="480"
+              height="320"
+              loading="lazy"
+            />
+          </div>
+
+          <p>A <strong>pyranometer</strong> measures the total solar energy arriving at the Earth's surface from all directions — a quantity called <strong>global horizontal irradiance (GHI)</strong> — by letting sunlight heat a black absorber disk under a glass dome and reading the resulting voltage.</p>
+
           <details class="expander">
-            <summary>How does a thermopile convert light into voltage?</summary>
+            <summary>What exactly is global horizontal irradiance?</summary>
             <div class="expander-body">
-              <p>A thermopile is a series of thermocouple junctions — pairs of two dissimilar metals joined at two points. When one junction (the "hot" side, on the absorber) is at a different temperature from the other (the "cold" side, on the instrument body), a small voltage appears across the pair. Stack many such junctions in series and the voltages add up to a measurable signal. In a pyranometer, absorbed solar radiation heats the black disk; the voltage the thermopile produces is calibrated against a reference standard so the reading can be expressed directly in W/m².</p>
+              <p>GHI is the sum of direct sunlight and diffuse skylight falling on a flat, horizontal surface. It is measured in watts per square metre (W/m²) at any instant, and accumulated into megajoules per square metre (MJ/m²) over a day or month. It is the single most useful quantity for characterising how much solar energy a location receives.</p>
             </div>
           </details>
-        </div>
 
-        <div class="diagram-wrap">
-          <img
-            src="/sunshine-temperature/pyranometer-diagram.svg"
-            alt="Cross-section diagram of a thermopile pyranometer showing outer and inner glass domes, thermopile absorber disk, desiccant cartridge, instrument body, and voltage output"
-            class="pyranometer-diagram"
-            width="480"
-            height="320"
-            loading="lazy"
-          />
+          <details class="expander">
+            <summary>Why two glass domes?</summary>
+            <div class="expander-body">
+              <p>The inner dome blocks long-wave thermal radiation emitted by the outer dome itself, so only shortwave solar radiation reaches the absorber. The outer dome shields the inner dome from wind, rain and direct convective cooling. Together they make the instrument's response depend almost entirely on incoming sunlight rather than on wind speed or ambient temperature.</p>
+            </div>
+          </details>
+
+          <details class="expander">
+            <summary>How does the thermopile work?</summary>
+            <div class="expander-body">
+              <p>A thermopile is a stack of thermocouple junctions — pairs of dissimilar metals that generate a small voltage whenever the two junctions are at different temperatures. The black absorber disk heats up in sunlight while the instrument body stays cooler; the temperature difference drives a voltage that is calibrated against a reference standard and expressed directly in W/m².</p>
+            </div>
+          </details>
+
+          <details class="expander">
+            <summary>What is the desiccant for?</summary>
+            <div class="expander-body">
+              <p>Moisture inside the sealed dome space would condense on the inner surface and scatter or absorb some of the incoming light, creating a reading error. A small desiccant cartridge — visible as the ribbed cylinder on the side of the instrument body — absorbs water vapour to keep the dome interior dry.</p>
+            </div>
+          </details>
+
+          <details class="expander">
+            <summary>What units are used here?</summary>
+            <div class="expander-body">
+              <p>Instantaneous readings are in W/m². This lab shows <strong>monthly totals in MJ/m²</strong> (megajoules per square metre), which are obtained by integrating the instantaneous readings over each day and summing across the month. 1 MJ/m² ≈ 0.278 kWh/m².</p>
+            </div>
+          </details>
         </div>
       </div>
     </section>
