@@ -1,0 +1,6253 @@
+{
+  "key": "VAL",
+  "name": "Valentia Observatory, Ireland",
+  "lat": 51.9394,
+  "lon": -10.2219,
+  "source": "Open-Meteo Historical Weather API (ERA5 reanalysis)",
+  "generated_at": "2026-06-29T09:50:49+00:00",
+  "start_date": "1940-01-01",
+  "end_date": "2026-06-28",
+  "temperature_station": {
+    "id": "EI000003953",
+    "name": "VALENTIA OBSERVATORY",
+    "lat": 51.9394,
+    "lon": -10.2219,
+    "elevation_m": 9.0,
+    "first_year": 1869,
+    "last_year": 2026,
+    "distance_km": 0.0
+  },
+  "units": {
+    "shortwave_mj_m2": "monthly sum of daily shortwave_radiation_sum (MJ/m\u00b2); ERA5 downwelling shortwave radiation at the surface \u2014 equivalent to global horizontal irradiance as measured by a pyranometer"
+  },
+  "monthly": [
+    {
+      "year": 1940,
+      "month": 1,
+      "shortwave_mj_m2": 89.56,
+      "days": 30
+    },
+    {
+      "year": 1940,
+      "month": 2,
+      "shortwave_mj_m2": 142.49,
+      "days": 29
+    },
+    {
+      "year": 1940,
+      "month": 3,
+      "shortwave_mj_m2": 318.09,
+      "days": 31
+    },
+    {
+      "year": 1940,
+      "month": 4,
+      "shortwave_mj_m2": 410.17,
+      "days": 30
+    },
+    {
+      "year": 1940,
+      "month": 5,
+      "shortwave_mj_m2": 680.23,
+      "days": 31
+    },
+    {
+      "year": 1940,
+      "month": 6,
+      "shortwave_mj_m2": 702.08,
+      "days": 30
+    },
+    {
+      "year": 1940,
+      "month": 7,
+      "shortwave_mj_m2": 594.8,
+      "days": 31
+    },
+    {
+      "year": 1940,
+      "month": 8,
+      "shortwave_mj_m2": 527.35,
+      "days": 31
+    },
+    {
+      "year": 1940,
+      "month": 9,
+      "shortwave_mj_m2": 337.2,
+      "days": 30
+    },
+    {
+      "year": 1940,
+      "month": 10,
+      "shortwave_mj_m2": 177.93,
+      "days": 31
+    },
+    {
+      "year": 1940,
+      "month": 11,
+      "shortwave_mj_m2": 118.75,
+      "days": 30
+    },
+    {
+      "year": 1940,
+      "month": 12,
+      "shortwave_mj_m2": 56.55,
+      "days": 31
+    },
+    {
+      "year": 1941,
+      "month": 1,
+      "shortwave_mj_m2": 104.23,
+      "days": 31
+    },
+    {
+      "year": 1941,
+      "month": 2,
+      "shortwave_mj_m2": 153.15,
+      "days": 28
+    },
+    {
+      "year": 1941,
+      "month": 3,
+      "shortwave_mj_m2": 294.98,
+      "days": 31
+    },
+    {
+      "year": 1941,
+      "month": 4,
+      "shortwave_mj_m2": 424.18,
+      "days": 30
+    },
+    {
+      "year": 1941,
+      "month": 5,
+      "shortwave_mj_m2": 587.64,
+      "days": 31
+    },
+    {
+      "year": 1941,
+      "month": 6,
+      "shortwave_mj_m2": 590.12,
+      "days": 30
+    },
+    {
+      "year": 1941,
+      "month": 7,
+      "shortwave_mj_m2": 612.56,
+      "days": 31
+    },
+    {
+      "year": 1941,
+      "month": 8,
+      "shortwave_mj_m2": 443.95,
+      "days": 31
+    },
+    {
+      "year": 1941,
+      "month": 9,
+      "shortwave_mj_m2": 395.13,
+      "days": 30
+    },
+    {
+      "year": 1941,
+      "month": 10,
+      "shortwave_mj_m2": 198.88,
+      "days": 31
+    },
+    {
+      "year": 1941,
+      "month": 11,
+      "shortwave_mj_m2": 117.27,
+      "days": 30
+    },
+    {
+      "year": 1941,
+      "month": 12,
+      "shortwave_mj_m2": 82.85,
+      "days": 31
+    },
+    {
+      "year": 1942,
+      "month": 1,
+      "shortwave_mj_m2": 94.25,
+      "days": 31
+    },
+    {
+      "year": 1942,
+      "month": 2,
+      "shortwave_mj_m2": 167.44,
+      "days": 28
+    },
+    {
+      "year": 1942,
+      "month": 3,
+      "shortwave_mj_m2": 296.03,
+      "days": 31
+    },
+    {
+      "year": 1942,
+      "month": 4,
+      "shortwave_mj_m2": 475.86,
+      "days": 30
+    },
+    {
+      "year": 1942,
+      "month": 5,
+      "shortwave_mj_m2": 557.01,
+      "days": 31
+    },
+    {
+      "year": 1942,
+      "month": 6,
+      "shortwave_mj_m2": 685.78,
+      "days": 30
+    },
+    {
+      "year": 1942,
+      "month": 7,
+      "shortwave_mj_m2": 577.61,
+      "days": 31
+    },
+    {
+      "year": 1942,
+      "month": 8,
+      "shortwave_mj_m2": 451.16,
+      "days": 31
+    },
+    {
+      "year": 1942,
+      "month": 9,
+      "shortwave_mj_m2": 346.51,
+      "days": 30
+    },
+    {
+      "year": 1942,
+      "month": 10,
+      "shortwave_mj_m2": 209.84,
+      "days": 31
+    },
+    {
+      "year": 1942,
+      "month": 11,
+      "shortwave_mj_m2": 135.46,
+      "days": 30
+    },
+    {
+      "year": 1942,
+      "month": 12,
+      "shortwave_mj_m2": 66.66,
+      "days": 31
+    },
+    {
+      "year": 1943,
+      "month": 1,
+      "shortwave_mj_m2": 93.09,
+      "days": 31
+    },
+    {
+      "year": 1943,
+      "month": 2,
+      "shortwave_mj_m2": 142.81,
+      "days": 28
+    },
+    {
+      "year": 1943,
+      "month": 3,
+      "shortwave_mj_m2": 300.92,
+      "days": 31
+    },
+    {
+      "year": 1943,
+      "month": 4,
+      "shortwave_mj_m2": 429.8,
+      "days": 30
+    },
+    {
+      "year": 1943,
+      "month": 5,
+      "shortwave_mj_m2": 590.01,
+      "days": 31
+    },
+    {
+      "year": 1943,
+      "month": 6,
+      "shortwave_mj_m2": 563.98,
+      "days": 30
+    },
+    {
+      "year": 1943,
+      "month": 7,
+      "shortwave_mj_m2": 611.17,
+      "days": 31
+    },
+    {
+      "year": 1943,
+      "month": 8,
+      "shortwave_mj_m2": 414.96,
+      "days": 31
+    },
+    {
+      "year": 1943,
+      "month": 9,
+      "shortwave_mj_m2": 306.51,
+      "days": 30
+    },
+    {
+      "year": 1943,
+      "month": 10,
+      "shortwave_mj_m2": 178.75,
+      "days": 31
+    },
+    {
+      "year": 1943,
+      "month": 11,
+      "shortwave_mj_m2": 102.23,
+      "days": 30
+    },
+    {
+      "year": 1943,
+      "month": 12,
+      "shortwave_mj_m2": 82.83,
+      "days": 31
+    },
+    {
+      "year": 1944,
+      "month": 1,
+      "shortwave_mj_m2": 78.1,
+      "days": 31
+    },
+    {
+      "year": 1944,
+      "month": 2,
+      "shortwave_mj_m2": 166.99,
+      "days": 29
+    },
+    {
+      "year": 1944,
+      "month": 3,
+      "shortwave_mj_m2": 363.73,
+      "days": 31
+    },
+    {
+      "year": 1944,
+      "month": 4,
+      "shortwave_mj_m2": 481.52,
+      "days": 30
+    },
+    {
+      "year": 1944,
+      "month": 5,
+      "shortwave_mj_m2": 653.82,
+      "days": 31
+    },
+    {
+      "year": 1944,
+      "month": 6,
+      "shortwave_mj_m2": 629.17,
+      "days": 30
+    },
+    {
+      "year": 1944,
+      "month": 7,
+      "shortwave_mj_m2": 516.01,
+      "days": 31
+    },
+    {
+      "year": 1944,
+      "month": 8,
+      "shortwave_mj_m2": 457.64,
+      "days": 31
+    },
+    {
+      "year": 1944,
+      "month": 9,
+      "shortwave_mj_m2": 340.79,
+      "days": 30
+    },
+    {
+      "year": 1944,
+      "month": 10,
+      "shortwave_mj_m2": 201.77,
+      "days": 31
+    },
+    {
+      "year": 1944,
+      "month": 11,
+      "shortwave_mj_m2": 96.15,
+      "days": 30
+    },
+    {
+      "year": 1944,
+      "month": 12,
+      "shortwave_mj_m2": 73.81,
+      "days": 31
+    },
+    {
+      "year": 1945,
+      "month": 1,
+      "shortwave_mj_m2": 102.51,
+      "days": 31
+    },
+    {
+      "year": 1945,
+      "month": 2,
+      "shortwave_mj_m2": 133.34,
+      "days": 28
+    },
+    {
+      "year": 1945,
+      "month": 3,
+      "shortwave_mj_m2": 294.29,
+      "days": 31
+    },
+    {
+      "year": 1945,
+      "month": 4,
+      "shortwave_mj_m2": 474.87,
+      "days": 30
+    },
+    {
+      "year": 1945,
+      "month": 5,
+      "shortwave_mj_m2": 568.04,
+      "days": 31
+    },
+    {
+      "year": 1945,
+      "month": 6,
+      "shortwave_mj_m2": 569.69,
+      "days": 30
+    },
+    {
+      "year": 1945,
+      "month": 7,
+      "shortwave_mj_m2": 546.02,
+      "days": 31
+    },
+    {
+      "year": 1945,
+      "month": 8,
+      "shortwave_mj_m2": 443.25,
+      "days": 31
+    },
+    {
+      "year": 1945,
+      "month": 9,
+      "shortwave_mj_m2": 316.24,
+      "days": 30
+    },
+    {
+      "year": 1945,
+      "month": 10,
+      "shortwave_mj_m2": 230.59,
+      "days": 31
+    },
+    {
+      "year": 1945,
+      "month": 11,
+      "shortwave_mj_m2": 104.54,
+      "days": 30
+    },
+    {
+      "year": 1945,
+      "month": 12,
+      "shortwave_mj_m2": 66.34,
+      "days": 31
+    },
+    {
+      "year": 1946,
+      "month": 1,
+      "shortwave_mj_m2": 85.03,
+      "days": 31
+    },
+    {
+      "year": 1946,
+      "month": 2,
+      "shortwave_mj_m2": 159.1,
+      "days": 28
+    },
+    {
+      "year": 1946,
+      "month": 3,
+      "shortwave_mj_m2": 311.84,
+      "days": 31
+    },
+    {
+      "year": 1946,
+      "month": 4,
+      "shortwave_mj_m2": 464.27,
+      "days": 30
+    },
+    {
+      "year": 1946,
+      "month": 5,
+      "shortwave_mj_m2": 608.89,
+      "days": 31
+    },
+    {
+      "year": 1946,
+      "month": 6,
+      "shortwave_mj_m2": 584.5,
+      "days": 30
+    },
+    {
+      "year": 1946,
+      "month": 7,
+      "shortwave_mj_m2": 589.72,
+      "days": 31
+    },
+    {
+      "year": 1946,
+      "month": 8,
+      "shortwave_mj_m2": 475.13,
+      "days": 31
+    },
+    {
+      "year": 1946,
+      "month": 9,
+      "shortwave_mj_m2": 293.47,
+      "days": 30
+    },
+    {
+      "year": 1946,
+      "month": 10,
+      "shortwave_mj_m2": 210.46,
+      "days": 31
+    },
+    {
+      "year": 1946,
+      "month": 11,
+      "shortwave_mj_m2": 110.49,
+      "days": 30
+    },
+    {
+      "year": 1946,
+      "month": 12,
+      "shortwave_mj_m2": 76.43,
+      "days": 31
+    },
+    {
+      "year": 1947,
+      "month": 1,
+      "shortwave_mj_m2": 100.22,
+      "days": 31
+    },
+    {
+      "year": 1947,
+      "month": 2,
+      "shortwave_mj_m2": 168.87,
+      "days": 28
+    },
+    {
+      "year": 1947,
+      "month": 3,
+      "shortwave_mj_m2": 290.39,
+      "days": 31
+    },
+    {
+      "year": 1947,
+      "month": 4,
+      "shortwave_mj_m2": 433.33,
+      "days": 30
+    },
+    {
+      "year": 1947,
+      "month": 5,
+      "shortwave_mj_m2": 545.18,
+      "days": 31
+    },
+    {
+      "year": 1947,
+      "month": 6,
+      "shortwave_mj_m2": 539.67,
+      "days": 30
+    },
+    {
+      "year": 1947,
+      "month": 7,
+      "shortwave_mj_m2": 484.96,
+      "days": 31
+    },
+    {
+      "year": 1947,
+      "month": 8,
+      "shortwave_mj_m2": 591.84,
+      "days": 31
+    },
+    {
+      "year": 1947,
+      "month": 9,
+      "shortwave_mj_m2": 304.97,
+      "days": 30
+    },
+    {
+      "year": 1947,
+      "month": 10,
+      "shortwave_mj_m2": 216.6,
+      "days": 31
+    },
+    {
+      "year": 1947,
+      "month": 11,
+      "shortwave_mj_m2": 91.14,
+      "days": 30
+    },
+    {
+      "year": 1947,
+      "month": 12,
+      "shortwave_mj_m2": 75.95,
+      "days": 31
+    },
+    {
+      "year": 1948,
+      "month": 1,
+      "shortwave_mj_m2": 86.03,
+      "days": 31
+    },
+    {
+      "year": 1948,
+      "month": 2,
+      "shortwave_mj_m2": 148.62,
+      "days": 29
+    },
+    {
+      "year": 1948,
+      "month": 3,
+      "shortwave_mj_m2": 310.41,
+      "days": 31
+    },
+    {
+      "year": 1948,
+      "month": 4,
+      "shortwave_mj_m2": 472.08,
+      "days": 30
+    },
+    {
+      "year": 1948,
+      "month": 5,
+      "shortwave_mj_m2": 626.78,
+      "days": 31
+    },
+    {
+      "year": 1948,
+      "month": 6,
+      "shortwave_mj_m2": 526.92,
+      "days": 30
+    },
+    {
+      "year": 1948,
+      "month": 7,
+      "shortwave_mj_m2": 535.0,
+      "days": 31
+    },
+    {
+      "year": 1948,
+      "month": 8,
+      "shortwave_mj_m2": 480.93,
+      "days": 31
+    },
+    {
+      "year": 1948,
+      "month": 9,
+      "shortwave_mj_m2": 302.89,
+      "days": 30
+    },
+    {
+      "year": 1948,
+      "month": 10,
+      "shortwave_mj_m2": 169.27,
+      "days": 31
+    },
+    {
+      "year": 1948,
+      "month": 11,
+      "shortwave_mj_m2": 92.34,
+      "days": 30
+    },
+    {
+      "year": 1948,
+      "month": 12,
+      "shortwave_mj_m2": 66.8,
+      "days": 31
+    },
+    {
+      "year": 1949,
+      "month": 1,
+      "shortwave_mj_m2": 73.52,
+      "days": 31
+    },
+    {
+      "year": 1949,
+      "month": 2,
+      "shortwave_mj_m2": 133.0,
+      "days": 28
+    },
+    {
+      "year": 1949,
+      "month": 3,
+      "shortwave_mj_m2": 272.49,
+      "days": 31
+    },
+    {
+      "year": 1949,
+      "month": 4,
+      "shortwave_mj_m2": 389.46,
+      "days": 30
+    },
+    {
+      "year": 1949,
+      "month": 5,
+      "shortwave_mj_m2": 616.93,
+      "days": 31
+    },
+    {
+      "year": 1949,
+      "month": 6,
+      "shortwave_mj_m2": 683.71,
+      "days": 30
+    },
+    {
+      "year": 1949,
+      "month": 7,
+      "shortwave_mj_m2": 575.41,
+      "days": 31
+    },
+    {
+      "year": 1949,
+      "month": 8,
+      "shortwave_mj_m2": 488.13,
+      "days": 31
+    },
+    {
+      "year": 1949,
+      "month": 9,
+      "shortwave_mj_m2": 338.74,
+      "days": 30
+    },
+    {
+      "year": 1949,
+      "month": 10,
+      "shortwave_mj_m2": 192.49,
+      "days": 31
+    },
+    {
+      "year": 1949,
+      "month": 11,
+      "shortwave_mj_m2": 114.23,
+      "days": 30
+    },
+    {
+      "year": 1949,
+      "month": 12,
+      "shortwave_mj_m2": 64.88,
+      "days": 31
+    },
+    {
+      "year": 1950,
+      "month": 1,
+      "shortwave_mj_m2": 86.12,
+      "days": 31
+    },
+    {
+      "year": 1950,
+      "month": 2,
+      "shortwave_mj_m2": 139.43,
+      "days": 28
+    },
+    {
+      "year": 1950,
+      "month": 3,
+      "shortwave_mj_m2": 307.81,
+      "days": 31
+    },
+    {
+      "year": 1950,
+      "month": 4,
+      "shortwave_mj_m2": 441.63,
+      "days": 30
+    },
+    {
+      "year": 1950,
+      "month": 5,
+      "shortwave_mj_m2": 652.21,
+      "days": 31
+    },
+    {
+      "year": 1950,
+      "month": 6,
+      "shortwave_mj_m2": 617.8,
+      "days": 30
+    },
+    {
+      "year": 1950,
+      "month": 7,
+      "shortwave_mj_m2": 573.7,
+      "days": 31
+    },
+    {
+      "year": 1950,
+      "month": 8,
+      "shortwave_mj_m2": 471.37,
+      "days": 31
+    },
+    {
+      "year": 1950,
+      "month": 9,
+      "shortwave_mj_m2": 270.13,
+      "days": 30
+    },
+    {
+      "year": 1950,
+      "month": 10,
+      "shortwave_mj_m2": 194.51,
+      "days": 31
+    },
+    {
+      "year": 1950,
+      "month": 11,
+      "shortwave_mj_m2": 110.63,
+      "days": 30
+    },
+    {
+      "year": 1950,
+      "month": 12,
+      "shortwave_mj_m2": 78.63,
+      "days": 31
+    },
+    {
+      "year": 1951,
+      "month": 1,
+      "shortwave_mj_m2": 81.5,
+      "days": 31
+    },
+    {
+      "year": 1951,
+      "month": 2,
+      "shortwave_mj_m2": 171.34,
+      "days": 28
+    },
+    {
+      "year": 1951,
+      "month": 3,
+      "shortwave_mj_m2": 294.49,
+      "days": 31
+    },
+    {
+      "year": 1951,
+      "month": 4,
+      "shortwave_mj_m2": 496.57,
+      "days": 30
+    },
+    {
+      "year": 1951,
+      "month": 5,
+      "shortwave_mj_m2": 614.23,
+      "days": 31
+    },
+    {
+      "year": 1951,
+      "month": 6,
+      "shortwave_mj_m2": 632.78,
+      "days": 30
+    },
+    {
+      "year": 1951,
+      "month": 7,
+      "shortwave_mj_m2": 626.92,
+      "days": 31
+    },
+    {
+      "year": 1951,
+      "month": 8,
+      "shortwave_mj_m2": 455.03,
+      "days": 31
+    },
+    {
+      "year": 1951,
+      "month": 9,
+      "shortwave_mj_m2": 284.53,
+      "days": 30
+    },
+    {
+      "year": 1951,
+      "month": 10,
+      "shortwave_mj_m2": 182.22,
+      "days": 31
+    },
+    {
+      "year": 1951,
+      "month": 11,
+      "shortwave_mj_m2": 96.7,
+      "days": 30
+    },
+    {
+      "year": 1951,
+      "month": 12,
+      "shortwave_mj_m2": 64.48,
+      "days": 31
+    },
+    {
+      "year": 1952,
+      "month": 1,
+      "shortwave_mj_m2": 88.81,
+      "days": 31
+    },
+    {
+      "year": 1952,
+      "month": 2,
+      "shortwave_mj_m2": 150.72,
+      "days": 29
+    },
+    {
+      "year": 1952,
+      "month": 3,
+      "shortwave_mj_m2": 286.48,
+      "days": 31
+    },
+    {
+      "year": 1952,
+      "month": 4,
+      "shortwave_mj_m2": 452.96,
+      "days": 30
+    },
+    {
+      "year": 1952,
+      "month": 5,
+      "shortwave_mj_m2": 633.84,
+      "days": 31
+    },
+    {
+      "year": 1952,
+      "month": 6,
+      "shortwave_mj_m2": 571.69,
+      "days": 30
+    },
+    {
+      "year": 1952,
+      "month": 7,
+      "shortwave_mj_m2": 581.41,
+      "days": 31
+    },
+    {
+      "year": 1952,
+      "month": 8,
+      "shortwave_mj_m2": 488.22,
+      "days": 31
+    },
+    {
+      "year": 1952,
+      "month": 9,
+      "shortwave_mj_m2": 357.54,
+      "days": 30
+    },
+    {
+      "year": 1952,
+      "month": 10,
+      "shortwave_mj_m2": 214.81,
+      "days": 31
+    },
+    {
+      "year": 1952,
+      "month": 11,
+      "shortwave_mj_m2": 97.79,
+      "days": 30
+    },
+    {
+      "year": 1952,
+      "month": 12,
+      "shortwave_mj_m2": 70.7,
+      "days": 31
+    },
+    {
+      "year": 1953,
+      "month": 1,
+      "shortwave_mj_m2": 85.65,
+      "days": 31
+    },
+    {
+      "year": 1953,
+      "month": 2,
+      "shortwave_mj_m2": 139.89,
+      "days": 28
+    },
+    {
+      "year": 1953,
+      "month": 3,
+      "shortwave_mj_m2": 336.23,
+      "days": 31
+    },
+    {
+      "year": 1953,
+      "month": 4,
+      "shortwave_mj_m2": 504.15,
+      "days": 30
+    },
+    {
+      "year": 1953,
+      "month": 5,
+      "shortwave_mj_m2": 544.91,
+      "days": 31
+    },
+    {
+      "year": 1953,
+      "month": 6,
+      "shortwave_mj_m2": 616.59,
+      "days": 30
+    },
+    {
+      "year": 1953,
+      "month": 7,
+      "shortwave_mj_m2": 595.69,
+      "days": 31
+    },
+    {
+      "year": 1953,
+      "month": 8,
+      "shortwave_mj_m2": 451.68,
+      "days": 31
+    },
+    {
+      "year": 1953,
+      "month": 9,
+      "shortwave_mj_m2": 299.73,
+      "days": 30
+    },
+    {
+      "year": 1953,
+      "month": 10,
+      "shortwave_mj_m2": 200.32,
+      "days": 31
+    },
+    {
+      "year": 1953,
+      "month": 11,
+      "shortwave_mj_m2": 102.93,
+      "days": 30
+    },
+    {
+      "year": 1953,
+      "month": 12,
+      "shortwave_mj_m2": 65.45,
+      "days": 31
+    },
+    {
+      "year": 1954,
+      "month": 1,
+      "shortwave_mj_m2": 92.27,
+      "days": 31
+    },
+    {
+      "year": 1954,
+      "month": 2,
+      "shortwave_mj_m2": 159.4,
+      "days": 28
+    },
+    {
+      "year": 1954,
+      "month": 3,
+      "shortwave_mj_m2": 283.5,
+      "days": 31
+    },
+    {
+      "year": 1954,
+      "month": 4,
+      "shortwave_mj_m2": 449.22,
+      "days": 30
+    },
+    {
+      "year": 1954,
+      "month": 5,
+      "shortwave_mj_m2": 585.66,
+      "days": 31
+    },
+    {
+      "year": 1954,
+      "month": 6,
+      "shortwave_mj_m2": 581.59,
+      "days": 30
+    },
+    {
+      "year": 1954,
+      "month": 7,
+      "shortwave_mj_m2": 500.28,
+      "days": 31
+    },
+    {
+      "year": 1954,
+      "month": 8,
+      "shortwave_mj_m2": 501.88,
+      "days": 31
+    },
+    {
+      "year": 1954,
+      "month": 9,
+      "shortwave_mj_m2": 326.2,
+      "days": 30
+    },
+    {
+      "year": 1954,
+      "month": 10,
+      "shortwave_mj_m2": 169.77,
+      "days": 31
+    },
+    {
+      "year": 1954,
+      "month": 11,
+      "shortwave_mj_m2": 101.43,
+      "days": 30
+    },
+    {
+      "year": 1954,
+      "month": 12,
+      "shortwave_mj_m2": 68.22,
+      "days": 31
+    },
+    {
+      "year": 1955,
+      "month": 1,
+      "shortwave_mj_m2": 90.44,
+      "days": 31
+    },
+    {
+      "year": 1955,
+      "month": 2,
+      "shortwave_mj_m2": 182.05,
+      "days": 28
+    },
+    {
+      "year": 1955,
+      "month": 3,
+      "shortwave_mj_m2": 383.6,
+      "days": 31
+    },
+    {
+      "year": 1955,
+      "month": 4,
+      "shortwave_mj_m2": 435.13,
+      "days": 30
+    },
+    {
+      "year": 1955,
+      "month": 5,
+      "shortwave_mj_m2": 608.34,
+      "days": 31
+    },
+    {
+      "year": 1955,
+      "month": 6,
+      "shortwave_mj_m2": 516.11,
+      "days": 30
+    },
+    {
+      "year": 1955,
+      "month": 7,
+      "shortwave_mj_m2": 747.77,
+      "days": 31
+    },
+    {
+      "year": 1955,
+      "month": 8,
+      "shortwave_mj_m2": 537.3,
+      "days": 31
+    },
+    {
+      "year": 1955,
+      "month": 9,
+      "shortwave_mj_m2": 342.48,
+      "days": 30
+    },
+    {
+      "year": 1955,
+      "month": 10,
+      "shortwave_mj_m2": 217.42,
+      "days": 31
+    },
+    {
+      "year": 1955,
+      "month": 11,
+      "shortwave_mj_m2": 110.69,
+      "days": 30
+    },
+    {
+      "year": 1955,
+      "month": 12,
+      "shortwave_mj_m2": 68.35,
+      "days": 31
+    },
+    {
+      "year": 1956,
+      "month": 1,
+      "shortwave_mj_m2": 89.39,
+      "days": 31
+    },
+    {
+      "year": 1956,
+      "month": 2,
+      "shortwave_mj_m2": 191.0,
+      "days": 29
+    },
+    {
+      "year": 1956,
+      "month": 3,
+      "shortwave_mj_m2": 318.49,
+      "days": 31
+    },
+    {
+      "year": 1956,
+      "month": 4,
+      "shortwave_mj_m2": 471.4,
+      "days": 30
+    },
+    {
+      "year": 1956,
+      "month": 5,
+      "shortwave_mj_m2": 590.67,
+      "days": 31
+    },
+    {
+      "year": 1956,
+      "month": 6,
+      "shortwave_mj_m2": 596.02,
+      "days": 30
+    },
+    {
+      "year": 1956,
+      "month": 7,
+      "shortwave_mj_m2": 595.65,
+      "days": 31
+    },
+    {
+      "year": 1956,
+      "month": 8,
+      "shortwave_mj_m2": 479.75,
+      "days": 31
+    },
+    {
+      "year": 1956,
+      "month": 9,
+      "shortwave_mj_m2": 298.54,
+      "days": 30
+    },
+    {
+      "year": 1956,
+      "month": 10,
+      "shortwave_mj_m2": 221.03,
+      "days": 31
+    },
+    {
+      "year": 1956,
+      "month": 11,
+      "shortwave_mj_m2": 111.6,
+      "days": 30
+    },
+    {
+      "year": 1956,
+      "month": 12,
+      "shortwave_mj_m2": 64.67,
+      "days": 31
+    },
+    {
+      "year": 1957,
+      "month": 1,
+      "shortwave_mj_m2": 95.79,
+      "days": 31
+    },
+    {
+      "year": 1957,
+      "month": 2,
+      "shortwave_mj_m2": 175.92,
+      "days": 28
+    },
+    {
+      "year": 1957,
+      "month": 3,
+      "shortwave_mj_m2": 271.02,
+      "days": 31
+    },
+    {
+      "year": 1957,
+      "month": 4,
+      "shortwave_mj_m2": 517.08,
+      "days": 30
+    },
+    {
+      "year": 1957,
+      "month": 5,
+      "shortwave_mj_m2": 638.28,
+      "days": 31
+    },
+    {
+      "year": 1957,
+      "month": 6,
+      "shortwave_mj_m2": 698.07,
+      "days": 30
+    },
+    {
+      "year": 1957,
+      "month": 7,
+      "shortwave_mj_m2": 565.52,
+      "days": 31
+    },
+    {
+      "year": 1957,
+      "month": 8,
+      "shortwave_mj_m2": 445.35,
+      "days": 31
+    },
+    {
+      "year": 1957,
+      "month": 9,
+      "shortwave_mj_m2": 300.12,
+      "days": 30
+    },
+    {
+      "year": 1957,
+      "month": 10,
+      "shortwave_mj_m2": 183.73,
+      "days": 31
+    },
+    {
+      "year": 1957,
+      "month": 11,
+      "shortwave_mj_m2": 119.4,
+      "days": 30
+    },
+    {
+      "year": 1957,
+      "month": 12,
+      "shortwave_mj_m2": 74.82,
+      "days": 31
+    },
+    {
+      "year": 1958,
+      "month": 1,
+      "shortwave_mj_m2": 90.1,
+      "days": 31
+    },
+    {
+      "year": 1958,
+      "month": 2,
+      "shortwave_mj_m2": 141.72,
+      "days": 28
+    },
+    {
+      "year": 1958,
+      "month": 3,
+      "shortwave_mj_m2": 295.78,
+      "days": 31
+    },
+    {
+      "year": 1958,
+      "month": 4,
+      "shortwave_mj_m2": 455.53,
+      "days": 30
+    },
+    {
+      "year": 1958,
+      "month": 5,
+      "shortwave_mj_m2": 567.25,
+      "days": 31
+    },
+    {
+      "year": 1958,
+      "month": 6,
+      "shortwave_mj_m2": 585.88,
+      "days": 30
+    },
+    {
+      "year": 1958,
+      "month": 7,
+      "shortwave_mj_m2": 580.74,
+      "days": 31
+    },
+    {
+      "year": 1958,
+      "month": 8,
+      "shortwave_mj_m2": 433.38,
+      "days": 31
+    },
+    {
+      "year": 1958,
+      "month": 9,
+      "shortwave_mj_m2": 313.3,
+      "days": 30
+    },
+    {
+      "year": 1958,
+      "month": 10,
+      "shortwave_mj_m2": 196.32,
+      "days": 31
+    },
+    {
+      "year": 1958,
+      "month": 11,
+      "shortwave_mj_m2": 100.0,
+      "days": 30
+    },
+    {
+      "year": 1958,
+      "month": 12,
+      "shortwave_mj_m2": 75.37,
+      "days": 31
+    },
+    {
+      "year": 1959,
+      "month": 1,
+      "shortwave_mj_m2": 89.23,
+      "days": 31
+    },
+    {
+      "year": 1959,
+      "month": 2,
+      "shortwave_mj_m2": 140.84,
+      "days": 28
+    },
+    {
+      "year": 1959,
+      "month": 3,
+      "shortwave_mj_m2": 305.97,
+      "days": 31
+    },
+    {
+      "year": 1959,
+      "month": 4,
+      "shortwave_mj_m2": 437.1,
+      "days": 30
+    },
+    {
+      "year": 1959,
+      "month": 5,
+      "shortwave_mj_m2": 589.9,
+      "days": 31
+    },
+    {
+      "year": 1959,
+      "month": 6,
+      "shortwave_mj_m2": 660.8,
+      "days": 30
+    },
+    {
+      "year": 1959,
+      "month": 7,
+      "shortwave_mj_m2": 603.66,
+      "days": 31
+    },
+    {
+      "year": 1959,
+      "month": 8,
+      "shortwave_mj_m2": 515.07,
+      "days": 31
+    },
+    {
+      "year": 1959,
+      "month": 9,
+      "shortwave_mj_m2": 405.9,
+      "days": 30
+    },
+    {
+      "year": 1959,
+      "month": 10,
+      "shortwave_mj_m2": 218.88,
+      "days": 31
+    },
+    {
+      "year": 1959,
+      "month": 11,
+      "shortwave_mj_m2": 111.61,
+      "days": 30
+    },
+    {
+      "year": 1959,
+      "month": 12,
+      "shortwave_mj_m2": 66.32,
+      "days": 31
+    },
+    {
+      "year": 1960,
+      "month": 1,
+      "shortwave_mj_m2": 87.65,
+      "days": 31
+    },
+    {
+      "year": 1960,
+      "month": 2,
+      "shortwave_mj_m2": 178.66,
+      "days": 29
+    },
+    {
+      "year": 1960,
+      "month": 3,
+      "shortwave_mj_m2": 306.56,
+      "days": 31
+    },
+    {
+      "year": 1960,
+      "month": 4,
+      "shortwave_mj_m2": 429.38,
+      "days": 30
+    },
+    {
+      "year": 1960,
+      "month": 5,
+      "shortwave_mj_m2": 518.99,
+      "days": 31
+    },
+    {
+      "year": 1960,
+      "month": 6,
+      "shortwave_mj_m2": 622.04,
+      "days": 30
+    },
+    {
+      "year": 1960,
+      "month": 7,
+      "shortwave_mj_m2": 537.7,
+      "days": 31
+    },
+    {
+      "year": 1960,
+      "month": 8,
+      "shortwave_mj_m2": 467.09,
+      "days": 31
+    },
+    {
+      "year": 1960,
+      "month": 9,
+      "shortwave_mj_m2": 328.88,
+      "days": 30
+    },
+    {
+      "year": 1960,
+      "month": 10,
+      "shortwave_mj_m2": 219.66,
+      "days": 31
+    },
+    {
+      "year": 1960,
+      "month": 11,
+      "shortwave_mj_m2": 110.39,
+      "days": 30
+    },
+    {
+      "year": 1960,
+      "month": 12,
+      "shortwave_mj_m2": 71.4,
+      "days": 31
+    },
+    {
+      "year": 1961,
+      "month": 1,
+      "shortwave_mj_m2": 79.98,
+      "days": 31
+    },
+    {
+      "year": 1961,
+      "month": 2,
+      "shortwave_mj_m2": 135.37,
+      "days": 28
+    },
+    {
+      "year": 1961,
+      "month": 3,
+      "shortwave_mj_m2": 316.34,
+      "days": 31
+    },
+    {
+      "year": 1961,
+      "month": 4,
+      "shortwave_mj_m2": 425.39,
+      "days": 30
+    },
+    {
+      "year": 1961,
+      "month": 5,
+      "shortwave_mj_m2": 675.76,
+      "days": 31
+    },
+    {
+      "year": 1961,
+      "month": 6,
+      "shortwave_mj_m2": 526.48,
+      "days": 30
+    },
+    {
+      "year": 1961,
+      "month": 7,
+      "shortwave_mj_m2": 501.32,
+      "days": 31
+    },
+    {
+      "year": 1961,
+      "month": 8,
+      "shortwave_mj_m2": 478.52,
+      "days": 31
+    },
+    {
+      "year": 1961,
+      "month": 9,
+      "shortwave_mj_m2": 312.88,
+      "days": 30
+    },
+    {
+      "year": 1961,
+      "month": 10,
+      "shortwave_mj_m2": 212.07,
+      "days": 31
+    },
+    {
+      "year": 1961,
+      "month": 11,
+      "shortwave_mj_m2": 117.43,
+      "days": 30
+    },
+    {
+      "year": 1961,
+      "month": 12,
+      "shortwave_mj_m2": 79.48,
+      "days": 31
+    },
+    {
+      "year": 1962,
+      "month": 1,
+      "shortwave_mj_m2": 82.59,
+      "days": 31
+    },
+    {
+      "year": 1962,
+      "month": 2,
+      "shortwave_mj_m2": 150.4,
+      "days": 28
+    },
+    {
+      "year": 1962,
+      "month": 3,
+      "shortwave_mj_m2": 318.82,
+      "days": 31
+    },
+    {
+      "year": 1962,
+      "month": 4,
+      "shortwave_mj_m2": 487.12,
+      "days": 30
+    },
+    {
+      "year": 1962,
+      "month": 5,
+      "shortwave_mj_m2": 618.38,
+      "days": 31
+    },
+    {
+      "year": 1962,
+      "month": 6,
+      "shortwave_mj_m2": 623.24,
+      "days": 30
+    },
+    {
+      "year": 1962,
+      "month": 7,
+      "shortwave_mj_m2": 544.05,
+      "days": 31
+    },
+    {
+      "year": 1962,
+      "month": 8,
+      "shortwave_mj_m2": 474.5,
+      "days": 31
+    },
+    {
+      "year": 1962,
+      "month": 9,
+      "shortwave_mj_m2": 318.21,
+      "days": 30
+    },
+    {
+      "year": 1962,
+      "month": 10,
+      "shortwave_mj_m2": 224.21,
+      "days": 31
+    },
+    {
+      "year": 1962,
+      "month": 11,
+      "shortwave_mj_m2": 110.93,
+      "days": 30
+    },
+    {
+      "year": 1962,
+      "month": 12,
+      "shortwave_mj_m2": 78.12,
+      "days": 31
+    },
+    {
+      "year": 1963,
+      "month": 1,
+      "shortwave_mj_m2": 113.4,
+      "days": 31
+    },
+    {
+      "year": 1963,
+      "month": 2,
+      "shortwave_mj_m2": 176.1,
+      "days": 28
+    },
+    {
+      "year": 1963,
+      "month": 3,
+      "shortwave_mj_m2": 279.3,
+      "days": 31
+    },
+    {
+      "year": 1963,
+      "month": 4,
+      "shortwave_mj_m2": 414.19,
+      "days": 30
+    },
+    {
+      "year": 1963,
+      "month": 5,
+      "shortwave_mj_m2": 544.19,
+      "days": 31
+    },
+    {
+      "year": 1963,
+      "month": 6,
+      "shortwave_mj_m2": 572.79,
+      "days": 30
+    },
+    {
+      "year": 1963,
+      "month": 7,
+      "shortwave_mj_m2": 563.88,
+      "days": 31
+    },
+    {
+      "year": 1963,
+      "month": 8,
+      "shortwave_mj_m2": 461.17,
+      "days": 31
+    },
+    {
+      "year": 1963,
+      "month": 9,
+      "shortwave_mj_m2": 325.42,
+      "days": 30
+    },
+    {
+      "year": 1963,
+      "month": 10,
+      "shortwave_mj_m2": 186.28,
+      "days": 31
+    },
+    {
+      "year": 1963,
+      "month": 11,
+      "shortwave_mj_m2": 115.06,
+      "days": 30
+    },
+    {
+      "year": 1963,
+      "month": 12,
+      "shortwave_mj_m2": 83.03,
+      "days": 31
+    },
+    {
+      "year": 1964,
+      "month": 1,
+      "shortwave_mj_m2": 84.4,
+      "days": 31
+    },
+    {
+      "year": 1964,
+      "month": 2,
+      "shortwave_mj_m2": 164.29,
+      "days": 29
+    },
+    {
+      "year": 1964,
+      "month": 3,
+      "shortwave_mj_m2": 282.22,
+      "days": 31
+    },
+    {
+      "year": 1964,
+      "month": 4,
+      "shortwave_mj_m2": 459.15,
+      "days": 30
+    },
+    {
+      "year": 1964,
+      "month": 5,
+      "shortwave_mj_m2": 511.93,
+      "days": 31
+    },
+    {
+      "year": 1964,
+      "month": 6,
+      "shortwave_mj_m2": 520.51,
+      "days": 30
+    },
+    {
+      "year": 1964,
+      "month": 7,
+      "shortwave_mj_m2": 538.32,
+      "days": 31
+    },
+    {
+      "year": 1964,
+      "month": 8,
+      "shortwave_mj_m2": 456.05,
+      "days": 31
+    },
+    {
+      "year": 1964,
+      "month": 9,
+      "shortwave_mj_m2": 330.47,
+      "days": 30
+    },
+    {
+      "year": 1964,
+      "month": 10,
+      "shortwave_mj_m2": 203.25,
+      "days": 31
+    },
+    {
+      "year": 1964,
+      "month": 11,
+      "shortwave_mj_m2": 112.98,
+      "days": 30
+    },
+    {
+      "year": 1964,
+      "month": 12,
+      "shortwave_mj_m2": 69.56,
+      "days": 31
+    },
+    {
+      "year": 1965,
+      "month": 1,
+      "shortwave_mj_m2": 96.09,
+      "days": 31
+    },
+    {
+      "year": 1965,
+      "month": 2,
+      "shortwave_mj_m2": 183.78,
+      "days": 28
+    },
+    {
+      "year": 1965,
+      "month": 3,
+      "shortwave_mj_m2": 327.35,
+      "days": 31
+    },
+    {
+      "year": 1965,
+      "month": 4,
+      "shortwave_mj_m2": 394.43,
+      "days": 30
+    },
+    {
+      "year": 1965,
+      "month": 5,
+      "shortwave_mj_m2": 550.75,
+      "days": 31
+    },
+    {
+      "year": 1965,
+      "month": 6,
+      "shortwave_mj_m2": 573.26,
+      "days": 30
+    },
+    {
+      "year": 1965,
+      "month": 7,
+      "shortwave_mj_m2": 592.92,
+      "days": 31
+    },
+    {
+      "year": 1965,
+      "month": 8,
+      "shortwave_mj_m2": 455.39,
+      "days": 31
+    },
+    {
+      "year": 1965,
+      "month": 9,
+      "shortwave_mj_m2": 302.82,
+      "days": 30
+    },
+    {
+      "year": 1965,
+      "month": 10,
+      "shortwave_mj_m2": 218.44,
+      "days": 31
+    },
+    {
+      "year": 1965,
+      "month": 11,
+      "shortwave_mj_m2": 111.66,
+      "days": 30
+    },
+    {
+      "year": 1965,
+      "month": 12,
+      "shortwave_mj_m2": 66.02,
+      "days": 31
+    },
+    {
+      "year": 1966,
+      "month": 1,
+      "shortwave_mj_m2": 87.21,
+      "days": 31
+    },
+    {
+      "year": 1966,
+      "month": 2,
+      "shortwave_mj_m2": 164.76,
+      "days": 28
+    },
+    {
+      "year": 1966,
+      "month": 3,
+      "shortwave_mj_m2": 310.24,
+      "days": 31
+    },
+    {
+      "year": 1966,
+      "month": 4,
+      "shortwave_mj_m2": 412.59,
+      "days": 30
+    },
+    {
+      "year": 1966,
+      "month": 5,
+      "shortwave_mj_m2": 609.3,
+      "days": 31
+    },
+    {
+      "year": 1966,
+      "month": 6,
+      "shortwave_mj_m2": 542.05,
+      "days": 30
+    },
+    {
+      "year": 1966,
+      "month": 7,
+      "shortwave_mj_m2": 563.8,
+      "days": 31
+    },
+    {
+      "year": 1966,
+      "month": 8,
+      "shortwave_mj_m2": 468.72,
+      "days": 31
+    },
+    {
+      "year": 1966,
+      "month": 9,
+      "shortwave_mj_m2": 327.22,
+      "days": 30
+    },
+    {
+      "year": 1966,
+      "month": 10,
+      "shortwave_mj_m2": 227.77,
+      "days": 31
+    },
+    {
+      "year": 1966,
+      "month": 11,
+      "shortwave_mj_m2": 120.77,
+      "days": 30
+    },
+    {
+      "year": 1966,
+      "month": 12,
+      "shortwave_mj_m2": 59.75,
+      "days": 31
+    },
+    {
+      "year": 1967,
+      "month": 1,
+      "shortwave_mj_m2": 88.12,
+      "days": 31
+    },
+    {
+      "year": 1967,
+      "month": 2,
+      "shortwave_mj_m2": 153.07,
+      "days": 28
+    },
+    {
+      "year": 1967,
+      "month": 3,
+      "shortwave_mj_m2": 324.95,
+      "days": 31
+    },
+    {
+      "year": 1967,
+      "month": 4,
+      "shortwave_mj_m2": 444.97,
+      "days": 30
+    },
+    {
+      "year": 1967,
+      "month": 5,
+      "shortwave_mj_m2": 604.11,
+      "days": 31
+    },
+    {
+      "year": 1967,
+      "month": 6,
+      "shortwave_mj_m2": 567.18,
+      "days": 30
+    },
+    {
+      "year": 1967,
+      "month": 7,
+      "shortwave_mj_m2": 532.02,
+      "days": 31
+    },
+    {
+      "year": 1967,
+      "month": 8,
+      "shortwave_mj_m2": 439.24,
+      "days": 31
+    },
+    {
+      "year": 1967,
+      "month": 9,
+      "shortwave_mj_m2": 312.7,
+      "days": 30
+    },
+    {
+      "year": 1967,
+      "month": 10,
+      "shortwave_mj_m2": 191.04,
+      "days": 31
+    },
+    {
+      "year": 1967,
+      "month": 11,
+      "shortwave_mj_m2": 104.6,
+      "days": 30
+    },
+    {
+      "year": 1967,
+      "month": 12,
+      "shortwave_mj_m2": 67.01,
+      "days": 31
+    },
+    {
+      "year": 1968,
+      "month": 1,
+      "shortwave_mj_m2": 72.64,
+      "days": 31
+    },
+    {
+      "year": 1968,
+      "month": 2,
+      "shortwave_mj_m2": 179.15,
+      "days": 29
+    },
+    {
+      "year": 1968,
+      "month": 3,
+      "shortwave_mj_m2": 304.37,
+      "days": 31
+    },
+    {
+      "year": 1968,
+      "month": 4,
+      "shortwave_mj_m2": 478.09,
+      "days": 30
+    },
+    {
+      "year": 1968,
+      "month": 5,
+      "shortwave_mj_m2": 596.76,
+      "days": 31
+    },
+    {
+      "year": 1968,
+      "month": 6,
+      "shortwave_mj_m2": 628.43,
+      "days": 30
+    },
+    {
+      "year": 1968,
+      "month": 7,
+      "shortwave_mj_m2": 610.91,
+      "days": 31
+    },
+    {
+      "year": 1968,
+      "month": 8,
+      "shortwave_mj_m2": 540.05,
+      "days": 31
+    },
+    {
+      "year": 1968,
+      "month": 9,
+      "shortwave_mj_m2": 335.85,
+      "days": 30
+    },
+    {
+      "year": 1968,
+      "month": 10,
+      "shortwave_mj_m2": 187.47,
+      "days": 31
+    },
+    {
+      "year": 1968,
+      "month": 11,
+      "shortwave_mj_m2": 88.52,
+      "days": 30
+    },
+    {
+      "year": 1968,
+      "month": 12,
+      "shortwave_mj_m2": 70.23,
+      "days": 31
+    },
+    {
+      "year": 1969,
+      "month": 1,
+      "shortwave_mj_m2": 91.76,
+      "days": 31
+    },
+    {
+      "year": 1969,
+      "month": 2,
+      "shortwave_mj_m2": 183.56,
+      "days": 28
+    },
+    {
+      "year": 1969,
+      "month": 3,
+      "shortwave_mj_m2": 301.6,
+      "days": 31
+    },
+    {
+      "year": 1969,
+      "month": 4,
+      "shortwave_mj_m2": 450.47,
+      "days": 30
+    },
+    {
+      "year": 1969,
+      "month": 5,
+      "shortwave_mj_m2": 570.81,
+      "days": 31
+    },
+    {
+      "year": 1969,
+      "month": 6,
+      "shortwave_mj_m2": 614.38,
+      "days": 30
+    },
+    {
+      "year": 1969,
+      "month": 7,
+      "shortwave_mj_m2": 584.12,
+      "days": 31
+    },
+    {
+      "year": 1969,
+      "month": 8,
+      "shortwave_mj_m2": 481.29,
+      "days": 31
+    },
+    {
+      "year": 1969,
+      "month": 9,
+      "shortwave_mj_m2": 321.41,
+      "days": 30
+    },
+    {
+      "year": 1969,
+      "month": 10,
+      "shortwave_mj_m2": 189.77,
+      "days": 31
+    },
+    {
+      "year": 1969,
+      "month": 11,
+      "shortwave_mj_m2": 106.83,
+      "days": 30
+    },
+    {
+      "year": 1969,
+      "month": 12,
+      "shortwave_mj_m2": 69.72,
+      "days": 31
+    },
+    {
+      "year": 1970,
+      "month": 1,
+      "shortwave_mj_m2": 93.78,
+      "days": 31
+    },
+    {
+      "year": 1970,
+      "month": 2,
+      "shortwave_mj_m2": 154.59,
+      "days": 28
+    },
+    {
+      "year": 1970,
+      "month": 3,
+      "shortwave_mj_m2": 338.31,
+      "days": 31
+    },
+    {
+      "year": 1970,
+      "month": 4,
+      "shortwave_mj_m2": 408.96,
+      "days": 30
+    },
+    {
+      "year": 1970,
+      "month": 5,
+      "shortwave_mj_m2": 553.11,
+      "days": 31
+    },
+    {
+      "year": 1970,
+      "month": 6,
+      "shortwave_mj_m2": 599.22,
+      "days": 30
+    },
+    {
+      "year": 1970,
+      "month": 7,
+      "shortwave_mj_m2": 526.15,
+      "days": 31
+    },
+    {
+      "year": 1970,
+      "month": 8,
+      "shortwave_mj_m2": 446.81,
+      "days": 31
+    },
+    {
+      "year": 1970,
+      "month": 9,
+      "shortwave_mj_m2": 283.38,
+      "days": 30
+    },
+    {
+      "year": 1970,
+      "month": 10,
+      "shortwave_mj_m2": 181.85,
+      "days": 31
+    },
+    {
+      "year": 1970,
+      "month": 11,
+      "shortwave_mj_m2": 94.62,
+      "days": 30
+    },
+    {
+      "year": 1970,
+      "month": 12,
+      "shortwave_mj_m2": 79.61,
+      "days": 31
+    },
+    {
+      "year": 1971,
+      "month": 1,
+      "shortwave_mj_m2": 87.02,
+      "days": 31
+    },
+    {
+      "year": 1971,
+      "month": 2,
+      "shortwave_mj_m2": 154.98,
+      "days": 28
+    },
+    {
+      "year": 1971,
+      "month": 3,
+      "shortwave_mj_m2": 276.9,
+      "days": 31
+    },
+    {
+      "year": 1971,
+      "month": 4,
+      "shortwave_mj_m2": 446.61,
+      "days": 30
+    },
+    {
+      "year": 1971,
+      "month": 5,
+      "shortwave_mj_m2": 550.02,
+      "days": 31
+    },
+    {
+      "year": 1971,
+      "month": 6,
+      "shortwave_mj_m2": 543.58,
+      "days": 30
+    },
+    {
+      "year": 1971,
+      "month": 7,
+      "shortwave_mj_m2": 631.79,
+      "days": 31
+    },
+    {
+      "year": 1971,
+      "month": 8,
+      "shortwave_mj_m2": 429.46,
+      "days": 31
+    },
+    {
+      "year": 1971,
+      "month": 9,
+      "shortwave_mj_m2": 315.74,
+      "days": 30
+    },
+    {
+      "year": 1971,
+      "month": 10,
+      "shortwave_mj_m2": 190.52,
+      "days": 31
+    },
+    {
+      "year": 1971,
+      "month": 11,
+      "shortwave_mj_m2": 96.63,
+      "days": 30
+    },
+    {
+      "year": 1971,
+      "month": 12,
+      "shortwave_mj_m2": 64.17,
+      "days": 31
+    },
+    {
+      "year": 1972,
+      "month": 1,
+      "shortwave_mj_m2": 97.23,
+      "days": 31
+    },
+    {
+      "year": 1972,
+      "month": 2,
+      "shortwave_mj_m2": 183.59,
+      "days": 29
+    },
+    {
+      "year": 1972,
+      "month": 3,
+      "shortwave_mj_m2": 316.04,
+      "days": 31
+    },
+    {
+      "year": 1972,
+      "month": 4,
+      "shortwave_mj_m2": 450.22,
+      "days": 30
+    },
+    {
+      "year": 1972,
+      "month": 5,
+      "shortwave_mj_m2": 561.73,
+      "days": 31
+    },
+    {
+      "year": 1972,
+      "month": 6,
+      "shortwave_mj_m2": 576.64,
+      "days": 30
+    },
+    {
+      "year": 1972,
+      "month": 7,
+      "shortwave_mj_m2": 493.9,
+      "days": 31
+    },
+    {
+      "year": 1972,
+      "month": 8,
+      "shortwave_mj_m2": 472.7,
+      "days": 31
+    },
+    {
+      "year": 1972,
+      "month": 9,
+      "shortwave_mj_m2": 342.49,
+      "days": 30
+    },
+    {
+      "year": 1972,
+      "month": 10,
+      "shortwave_mj_m2": 195.18,
+      "days": 31
+    },
+    {
+      "year": 1972,
+      "month": 11,
+      "shortwave_mj_m2": 95.98,
+      "days": 30
+    },
+    {
+      "year": 1972,
+      "month": 12,
+      "shortwave_mj_m2": 58.83,
+      "days": 31
+    },
+    {
+      "year": 1973,
+      "month": 1,
+      "shortwave_mj_m2": 75.59,
+      "days": 31
+    },
+    {
+      "year": 1973,
+      "month": 2,
+      "shortwave_mj_m2": 133.47,
+      "days": 28
+    },
+    {
+      "year": 1973,
+      "month": 3,
+      "shortwave_mj_m2": 325.35,
+      "days": 31
+    },
+    {
+      "year": 1973,
+      "month": 4,
+      "shortwave_mj_m2": 455.19,
+      "days": 30
+    },
+    {
+      "year": 1973,
+      "month": 5,
+      "shortwave_mj_m2": 516.08,
+      "days": 31
+    },
+    {
+      "year": 1973,
+      "month": 6,
+      "shortwave_mj_m2": 586.65,
+      "days": 30
+    },
+    {
+      "year": 1973,
+      "month": 7,
+      "shortwave_mj_m2": 543.43,
+      "days": 31
+    },
+    {
+      "year": 1973,
+      "month": 8,
+      "shortwave_mj_m2": 468.46,
+      "days": 31
+    },
+    {
+      "year": 1973,
+      "month": 9,
+      "shortwave_mj_m2": 342.39,
+      "days": 30
+    },
+    {
+      "year": 1973,
+      "month": 10,
+      "shortwave_mj_m2": 190.46,
+      "days": 31
+    },
+    {
+      "year": 1973,
+      "month": 11,
+      "shortwave_mj_m2": 94.2,
+      "days": 30
+    },
+    {
+      "year": 1973,
+      "month": 12,
+      "shortwave_mj_m2": 63.33,
+      "days": 31
+    },
+    {
+      "year": 1974,
+      "month": 1,
+      "shortwave_mj_m2": 89.3,
+      "days": 31
+    },
+    {
+      "year": 1974,
+      "month": 2,
+      "shortwave_mj_m2": 144.93,
+      "days": 28
+    },
+    {
+      "year": 1974,
+      "month": 3,
+      "shortwave_mj_m2": 304.15,
+      "days": 31
+    },
+    {
+      "year": 1974,
+      "month": 4,
+      "shortwave_mj_m2": 489.39,
+      "days": 30
+    },
+    {
+      "year": 1974,
+      "month": 5,
+      "shortwave_mj_m2": 562.34,
+      "days": 31
+    },
+    {
+      "year": 1974,
+      "month": 6,
+      "shortwave_mj_m2": 560.85,
+      "days": 30
+    },
+    {
+      "year": 1974,
+      "month": 7,
+      "shortwave_mj_m2": 494.58,
+      "days": 31
+    },
+    {
+      "year": 1974,
+      "month": 8,
+      "shortwave_mj_m2": 455.41,
+      "days": 31
+    },
+    {
+      "year": 1974,
+      "month": 9,
+      "shortwave_mj_m2": 304.67,
+      "days": 30
+    },
+    {
+      "year": 1974,
+      "month": 10,
+      "shortwave_mj_m2": 197.96,
+      "days": 31
+    },
+    {
+      "year": 1974,
+      "month": 11,
+      "shortwave_mj_m2": 114.24,
+      "days": 30
+    },
+    {
+      "year": 1974,
+      "month": 12,
+      "shortwave_mj_m2": 62.63,
+      "days": 31
+    },
+    {
+      "year": 1975,
+      "month": 1,
+      "shortwave_mj_m2": 90.23,
+      "days": 31
+    },
+    {
+      "year": 1975,
+      "month": 2,
+      "shortwave_mj_m2": 171.8,
+      "days": 28
+    },
+    {
+      "year": 1975,
+      "month": 3,
+      "shortwave_mj_m2": 336.39,
+      "days": 31
+    },
+    {
+      "year": 1975,
+      "month": 4,
+      "shortwave_mj_m2": 435.75,
+      "days": 30
+    },
+    {
+      "year": 1975,
+      "month": 5,
+      "shortwave_mj_m2": 655.06,
+      "days": 31
+    },
+    {
+      "year": 1975,
+      "month": 6,
+      "shortwave_mj_m2": 686.28,
+      "days": 30
+    },
+    {
+      "year": 1975,
+      "month": 7,
+      "shortwave_mj_m2": 547.72,
+      "days": 31
+    },
+    {
+      "year": 1975,
+      "month": 8,
+      "shortwave_mj_m2": 502.45,
+      "days": 31
+    },
+    {
+      "year": 1975,
+      "month": 9,
+      "shortwave_mj_m2": 338.02,
+      "days": 30
+    },
+    {
+      "year": 1975,
+      "month": 10,
+      "shortwave_mj_m2": 189.85,
+      "days": 31
+    },
+    {
+      "year": 1975,
+      "month": 11,
+      "shortwave_mj_m2": 103.37,
+      "days": 30
+    },
+    {
+      "year": 1975,
+      "month": 12,
+      "shortwave_mj_m2": 72.01,
+      "days": 31
+    },
+    {
+      "year": 1976,
+      "month": 1,
+      "shortwave_mj_m2": 81.03,
+      "days": 31
+    },
+    {
+      "year": 1976,
+      "month": 2,
+      "shortwave_mj_m2": 158.01,
+      "days": 29
+    },
+    {
+      "year": 1976,
+      "month": 3,
+      "shortwave_mj_m2": 252.95,
+      "days": 31
+    },
+    {
+      "year": 1976,
+      "month": 4,
+      "shortwave_mj_m2": 482.94,
+      "days": 30
+    },
+    {
+      "year": 1976,
+      "month": 5,
+      "shortwave_mj_m2": 521.76,
+      "days": 31
+    },
+    {
+      "year": 1976,
+      "month": 6,
+      "shortwave_mj_m2": 562.49,
+      "days": 30
+    },
+    {
+      "year": 1976,
+      "month": 7,
+      "shortwave_mj_m2": 576.37,
+      "days": 31
+    },
+    {
+      "year": 1976,
+      "month": 8,
+      "shortwave_mj_m2": 552.02,
+      "days": 31
+    },
+    {
+      "year": 1976,
+      "month": 9,
+      "shortwave_mj_m2": 356.81,
+      "days": 30
+    },
+    {
+      "year": 1976,
+      "month": 10,
+      "shortwave_mj_m2": 225.16,
+      "days": 31
+    },
+    {
+      "year": 1976,
+      "month": 11,
+      "shortwave_mj_m2": 115.07,
+      "days": 30
+    },
+    {
+      "year": 1976,
+      "month": 12,
+      "shortwave_mj_m2": 69.09,
+      "days": 31
+    },
+    {
+      "year": 1977,
+      "month": 1,
+      "shortwave_mj_m2": 94.37,
+      "days": 31
+    },
+    {
+      "year": 1977,
+      "month": 2,
+      "shortwave_mj_m2": 147.78,
+      "days": 28
+    },
+    {
+      "year": 1977,
+      "month": 3,
+      "shortwave_mj_m2": 292.14,
+      "days": 31
+    },
+    {
+      "year": 1977,
+      "month": 4,
+      "shortwave_mj_m2": 428.4,
+      "days": 30
+    },
+    {
+      "year": 1977,
+      "month": 5,
+      "shortwave_mj_m2": 622.97,
+      "days": 31
+    },
+    {
+      "year": 1977,
+      "month": 6,
+      "shortwave_mj_m2": 610.2,
+      "days": 30
+    },
+    {
+      "year": 1977,
+      "month": 7,
+      "shortwave_mj_m2": 582.64,
+      "days": 31
+    },
+    {
+      "year": 1977,
+      "month": 8,
+      "shortwave_mj_m2": 520.45,
+      "days": 31
+    },
+    {
+      "year": 1977,
+      "month": 9,
+      "shortwave_mj_m2": 331.46,
+      "days": 30
+    },
+    {
+      "year": 1977,
+      "month": 10,
+      "shortwave_mj_m2": 176.91,
+      "days": 31
+    },
+    {
+      "year": 1977,
+      "month": 11,
+      "shortwave_mj_m2": 103.88,
+      "days": 30
+    },
+    {
+      "year": 1977,
+      "month": 12,
+      "shortwave_mj_m2": 60.26,
+      "days": 31
+    },
+    {
+      "year": 1978,
+      "month": 1,
+      "shortwave_mj_m2": 94.61,
+      "days": 31
+    },
+    {
+      "year": 1978,
+      "month": 2,
+      "shortwave_mj_m2": 145.49,
+      "days": 28
+    },
+    {
+      "year": 1978,
+      "month": 3,
+      "shortwave_mj_m2": 290.0,
+      "days": 31
+    },
+    {
+      "year": 1978,
+      "month": 4,
+      "shortwave_mj_m2": 454.47,
+      "days": 30
+    },
+    {
+      "year": 1978,
+      "month": 5,
+      "shortwave_mj_m2": 579.71,
+      "days": 31
+    },
+    {
+      "year": 1978,
+      "month": 6,
+      "shortwave_mj_m2": 624.16,
+      "days": 30
+    },
+    {
+      "year": 1978,
+      "month": 7,
+      "shortwave_mj_m2": 510.54,
+      "days": 31
+    },
+    {
+      "year": 1978,
+      "month": 8,
+      "shortwave_mj_m2": 480.24,
+      "days": 31
+    },
+    {
+      "year": 1978,
+      "month": 9,
+      "shortwave_mj_m2": 339.42,
+      "days": 30
+    },
+    {
+      "year": 1978,
+      "month": 10,
+      "shortwave_mj_m2": 211.07,
+      "days": 31
+    },
+    {
+      "year": 1978,
+      "month": 11,
+      "shortwave_mj_m2": 94.61,
+      "days": 30
+    },
+    {
+      "year": 1978,
+      "month": 12,
+      "shortwave_mj_m2": 74.86,
+      "days": 31
+    },
+    {
+      "year": 1979,
+      "month": 1,
+      "shortwave_mj_m2": 102.66,
+      "days": 31
+    },
+    {
+      "year": 1979,
+      "month": 2,
+      "shortwave_mj_m2": 131.2,
+      "days": 28
+    },
+    {
+      "year": 1979,
+      "month": 3,
+      "shortwave_mj_m2": 304.29,
+      "days": 31
+    },
+    {
+      "year": 1979,
+      "month": 4,
+      "shortwave_mj_m2": 420.45,
+      "days": 30
+    },
+    {
+      "year": 1979,
+      "month": 5,
+      "shortwave_mj_m2": 606.55,
+      "days": 31
+    },
+    {
+      "year": 1979,
+      "month": 6,
+      "shortwave_mj_m2": 559.94,
+      "days": 30
+    },
+    {
+      "year": 1979,
+      "month": 7,
+      "shortwave_mj_m2": 576.46,
+      "days": 31
+    },
+    {
+      "year": 1979,
+      "month": 8,
+      "shortwave_mj_m2": 412.25,
+      "days": 31
+    },
+    {
+      "year": 1979,
+      "month": 9,
+      "shortwave_mj_m2": 299.86,
+      "days": 30
+    },
+    {
+      "year": 1979,
+      "month": 10,
+      "shortwave_mj_m2": 212.35,
+      "days": 31
+    },
+    {
+      "year": 1979,
+      "month": 11,
+      "shortwave_mj_m2": 89.69,
+      "days": 30
+    },
+    {
+      "year": 1979,
+      "month": 12,
+      "shortwave_mj_m2": 64.89,
+      "days": 31
+    },
+    {
+      "year": 1980,
+      "month": 1,
+      "shortwave_mj_m2": 91.12,
+      "days": 31
+    },
+    {
+      "year": 1980,
+      "month": 2,
+      "shortwave_mj_m2": 145.55,
+      "days": 29
+    },
+    {
+      "year": 1980,
+      "month": 3,
+      "shortwave_mj_m2": 304.24,
+      "days": 31
+    },
+    {
+      "year": 1980,
+      "month": 4,
+      "shortwave_mj_m2": 469.5,
+      "days": 30
+    },
+    {
+      "year": 1980,
+      "month": 5,
+      "shortwave_mj_m2": 619.03,
+      "days": 31
+    },
+    {
+      "year": 1980,
+      "month": 6,
+      "shortwave_mj_m2": 551.39,
+      "days": 30
+    },
+    {
+      "year": 1980,
+      "month": 7,
+      "shortwave_mj_m2": 509.93,
+      "days": 31
+    },
+    {
+      "year": 1980,
+      "month": 8,
+      "shortwave_mj_m2": 397.53,
+      "days": 31
+    },
+    {
+      "year": 1980,
+      "month": 9,
+      "shortwave_mj_m2": 294.4,
+      "days": 30
+    },
+    {
+      "year": 1980,
+      "month": 10,
+      "shortwave_mj_m2": 196.86,
+      "days": 31
+    },
+    {
+      "year": 1980,
+      "month": 11,
+      "shortwave_mj_m2": 103.28,
+      "days": 30
+    },
+    {
+      "year": 1980,
+      "month": 12,
+      "shortwave_mj_m2": 62.69,
+      "days": 31
+    },
+    {
+      "year": 1981,
+      "month": 1,
+      "shortwave_mj_m2": 84.77,
+      "days": 31
+    },
+    {
+      "year": 1981,
+      "month": 2,
+      "shortwave_mj_m2": 142.91,
+      "days": 28
+    },
+    {
+      "year": 1981,
+      "month": 3,
+      "shortwave_mj_m2": 277.46,
+      "days": 31
+    },
+    {
+      "year": 1981,
+      "month": 4,
+      "shortwave_mj_m2": 463.22,
+      "days": 30
+    },
+    {
+      "year": 1981,
+      "month": 5,
+      "shortwave_mj_m2": 513.21,
+      "days": 31
+    },
+    {
+      "year": 1981,
+      "month": 6,
+      "shortwave_mj_m2": 533.14,
+      "days": 30
+    },
+    {
+      "year": 1981,
+      "month": 7,
+      "shortwave_mj_m2": 558.78,
+      "days": 31
+    },
+    {
+      "year": 1981,
+      "month": 8,
+      "shortwave_mj_m2": 469.82,
+      "days": 31
+    },
+    {
+      "year": 1981,
+      "month": 9,
+      "shortwave_mj_m2": 319.22,
+      "days": 30
+    },
+    {
+      "year": 1981,
+      "month": 10,
+      "shortwave_mj_m2": 198.01,
+      "days": 31
+    },
+    {
+      "year": 1981,
+      "month": 11,
+      "shortwave_mj_m2": 92.32,
+      "days": 30
+    },
+    {
+      "year": 1981,
+      "month": 12,
+      "shortwave_mj_m2": 75.4,
+      "days": 31
+    },
+    {
+      "year": 1982,
+      "month": 1,
+      "shortwave_mj_m2": 84.78,
+      "days": 31
+    },
+    {
+      "year": 1982,
+      "month": 2,
+      "shortwave_mj_m2": 143.65,
+      "days": 28
+    },
+    {
+      "year": 1982,
+      "month": 3,
+      "shortwave_mj_m2": 308.97,
+      "days": 31
+    },
+    {
+      "year": 1982,
+      "month": 4,
+      "shortwave_mj_m2": 479.24,
+      "days": 30
+    },
+    {
+      "year": 1982,
+      "month": 5,
+      "shortwave_mj_m2": 597.78,
+      "days": 31
+    },
+    {
+      "year": 1982,
+      "month": 6,
+      "shortwave_mj_m2": 517.75,
+      "days": 30
+    },
+    {
+      "year": 1982,
+      "month": 7,
+      "shortwave_mj_m2": 572.58,
+      "days": 31
+    },
+    {
+      "year": 1982,
+      "month": 8,
+      "shortwave_mj_m2": 439.23,
+      "days": 31
+    },
+    {
+      "year": 1982,
+      "month": 9,
+      "shortwave_mj_m2": 297.13,
+      "days": 30
+    },
+    {
+      "year": 1982,
+      "month": 10,
+      "shortwave_mj_m2": 198.68,
+      "days": 31
+    },
+    {
+      "year": 1982,
+      "month": 11,
+      "shortwave_mj_m2": 98.92,
+      "days": 30
+    },
+    {
+      "year": 1982,
+      "month": 12,
+      "shortwave_mj_m2": 64.13,
+      "days": 31
+    },
+    {
+      "year": 1983,
+      "month": 1,
+      "shortwave_mj_m2": 80.27,
+      "days": 31
+    },
+    {
+      "year": 1983,
+      "month": 2,
+      "shortwave_mj_m2": 147.28,
+      "days": 28
+    },
+    {
+      "year": 1983,
+      "month": 3,
+      "shortwave_mj_m2": 255.25,
+      "days": 31
+    },
+    {
+      "year": 1983,
+      "month": 4,
+      "shortwave_mj_m2": 459.78,
+      "days": 30
+    },
+    {
+      "year": 1983,
+      "month": 5,
+      "shortwave_mj_m2": 581.2,
+      "days": 31
+    },
+    {
+      "year": 1983,
+      "month": 6,
+      "shortwave_mj_m2": 556.85,
+      "days": 30
+    },
+    {
+      "year": 1983,
+      "month": 7,
+      "shortwave_mj_m2": 621.75,
+      "days": 31
+    },
+    {
+      "year": 1983,
+      "month": 8,
+      "shortwave_mj_m2": 470.75,
+      "days": 31
+    },
+    {
+      "year": 1983,
+      "month": 9,
+      "shortwave_mj_m2": 284.6,
+      "days": 30
+    },
+    {
+      "year": 1983,
+      "month": 10,
+      "shortwave_mj_m2": 181.21,
+      "days": 31
+    },
+    {
+      "year": 1983,
+      "month": 11,
+      "shortwave_mj_m2": 100.81,
+      "days": 30
+    },
+    {
+      "year": 1983,
+      "month": 12,
+      "shortwave_mj_m2": 68.35,
+      "days": 31
+    },
+    {
+      "year": 1984,
+      "month": 1,
+      "shortwave_mj_m2": 84.42,
+      "days": 31
+    },
+    {
+      "year": 1984,
+      "month": 2,
+      "shortwave_mj_m2": 153.95,
+      "days": 29
+    },
+    {
+      "year": 1984,
+      "month": 3,
+      "shortwave_mj_m2": 332.29,
+      "days": 31
+    },
+    {
+      "year": 1984,
+      "month": 4,
+      "shortwave_mj_m2": 465.13,
+      "days": 30
+    },
+    {
+      "year": 1984,
+      "month": 5,
+      "shortwave_mj_m2": 606.79,
+      "days": 31
+    },
+    {
+      "year": 1984,
+      "month": 6,
+      "shortwave_mj_m2": 579.32,
+      "days": 30
+    },
+    {
+      "year": 1984,
+      "month": 7,
+      "shortwave_mj_m2": 641.53,
+      "days": 31
+    },
+    {
+      "year": 1984,
+      "month": 8,
+      "shortwave_mj_m2": 430.53,
+      "days": 31
+    },
+    {
+      "year": 1984,
+      "month": 9,
+      "shortwave_mj_m2": 288.13,
+      "days": 30
+    },
+    {
+      "year": 1984,
+      "month": 10,
+      "shortwave_mj_m2": 198.03,
+      "days": 31
+    },
+    {
+      "year": 1984,
+      "month": 11,
+      "shortwave_mj_m2": 102.06,
+      "days": 30
+    },
+    {
+      "year": 1984,
+      "month": 12,
+      "shortwave_mj_m2": 61.77,
+      "days": 31
+    },
+    {
+      "year": 1985,
+      "month": 1,
+      "shortwave_mj_m2": 101.9,
+      "days": 31
+    },
+    {
+      "year": 1985,
+      "month": 2,
+      "shortwave_mj_m2": 143.52,
+      "days": 28
+    },
+    {
+      "year": 1985,
+      "month": 3,
+      "shortwave_mj_m2": 296.49,
+      "days": 31
+    },
+    {
+      "year": 1985,
+      "month": 4,
+      "shortwave_mj_m2": 462.93,
+      "days": 30
+    },
+    {
+      "year": 1985,
+      "month": 5,
+      "shortwave_mj_m2": 570.19,
+      "days": 31
+    },
+    {
+      "year": 1985,
+      "month": 6,
+      "shortwave_mj_m2": 562.94,
+      "days": 30
+    },
+    {
+      "year": 1985,
+      "month": 7,
+      "shortwave_mj_m2": 485.66,
+      "days": 31
+    },
+    {
+      "year": 1985,
+      "month": 8,
+      "shortwave_mj_m2": 417.56,
+      "days": 31
+    },
+    {
+      "year": 1985,
+      "month": 9,
+      "shortwave_mj_m2": 297.65,
+      "days": 30
+    },
+    {
+      "year": 1985,
+      "month": 10,
+      "shortwave_mj_m2": 215.19,
+      "days": 31
+    },
+    {
+      "year": 1985,
+      "month": 11,
+      "shortwave_mj_m2": 128.1,
+      "days": 30
+    },
+    {
+      "year": 1985,
+      "month": 12,
+      "shortwave_mj_m2": 70.99,
+      "days": 31
+    },
+    {
+      "year": 1986,
+      "month": 1,
+      "shortwave_mj_m2": 87.85,
+      "days": 31
+    },
+    {
+      "year": 1986,
+      "month": 2,
+      "shortwave_mj_m2": 162.89,
+      "days": 28
+    },
+    {
+      "year": 1986,
+      "month": 3,
+      "shortwave_mj_m2": 294.24,
+      "days": 31
+    },
+    {
+      "year": 1986,
+      "month": 4,
+      "shortwave_mj_m2": 501.88,
+      "days": 30
+    },
+    {
+      "year": 1986,
+      "month": 5,
+      "shortwave_mj_m2": 533.56,
+      "days": 31
+    },
+    {
+      "year": 1986,
+      "month": 6,
+      "shortwave_mj_m2": 526.21,
+      "days": 30
+    },
+    {
+      "year": 1986,
+      "month": 7,
+      "shortwave_mj_m2": 470.65,
+      "days": 31
+    },
+    {
+      "year": 1986,
+      "month": 8,
+      "shortwave_mj_m2": 461.65,
+      "days": 31
+    },
+    {
+      "year": 1986,
+      "month": 9,
+      "shortwave_mj_m2": 356.15,
+      "days": 30
+    },
+    {
+      "year": 1986,
+      "month": 10,
+      "shortwave_mj_m2": 196.59,
+      "days": 31
+    },
+    {
+      "year": 1986,
+      "month": 11,
+      "shortwave_mj_m2": 102.41,
+      "days": 30
+    },
+    {
+      "year": 1986,
+      "month": 12,
+      "shortwave_mj_m2": 64.35,
+      "days": 31
+    },
+    {
+      "year": 1987,
+      "month": 1,
+      "shortwave_mj_m2": 88.74,
+      "days": 31
+    },
+    {
+      "year": 1987,
+      "month": 2,
+      "shortwave_mj_m2": 153.59,
+      "days": 28
+    },
+    {
+      "year": 1987,
+      "month": 3,
+      "shortwave_mj_m2": 282.93,
+      "days": 31
+    },
+    {
+      "year": 1987,
+      "month": 4,
+      "shortwave_mj_m2": 406.18,
+      "days": 30
+    },
+    {
+      "year": 1987,
+      "month": 5,
+      "shortwave_mj_m2": 610.0,
+      "days": 31
+    },
+    {
+      "year": 1987,
+      "month": 6,
+      "shortwave_mj_m2": 515.7,
+      "days": 30
+    },
+    {
+      "year": 1987,
+      "month": 7,
+      "shortwave_mj_m2": 550.56,
+      "days": 31
+    },
+    {
+      "year": 1987,
+      "month": 8,
+      "shortwave_mj_m2": 459.81,
+      "days": 31
+    },
+    {
+      "year": 1987,
+      "month": 9,
+      "shortwave_mj_m2": 332.06,
+      "days": 30
+    },
+    {
+      "year": 1987,
+      "month": 10,
+      "shortwave_mj_m2": 218.47,
+      "days": 31
+    },
+    {
+      "year": 1987,
+      "month": 11,
+      "shortwave_mj_m2": 114.14,
+      "days": 30
+    },
+    {
+      "year": 1987,
+      "month": 12,
+      "shortwave_mj_m2": 64.14,
+      "days": 31
+    },
+    {
+      "year": 1988,
+      "month": 1,
+      "shortwave_mj_m2": 82.96,
+      "days": 31
+    },
+    {
+      "year": 1988,
+      "month": 2,
+      "shortwave_mj_m2": 170.5,
+      "days": 29
+    },
+    {
+      "year": 1988,
+      "month": 3,
+      "shortwave_mj_m2": 285.54,
+      "days": 31
+    },
+    {
+      "year": 1988,
+      "month": 4,
+      "shortwave_mj_m2": 394.47,
+      "days": 30
+    },
+    {
+      "year": 1988,
+      "month": 5,
+      "shortwave_mj_m2": 631.95,
+      "days": 31
+    },
+    {
+      "year": 1988,
+      "month": 6,
+      "shortwave_mj_m2": 602.55,
+      "days": 30
+    },
+    {
+      "year": 1988,
+      "month": 7,
+      "shortwave_mj_m2": 530.65,
+      "days": 31
+    },
+    {
+      "year": 1988,
+      "month": 8,
+      "shortwave_mj_m2": 432.3,
+      "days": 31
+    },
+    {
+      "year": 1988,
+      "month": 9,
+      "shortwave_mj_m2": 311.67,
+      "days": 30
+    },
+    {
+      "year": 1988,
+      "month": 10,
+      "shortwave_mj_m2": 189.39,
+      "days": 31
+    },
+    {
+      "year": 1988,
+      "month": 11,
+      "shortwave_mj_m2": 108.1,
+      "days": 30
+    },
+    {
+      "year": 1988,
+      "month": 12,
+      "shortwave_mj_m2": 63.19,
+      "days": 31
+    },
+    {
+      "year": 1989,
+      "month": 1,
+      "shortwave_mj_m2": 81.47,
+      "days": 31
+    },
+    {
+      "year": 1989,
+      "month": 2,
+      "shortwave_mj_m2": 151.29,
+      "days": 28
+    },
+    {
+      "year": 1989,
+      "month": 3,
+      "shortwave_mj_m2": 255.03,
+      "days": 31
+    },
+    {
+      "year": 1989,
+      "month": 4,
+      "shortwave_mj_m2": 482.84,
+      "days": 30
+    },
+    {
+      "year": 1989,
+      "month": 5,
+      "shortwave_mj_m2": 641.17,
+      "days": 31
+    },
+    {
+      "year": 1989,
+      "month": 6,
+      "shortwave_mj_m2": 641.83,
+      "days": 30
+    },
+    {
+      "year": 1989,
+      "month": 7,
+      "shortwave_mj_m2": 667.78,
+      "days": 31
+    },
+    {
+      "year": 1989,
+      "month": 8,
+      "shortwave_mj_m2": 425.93,
+      "days": 31
+    },
+    {
+      "year": 1989,
+      "month": 9,
+      "shortwave_mj_m2": 327.59,
+      "days": 30
+    },
+    {
+      "year": 1989,
+      "month": 10,
+      "shortwave_mj_m2": 162.06,
+      "days": 31
+    },
+    {
+      "year": 1989,
+      "month": 11,
+      "shortwave_mj_m2": 106.42,
+      "days": 30
+    },
+    {
+      "year": 1989,
+      "month": 12,
+      "shortwave_mj_m2": 69.97,
+      "days": 31
+    },
+    {
+      "year": 1990,
+      "month": 1,
+      "shortwave_mj_m2": 91.0,
+      "days": 31
+    },
+    {
+      "year": 1990,
+      "month": 2,
+      "shortwave_mj_m2": 123.57,
+      "days": 28
+    },
+    {
+      "year": 1990,
+      "month": 3,
+      "shortwave_mj_m2": 277.47,
+      "days": 31
+    },
+    {
+      "year": 1990,
+      "month": 4,
+      "shortwave_mj_m2": 466.31,
+      "days": 30
+    },
+    {
+      "year": 1990,
+      "month": 5,
+      "shortwave_mj_m2": 582.97,
+      "days": 31
+    },
+    {
+      "year": 1990,
+      "month": 6,
+      "shortwave_mj_m2": 529.66,
+      "days": 30
+    },
+    {
+      "year": 1990,
+      "month": 7,
+      "shortwave_mj_m2": 634.91,
+      "days": 31
+    },
+    {
+      "year": 1990,
+      "month": 8,
+      "shortwave_mj_m2": 441.85,
+      "days": 31
+    },
+    {
+      "year": 1990,
+      "month": 9,
+      "shortwave_mj_m2": 350.35,
+      "days": 30
+    },
+    {
+      "year": 1990,
+      "month": 10,
+      "shortwave_mj_m2": 175.31,
+      "days": 31
+    },
+    {
+      "year": 1990,
+      "month": 11,
+      "shortwave_mj_m2": 118.83,
+      "days": 30
+    },
+    {
+      "year": 1990,
+      "month": 12,
+      "shortwave_mj_m2": 74.27,
+      "days": 31
+    },
+    {
+      "year": 1991,
+      "month": 1,
+      "shortwave_mj_m2": 93.31,
+      "days": 31
+    },
+    {
+      "year": 1991,
+      "month": 2,
+      "shortwave_mj_m2": 148.42,
+      "days": 28
+    },
+    {
+      "year": 1991,
+      "month": 3,
+      "shortwave_mj_m2": 292.8,
+      "days": 31
+    },
+    {
+      "year": 1991,
+      "month": 4,
+      "shortwave_mj_m2": 400.61,
+      "days": 30
+    },
+    {
+      "year": 1991,
+      "month": 5,
+      "shortwave_mj_m2": 612.6,
+      "days": 31
+    },
+    {
+      "year": 1991,
+      "month": 6,
+      "shortwave_mj_m2": 574.99,
+      "days": 30
+    },
+    {
+      "year": 1991,
+      "month": 7,
+      "shortwave_mj_m2": 499.31,
+      "days": 31
+    },
+    {
+      "year": 1991,
+      "month": 8,
+      "shortwave_mj_m2": 498.32,
+      "days": 31
+    },
+    {
+      "year": 1991,
+      "month": 9,
+      "shortwave_mj_m2": 351.96,
+      "days": 30
+    },
+    {
+      "year": 1991,
+      "month": 10,
+      "shortwave_mj_m2": 194.69,
+      "days": 31
+    },
+    {
+      "year": 1991,
+      "month": 11,
+      "shortwave_mj_m2": 101.6,
+      "days": 30
+    },
+    {
+      "year": 1991,
+      "month": 12,
+      "shortwave_mj_m2": 66.67,
+      "days": 31
+    },
+    {
+      "year": 1992,
+      "month": 1,
+      "shortwave_mj_m2": 83.79,
+      "days": 31
+    },
+    {
+      "year": 1992,
+      "month": 2,
+      "shortwave_mj_m2": 142.1,
+      "days": 29
+    },
+    {
+      "year": 1992,
+      "month": 3,
+      "shortwave_mj_m2": 260.44,
+      "days": 31
+    },
+    {
+      "year": 1992,
+      "month": 4,
+      "shortwave_mj_m2": 387.19,
+      "days": 30
+    },
+    {
+      "year": 1992,
+      "month": 5,
+      "shortwave_mj_m2": 591.78,
+      "days": 31
+    },
+    {
+      "year": 1992,
+      "month": 6,
+      "shortwave_mj_m2": 593.01,
+      "days": 30
+    },
+    {
+      "year": 1992,
+      "month": 7,
+      "shortwave_mj_m2": 513.88,
+      "days": 31
+    },
+    {
+      "year": 1992,
+      "month": 8,
+      "shortwave_mj_m2": 456.32,
+      "days": 31
+    },
+    {
+      "year": 1992,
+      "month": 9,
+      "shortwave_mj_m2": 300.58,
+      "days": 30
+    },
+    {
+      "year": 1992,
+      "month": 10,
+      "shortwave_mj_m2": 221.83,
+      "days": 31
+    },
+    {
+      "year": 1992,
+      "month": 11,
+      "shortwave_mj_m2": 92.75,
+      "days": 30
+    },
+    {
+      "year": 1992,
+      "month": 12,
+      "shortwave_mj_m2": 66.85,
+      "days": 31
+    },
+    {
+      "year": 1993,
+      "month": 1,
+      "shortwave_mj_m2": 80.96,
+      "days": 31
+    },
+    {
+      "year": 1993,
+      "month": 2,
+      "shortwave_mj_m2": 141.7,
+      "days": 28
+    },
+    {
+      "year": 1993,
+      "month": 3,
+      "shortwave_mj_m2": 309.97,
+      "days": 31
+    },
+    {
+      "year": 1993,
+      "month": 4,
+      "shortwave_mj_m2": 428.94,
+      "days": 30
+    },
+    {
+      "year": 1993,
+      "month": 5,
+      "shortwave_mj_m2": 602.16,
+      "days": 31
+    },
+    {
+      "year": 1993,
+      "month": 6,
+      "shortwave_mj_m2": 502.62,
+      "days": 30
+    },
+    {
+      "year": 1993,
+      "month": 7,
+      "shortwave_mj_m2": 495.97,
+      "days": 31
+    },
+    {
+      "year": 1993,
+      "month": 8,
+      "shortwave_mj_m2": 446.71,
+      "days": 31
+    },
+    {
+      "year": 1993,
+      "month": 9,
+      "shortwave_mj_m2": 335.42,
+      "days": 30
+    },
+    {
+      "year": 1993,
+      "month": 10,
+      "shortwave_mj_m2": 238.94,
+      "days": 31
+    },
+    {
+      "year": 1993,
+      "month": 11,
+      "shortwave_mj_m2": 91.78,
+      "days": 30
+    },
+    {
+      "year": 1993,
+      "month": 12,
+      "shortwave_mj_m2": 61.85,
+      "days": 31
+    },
+    {
+      "year": 1994,
+      "month": 1,
+      "shortwave_mj_m2": 86.24,
+      "days": 31
+    },
+    {
+      "year": 1994,
+      "month": 2,
+      "shortwave_mj_m2": 136.63,
+      "days": 28
+    },
+    {
+      "year": 1994,
+      "month": 3,
+      "shortwave_mj_m2": 231.12,
+      "days": 31
+    },
+    {
+      "year": 1994,
+      "month": 4,
+      "shortwave_mj_m2": 427.7,
+      "days": 30
+    },
+    {
+      "year": 1994,
+      "month": 5,
+      "shortwave_mj_m2": 565.54,
+      "days": 31
+    },
+    {
+      "year": 1994,
+      "month": 6,
+      "shortwave_mj_m2": 516.09,
+      "days": 30
+    },
+    {
+      "year": 1994,
+      "month": 7,
+      "shortwave_mj_m2": 497.7,
+      "days": 31
+    },
+    {
+      "year": 1994,
+      "month": 8,
+      "shortwave_mj_m2": 428.6,
+      "days": 31
+    },
+    {
+      "year": 1994,
+      "month": 9,
+      "shortwave_mj_m2": 327.61,
+      "days": 30
+    },
+    {
+      "year": 1994,
+      "month": 10,
+      "shortwave_mj_m2": 217.19,
+      "days": 31
+    },
+    {
+      "year": 1994,
+      "month": 11,
+      "shortwave_mj_m2": 94.07,
+      "days": 30
+    },
+    {
+      "year": 1994,
+      "month": 12,
+      "shortwave_mj_m2": 60.94,
+      "days": 31
+    },
+    {
+      "year": 1995,
+      "month": 1,
+      "shortwave_mj_m2": 73.62,
+      "days": 31
+    },
+    {
+      "year": 1995,
+      "month": 2,
+      "shortwave_mj_m2": 127.22,
+      "days": 28
+    },
+    {
+      "year": 1995,
+      "month": 3,
+      "shortwave_mj_m2": 297.66,
+      "days": 31
+    },
+    {
+      "year": 1995,
+      "month": 4,
+      "shortwave_mj_m2": 471.94,
+      "days": 30
+    },
+    {
+      "year": 1995,
+      "month": 5,
+      "shortwave_mj_m2": 551.53,
+      "days": 31
+    },
+    {
+      "year": 1995,
+      "month": 6,
+      "shortwave_mj_m2": 614.12,
+      "days": 30
+    },
+    {
+      "year": 1995,
+      "month": 7,
+      "shortwave_mj_m2": 512.01,
+      "days": 31
+    },
+    {
+      "year": 1995,
+      "month": 8,
+      "shortwave_mj_m2": 548.84,
+      "days": 31
+    },
+    {
+      "year": 1995,
+      "month": 9,
+      "shortwave_mj_m2": 358.84,
+      "days": 30
+    },
+    {
+      "year": 1995,
+      "month": 10,
+      "shortwave_mj_m2": 184.83,
+      "days": 31
+    },
+    {
+      "year": 1995,
+      "month": 11,
+      "shortwave_mj_m2": 108.4,
+      "days": 30
+    },
+    {
+      "year": 1995,
+      "month": 12,
+      "shortwave_mj_m2": 77.36,
+      "days": 31
+    },
+    {
+      "year": 1996,
+      "month": 1,
+      "shortwave_mj_m2": 86.72,
+      "days": 31
+    },
+    {
+      "year": 1996,
+      "month": 2,
+      "shortwave_mj_m2": 194.71,
+      "days": 29
+    },
+    {
+      "year": 1996,
+      "month": 3,
+      "shortwave_mj_m2": 272.32,
+      "days": 31
+    },
+    {
+      "year": 1996,
+      "month": 4,
+      "shortwave_mj_m2": 428.85,
+      "days": 30
+    },
+    {
+      "year": 1996,
+      "month": 5,
+      "shortwave_mj_m2": 606.93,
+      "days": 31
+    },
+    {
+      "year": 1996,
+      "month": 6,
+      "shortwave_mj_m2": 662.23,
+      "days": 30
+    },
+    {
+      "year": 1996,
+      "month": 7,
+      "shortwave_mj_m2": 566.09,
+      "days": 31
+    },
+    {
+      "year": 1996,
+      "month": 8,
+      "shortwave_mj_m2": 461.65,
+      "days": 31
+    },
+    {
+      "year": 1996,
+      "month": 9,
+      "shortwave_mj_m2": 355.13,
+      "days": 30
+    },
+    {
+      "year": 1996,
+      "month": 10,
+      "shortwave_mj_m2": 158.83,
+      "days": 31
+    },
+    {
+      "year": 1996,
+      "month": 11,
+      "shortwave_mj_m2": 102.36,
+      "days": 30
+    },
+    {
+      "year": 1996,
+      "month": 12,
+      "shortwave_mj_m2": 76.51,
+      "days": 31
+    },
+    {
+      "year": 1997,
+      "month": 1,
+      "shortwave_mj_m2": 88.75,
+      "days": 31
+    },
+    {
+      "year": 1997,
+      "month": 2,
+      "shortwave_mj_m2": 144.03,
+      "days": 28
+    },
+    {
+      "year": 1997,
+      "month": 3,
+      "shortwave_mj_m2": 292.1,
+      "days": 31
+    },
+    {
+      "year": 1997,
+      "month": 4,
+      "shortwave_mj_m2": 457.98,
+      "days": 30
+    },
+    {
+      "year": 1997,
+      "month": 5,
+      "shortwave_mj_m2": 647.77,
+      "days": 31
+    },
+    {
+      "year": 1997,
+      "month": 6,
+      "shortwave_mj_m2": 567.22,
+      "days": 30
+    },
+    {
+      "year": 1997,
+      "month": 7,
+      "shortwave_mj_m2": 591.87,
+      "days": 31
+    },
+    {
+      "year": 1997,
+      "month": 8,
+      "shortwave_mj_m2": 397.17,
+      "days": 31
+    },
+    {
+      "year": 1997,
+      "month": 9,
+      "shortwave_mj_m2": 293.19,
+      "days": 30
+    },
+    {
+      "year": 1997,
+      "month": 10,
+      "shortwave_mj_m2": 189.08,
+      "days": 31
+    },
+    {
+      "year": 1997,
+      "month": 11,
+      "shortwave_mj_m2": 96.86,
+      "days": 30
+    },
+    {
+      "year": 1997,
+      "month": 12,
+      "shortwave_mj_m2": 74.4,
+      "days": 31
+    },
+    {
+      "year": 1998,
+      "month": 1,
+      "shortwave_mj_m2": 96.8,
+      "days": 31
+    },
+    {
+      "year": 1998,
+      "month": 2,
+      "shortwave_mj_m2": 145.91,
+      "days": 28
+    },
+    {
+      "year": 1998,
+      "month": 3,
+      "shortwave_mj_m2": 264.68,
+      "days": 31
+    },
+    {
+      "year": 1998,
+      "month": 4,
+      "shortwave_mj_m2": 498.92,
+      "days": 30
+    },
+    {
+      "year": 1998,
+      "month": 5,
+      "shortwave_mj_m2": 571.48,
+      "days": 31
+    },
+    {
+      "year": 1998,
+      "month": 6,
+      "shortwave_mj_m2": 525.19,
+      "days": 30
+    },
+    {
+      "year": 1998,
+      "month": 7,
+      "shortwave_mj_m2": 515.02,
+      "days": 31
+    },
+    {
+      "year": 1998,
+      "month": 8,
+      "shortwave_mj_m2": 450.1,
+      "days": 31
+    },
+    {
+      "year": 1998,
+      "month": 9,
+      "shortwave_mj_m2": 329.39,
+      "days": 30
+    },
+    {
+      "year": 1998,
+      "month": 10,
+      "shortwave_mj_m2": 204.12,
+      "days": 31
+    },
+    {
+      "year": 1998,
+      "month": 11,
+      "shortwave_mj_m2": 107.51,
+      "days": 30
+    },
+    {
+      "year": 1998,
+      "month": 12,
+      "shortwave_mj_m2": 69.38,
+      "days": 31
+    },
+    {
+      "year": 1999,
+      "month": 1,
+      "shortwave_mj_m2": 90.39,
+      "days": 31
+    },
+    {
+      "year": 1999,
+      "month": 2,
+      "shortwave_mj_m2": 135.02,
+      "days": 28
+    },
+    {
+      "year": 1999,
+      "month": 3,
+      "shortwave_mj_m2": 308.96,
+      "days": 31
+    },
+    {
+      "year": 1999,
+      "month": 4,
+      "shortwave_mj_m2": 435.54,
+      "days": 30
+    },
+    {
+      "year": 1999,
+      "month": 5,
+      "shortwave_mj_m2": 525.81,
+      "days": 31
+    },
+    {
+      "year": 1999,
+      "month": 6,
+      "shortwave_mj_m2": 549.47,
+      "days": 30
+    },
+    {
+      "year": 1999,
+      "month": 7,
+      "shortwave_mj_m2": 559.78,
+      "days": 31
+    },
+    {
+      "year": 1999,
+      "month": 8,
+      "shortwave_mj_m2": 452.21,
+      "days": 31
+    },
+    {
+      "year": 1999,
+      "month": 9,
+      "shortwave_mj_m2": 312.09,
+      "days": 30
+    },
+    {
+      "year": 1999,
+      "month": 10,
+      "shortwave_mj_m2": 190.19,
+      "days": 31
+    },
+    {
+      "year": 1999,
+      "month": 11,
+      "shortwave_mj_m2": 106.06,
+      "days": 30
+    },
+    {
+      "year": 1999,
+      "month": 12,
+      "shortwave_mj_m2": 63.41,
+      "days": 31
+    },
+    {
+      "year": 2000,
+      "month": 1,
+      "shortwave_mj_m2": 88.67,
+      "days": 31
+    },
+    {
+      "year": 2000,
+      "month": 2,
+      "shortwave_mj_m2": 143.23,
+      "days": 29
+    },
+    {
+      "year": 2000,
+      "month": 3,
+      "shortwave_mj_m2": 314.09,
+      "days": 31
+    },
+    {
+      "year": 2000,
+      "month": 4,
+      "shortwave_mj_m2": 498.16,
+      "days": 30
+    },
+    {
+      "year": 2000,
+      "month": 5,
+      "shortwave_mj_m2": 588.96,
+      "days": 31
+    },
+    {
+      "year": 2000,
+      "month": 6,
+      "shortwave_mj_m2": 577.35,
+      "days": 30
+    },
+    {
+      "year": 2000,
+      "month": 7,
+      "shortwave_mj_m2": 570.73,
+      "days": 31
+    },
+    {
+      "year": 2000,
+      "month": 8,
+      "shortwave_mj_m2": 484.26,
+      "days": 31
+    },
+    {
+      "year": 2000,
+      "month": 9,
+      "shortwave_mj_m2": 311.15,
+      "days": 30
+    },
+    {
+      "year": 2000,
+      "month": 10,
+      "shortwave_mj_m2": 187.12,
+      "days": 31
+    },
+    {
+      "year": 2000,
+      "month": 11,
+      "shortwave_mj_m2": 100.64,
+      "days": 30
+    },
+    {
+      "year": 2000,
+      "month": 12,
+      "shortwave_mj_m2": 76.81,
+      "days": 31
+    },
+    {
+      "year": 2001,
+      "month": 1,
+      "shortwave_mj_m2": 98.89,
+      "days": 31
+    },
+    {
+      "year": 2001,
+      "month": 2,
+      "shortwave_mj_m2": 162.08,
+      "days": 28
+    },
+    {
+      "year": 2001,
+      "month": 3,
+      "shortwave_mj_m2": 300.37,
+      "days": 31
+    },
+    {
+      "year": 2001,
+      "month": 4,
+      "shortwave_mj_m2": 425.07,
+      "days": 30
+    },
+    {
+      "year": 2001,
+      "month": 5,
+      "shortwave_mj_m2": 621.59,
+      "days": 31
+    },
+    {
+      "year": 2001,
+      "month": 6,
+      "shortwave_mj_m2": 613.28,
+      "days": 30
+    },
+    {
+      "year": 2001,
+      "month": 7,
+      "shortwave_mj_m2": 595.48,
+      "days": 31
+    },
+    {
+      "year": 2001,
+      "month": 8,
+      "shortwave_mj_m2": 477.6,
+      "days": 31
+    },
+    {
+      "year": 2001,
+      "month": 9,
+      "shortwave_mj_m2": 321.54,
+      "days": 30
+    },
+    {
+      "year": 2001,
+      "month": 10,
+      "shortwave_mj_m2": 211.87,
+      "days": 31
+    },
+    {
+      "year": 2001,
+      "month": 11,
+      "shortwave_mj_m2": 101.31,
+      "days": 30
+    },
+    {
+      "year": 2001,
+      "month": 12,
+      "shortwave_mj_m2": 85.66,
+      "days": 31
+    },
+    {
+      "year": 2002,
+      "month": 1,
+      "shortwave_mj_m2": 85.06,
+      "days": 31
+    },
+    {
+      "year": 2002,
+      "month": 2,
+      "shortwave_mj_m2": 143.22,
+      "days": 28
+    },
+    {
+      "year": 2002,
+      "month": 3,
+      "shortwave_mj_m2": 302.99,
+      "days": 31
+    },
+    {
+      "year": 2002,
+      "month": 4,
+      "shortwave_mj_m2": 452.38,
+      "days": 30
+    },
+    {
+      "year": 2002,
+      "month": 5,
+      "shortwave_mj_m2": 535.57,
+      "days": 31
+    },
+    {
+      "year": 2002,
+      "month": 6,
+      "shortwave_mj_m2": 543.63,
+      "days": 30
+    },
+    {
+      "year": 2002,
+      "month": 7,
+      "shortwave_mj_m2": 508.08,
+      "days": 31
+    },
+    {
+      "year": 2002,
+      "month": 8,
+      "shortwave_mj_m2": 444.23,
+      "days": 31
+    },
+    {
+      "year": 2002,
+      "month": 9,
+      "shortwave_mj_m2": 371.73,
+      "days": 30
+    },
+    {
+      "year": 2002,
+      "month": 10,
+      "shortwave_mj_m2": 207.73,
+      "days": 31
+    },
+    {
+      "year": 2002,
+      "month": 11,
+      "shortwave_mj_m2": 99.24,
+      "days": 30
+    },
+    {
+      "year": 2002,
+      "month": 12,
+      "shortwave_mj_m2": 72.45,
+      "days": 31
+    },
+    {
+      "year": 2003,
+      "month": 1,
+      "shortwave_mj_m2": 97.99,
+      "days": 31
+    },
+    {
+      "year": 2003,
+      "month": 2,
+      "shortwave_mj_m2": 154.35,
+      "days": 28
+    },
+    {
+      "year": 2003,
+      "month": 3,
+      "shortwave_mj_m2": 338.64,
+      "days": 31
+    },
+    {
+      "year": 2003,
+      "month": 4,
+      "shortwave_mj_m2": 483.28,
+      "days": 30
+    },
+    {
+      "year": 2003,
+      "month": 5,
+      "shortwave_mj_m2": 530.28,
+      "days": 31
+    },
+    {
+      "year": 2003,
+      "month": 6,
+      "shortwave_mj_m2": 603.44,
+      "days": 30
+    },
+    {
+      "year": 2003,
+      "month": 7,
+      "shortwave_mj_m2": 505.47,
+      "days": 31
+    },
+    {
+      "year": 2003,
+      "month": 8,
+      "shortwave_mj_m2": 526.73,
+      "days": 31
+    },
+    {
+      "year": 2003,
+      "month": 9,
+      "shortwave_mj_m2": 325.42,
+      "days": 30
+    },
+    {
+      "year": 2003,
+      "month": 10,
+      "shortwave_mj_m2": 229.13,
+      "days": 31
+    },
+    {
+      "year": 2003,
+      "month": 11,
+      "shortwave_mj_m2": 100.44,
+      "days": 30
+    },
+    {
+      "year": 2003,
+      "month": 12,
+      "shortwave_mj_m2": 68.51,
+      "days": 31
+    },
+    {
+      "year": 2004,
+      "month": 1,
+      "shortwave_mj_m2": 89.09,
+      "days": 31
+    },
+    {
+      "year": 2004,
+      "month": 2,
+      "shortwave_mj_m2": 187.96,
+      "days": 29
+    },
+    {
+      "year": 2004,
+      "month": 3,
+      "shortwave_mj_m2": 325.97,
+      "days": 31
+    },
+    {
+      "year": 2004,
+      "month": 4,
+      "shortwave_mj_m2": 426.33,
+      "days": 30
+    },
+    {
+      "year": 2004,
+      "month": 5,
+      "shortwave_mj_m2": 595.4,
+      "days": 31
+    },
+    {
+      "year": 2004,
+      "month": 6,
+      "shortwave_mj_m2": 605.55,
+      "days": 30
+    },
+    {
+      "year": 2004,
+      "month": 7,
+      "shortwave_mj_m2": 590.23,
+      "days": 31
+    },
+    {
+      "year": 2004,
+      "month": 8,
+      "shortwave_mj_m2": 472.47,
+      "days": 31
+    },
+    {
+      "year": 2004,
+      "month": 9,
+      "shortwave_mj_m2": 283.3,
+      "days": 30
+    },
+    {
+      "year": 2004,
+      "month": 10,
+      "shortwave_mj_m2": 216.81,
+      "days": 31
+    },
+    {
+      "year": 2004,
+      "month": 11,
+      "shortwave_mj_m2": 94.97,
+      "days": 30
+    },
+    {
+      "year": 2004,
+      "month": 12,
+      "shortwave_mj_m2": 69.08,
+      "days": 31
+    },
+    {
+      "year": 2005,
+      "month": 1,
+      "shortwave_mj_m2": 87.07,
+      "days": 31
+    },
+    {
+      "year": 2005,
+      "month": 2,
+      "shortwave_mj_m2": 159.59,
+      "days": 28
+    },
+    {
+      "year": 2005,
+      "month": 3,
+      "shortwave_mj_m2": 307.41,
+      "days": 31
+    },
+    {
+      "year": 2005,
+      "month": 4,
+      "shortwave_mj_m2": 458.14,
+      "days": 30
+    },
+    {
+      "year": 2005,
+      "month": 5,
+      "shortwave_mj_m2": 560.49,
+      "days": 31
+    },
+    {
+      "year": 2005,
+      "month": 6,
+      "shortwave_mj_m2": 580.47,
+      "days": 30
+    },
+    {
+      "year": 2005,
+      "month": 7,
+      "shortwave_mj_m2": 538.98,
+      "days": 31
+    },
+    {
+      "year": 2005,
+      "month": 8,
+      "shortwave_mj_m2": 484.56,
+      "days": 31
+    },
+    {
+      "year": 2005,
+      "month": 9,
+      "shortwave_mj_m2": 299.25,
+      "days": 30
+    },
+    {
+      "year": 2005,
+      "month": 10,
+      "shortwave_mj_m2": 203.68,
+      "days": 31
+    },
+    {
+      "year": 2005,
+      "month": 11,
+      "shortwave_mj_m2": 111.94,
+      "days": 30
+    },
+    {
+      "year": 2005,
+      "month": 12,
+      "shortwave_mj_m2": 69.94,
+      "days": 31
+    },
+    {
+      "year": 2006,
+      "month": 1,
+      "shortwave_mj_m2": 96.94,
+      "days": 31
+    },
+    {
+      "year": 2006,
+      "month": 2,
+      "shortwave_mj_m2": 170.81,
+      "days": 28
+    },
+    {
+      "year": 2006,
+      "month": 3,
+      "shortwave_mj_m2": 260.46,
+      "days": 31
+    },
+    {
+      "year": 2006,
+      "month": 4,
+      "shortwave_mj_m2": 464.09,
+      "days": 30
+    },
+    {
+      "year": 2006,
+      "month": 5,
+      "shortwave_mj_m2": 530.29,
+      "days": 31
+    },
+    {
+      "year": 2006,
+      "month": 6,
+      "shortwave_mj_m2": 661.8,
+      "days": 30
+    },
+    {
+      "year": 2006,
+      "month": 7,
+      "shortwave_mj_m2": 578.85,
+      "days": 31
+    },
+    {
+      "year": 2006,
+      "month": 8,
+      "shortwave_mj_m2": 480.03,
+      "days": 31
+    },
+    {
+      "year": 2006,
+      "month": 9,
+      "shortwave_mj_m2": 324.94,
+      "days": 30
+    },
+    {
+      "year": 2006,
+      "month": 10,
+      "shortwave_mj_m2": 189.1,
+      "days": 31
+    },
+    {
+      "year": 2006,
+      "month": 11,
+      "shortwave_mj_m2": 107.62,
+      "days": 30
+    },
+    {
+      "year": 2006,
+      "month": 12,
+      "shortwave_mj_m2": 69.11,
+      "days": 31
+    },
+    {
+      "year": 2007,
+      "month": 1,
+      "shortwave_mj_m2": 96.73,
+      "days": 31
+    },
+    {
+      "year": 2007,
+      "month": 2,
+      "shortwave_mj_m2": 146.12,
+      "days": 28
+    },
+    {
+      "year": 2007,
+      "month": 3,
+      "shortwave_mj_m2": 306.14,
+      "days": 31
+    },
+    {
+      "year": 2007,
+      "month": 4,
+      "shortwave_mj_m2": 507.6,
+      "days": 30
+    },
+    {
+      "year": 2007,
+      "month": 5,
+      "shortwave_mj_m2": 557.24,
+      "days": 31
+    },
+    {
+      "year": 2007,
+      "month": 6,
+      "shortwave_mj_m2": 566.79,
+      "days": 30
+    },
+    {
+      "year": 2007,
+      "month": 7,
+      "shortwave_mj_m2": 608.76,
+      "days": 31
+    },
+    {
+      "year": 2007,
+      "month": 8,
+      "shortwave_mj_m2": 451.16,
+      "days": 31
+    },
+    {
+      "year": 2007,
+      "month": 9,
+      "shortwave_mj_m2": 360.55,
+      "days": 30
+    },
+    {
+      "year": 2007,
+      "month": 10,
+      "shortwave_mj_m2": 205.67,
+      "days": 31
+    },
+    {
+      "year": 2007,
+      "month": 11,
+      "shortwave_mj_m2": 108.01,
+      "days": 30
+    },
+    {
+      "year": 2007,
+      "month": 12,
+      "shortwave_mj_m2": 68.71,
+      "days": 31
+    },
+    {
+      "year": 2008,
+      "month": 1,
+      "shortwave_mj_m2": 84.37,
+      "days": 31
+    },
+    {
+      "year": 2008,
+      "month": 2,
+      "shortwave_mj_m2": 167.48,
+      "days": 29
+    },
+    {
+      "year": 2008,
+      "month": 3,
+      "shortwave_mj_m2": 305.58,
+      "days": 31
+    },
+    {
+      "year": 2008,
+      "month": 4,
+      "shortwave_mj_m2": 496.92,
+      "days": 30
+    },
+    {
+      "year": 2008,
+      "month": 5,
+      "shortwave_mj_m2": 599.52,
+      "days": 31
+    },
+    {
+      "year": 2008,
+      "month": 6,
+      "shortwave_mj_m2": 567.41,
+      "days": 30
+    },
+    {
+      "year": 2008,
+      "month": 7,
+      "shortwave_mj_m2": 516.56,
+      "days": 31
+    },
+    {
+      "year": 2008,
+      "month": 8,
+      "shortwave_mj_m2": 411.1,
+      "days": 31
+    },
+    {
+      "year": 2008,
+      "month": 9,
+      "shortwave_mj_m2": 320.41,
+      "days": 30
+    },
+    {
+      "year": 2008,
+      "month": 10,
+      "shortwave_mj_m2": 186.65,
+      "days": 31
+    },
+    {
+      "year": 2008,
+      "month": 11,
+      "shortwave_mj_m2": 104.06,
+      "days": 30
+    },
+    {
+      "year": 2008,
+      "month": 12,
+      "shortwave_mj_m2": 64.02,
+      "days": 31
+    },
+    {
+      "year": 2009,
+      "month": 1,
+      "shortwave_mj_m2": 87.18,
+      "days": 31
+    },
+    {
+      "year": 2009,
+      "month": 2,
+      "shortwave_mj_m2": 159.52,
+      "days": 28
+    },
+    {
+      "year": 2009,
+      "month": 3,
+      "shortwave_mj_m2": 328.15,
+      "days": 31
+    },
+    {
+      "year": 2009,
+      "month": 4,
+      "shortwave_mj_m2": 444.84,
+      "days": 30
+    },
+    {
+      "year": 2009,
+      "month": 5,
+      "shortwave_mj_m2": 562.49,
+      "days": 31
+    },
+    {
+      "year": 2009,
+      "month": 6,
+      "shortwave_mj_m2": 665.03,
+      "days": 30
+    },
+    {
+      "year": 2009,
+      "month": 7,
+      "shortwave_mj_m2": 567.32,
+      "days": 31
+    },
+    {
+      "year": 2009,
+      "month": 8,
+      "shortwave_mj_m2": 411.72,
+      "days": 31
+    },
+    {
+      "year": 2009,
+      "month": 9,
+      "shortwave_mj_m2": 343.0,
+      "days": 30
+    },
+    {
+      "year": 2009,
+      "month": 10,
+      "shortwave_mj_m2": 183.92,
+      "days": 31
+    },
+    {
+      "year": 2009,
+      "month": 11,
+      "shortwave_mj_m2": 102.1,
+      "days": 30
+    },
+    {
+      "year": 2009,
+      "month": 12,
+      "shortwave_mj_m2": 78.46,
+      "days": 31
+    },
+    {
+      "year": 2010,
+      "month": 1,
+      "shortwave_mj_m2": 111.55,
+      "days": 31
+    },
+    {
+      "year": 2010,
+      "month": 2,
+      "shortwave_mj_m2": 183.21,
+      "days": 28
+    },
+    {
+      "year": 2010,
+      "month": 3,
+      "shortwave_mj_m2": 354.25,
+      "days": 31
+    },
+    {
+      "year": 2010,
+      "month": 4,
+      "shortwave_mj_m2": 506.3,
+      "days": 30
+    },
+    {
+      "year": 2010,
+      "month": 5,
+      "shortwave_mj_m2": 585.69,
+      "days": 31
+    },
+    {
+      "year": 2010,
+      "month": 6,
+      "shortwave_mj_m2": 625.25,
+      "days": 30
+    },
+    {
+      "year": 2010,
+      "month": 7,
+      "shortwave_mj_m2": 457.96,
+      "days": 31
+    },
+    {
+      "year": 2010,
+      "month": 8,
+      "shortwave_mj_m2": 491.93,
+      "days": 31
+    },
+    {
+      "year": 2010,
+      "month": 9,
+      "shortwave_mj_m2": 331.62,
+      "days": 30
+    },
+    {
+      "year": 2010,
+      "month": 10,
+      "shortwave_mj_m2": 225.72,
+      "days": 31
+    },
+    {
+      "year": 2010,
+      "month": 11,
+      "shortwave_mj_m2": 105.83,
+      "days": 30
+    },
+    {
+      "year": 2010,
+      "month": 12,
+      "shortwave_mj_m2": 84.91,
+      "days": 31
+    },
+    {
+      "year": 2011,
+      "month": 1,
+      "shortwave_mj_m2": 98.54,
+      "days": 31
+    },
+    {
+      "year": 2011,
+      "month": 2,
+      "shortwave_mj_m2": 142.28,
+      "days": 28
+    },
+    {
+      "year": 2011,
+      "month": 3,
+      "shortwave_mj_m2": 348.66,
+      "days": 31
+    },
+    {
+      "year": 2011,
+      "month": 4,
+      "shortwave_mj_m2": 455.88,
+      "days": 30
+    },
+    {
+      "year": 2011,
+      "month": 5,
+      "shortwave_mj_m2": 535.42,
+      "days": 31
+    },
+    {
+      "year": 2011,
+      "month": 6,
+      "shortwave_mj_m2": 594.34,
+      "days": 30
+    },
+    {
+      "year": 2011,
+      "month": 7,
+      "shortwave_mj_m2": 496.84,
+      "days": 31
+    },
+    {
+      "year": 2011,
+      "month": 8,
+      "shortwave_mj_m2": 456.75,
+      "days": 31
+    },
+    {
+      "year": 2011,
+      "month": 9,
+      "shortwave_mj_m2": 304.87,
+      "days": 30
+    },
+    {
+      "year": 2011,
+      "month": 10,
+      "shortwave_mj_m2": 159.17,
+      "days": 31
+    },
+    {
+      "year": 2011,
+      "month": 11,
+      "shortwave_mj_m2": 106.91,
+      "days": 30
+    },
+    {
+      "year": 2011,
+      "month": 12,
+      "shortwave_mj_m2": 57.44,
+      "days": 31
+    },
+    {
+      "year": 2012,
+      "month": 1,
+      "shortwave_mj_m2": 71.88,
+      "days": 31
+    },
+    {
+      "year": 2012,
+      "month": 2,
+      "shortwave_mj_m2": 120.86,
+      "days": 29
+    },
+    {
+      "year": 2012,
+      "month": 3,
+      "shortwave_mj_m2": 344.69,
+      "days": 31
+    },
+    {
+      "year": 2012,
+      "month": 4,
+      "shortwave_mj_m2": 487.35,
+      "days": 30
+    },
+    {
+      "year": 2012,
+      "month": 5,
+      "shortwave_mj_m2": 561.68,
+      "days": 31
+    },
+    {
+      "year": 2012,
+      "month": 6,
+      "shortwave_mj_m2": 511.94,
+      "days": 30
+    },
+    {
+      "year": 2012,
+      "month": 7,
+      "shortwave_mj_m2": 479.62,
+      "days": 31
+    },
+    {
+      "year": 2012,
+      "month": 8,
+      "shortwave_mj_m2": 464.59,
+      "days": 31
+    },
+    {
+      "year": 2012,
+      "month": 9,
+      "shortwave_mj_m2": 335.1,
+      "days": 30
+    },
+    {
+      "year": 2012,
+      "month": 10,
+      "shortwave_mj_m2": 196.46,
+      "days": 31
+    },
+    {
+      "year": 2012,
+      "month": 11,
+      "shortwave_mj_m2": 108.59,
+      "days": 30
+    },
+    {
+      "year": 2012,
+      "month": 12,
+      "shortwave_mj_m2": 66.49,
+      "days": 31
+    },
+    {
+      "year": 2013,
+      "month": 1,
+      "shortwave_mj_m2": 79.63,
+      "days": 31
+    },
+    {
+      "year": 2013,
+      "month": 2,
+      "shortwave_mj_m2": 161.95,
+      "days": 28
+    },
+    {
+      "year": 2013,
+      "month": 3,
+      "shortwave_mj_m2": 307.5,
+      "days": 31
+    },
+    {
+      "year": 2013,
+      "month": 4,
+      "shortwave_mj_m2": 455.12,
+      "days": 30
+    },
+    {
+      "year": 2013,
+      "month": 5,
+      "shortwave_mj_m2": 583.53,
+      "days": 31
+    },
+    {
+      "year": 2013,
+      "month": 6,
+      "shortwave_mj_m2": 556.43,
+      "days": 30
+    },
+    {
+      "year": 2013,
+      "month": 7,
+      "shortwave_mj_m2": 644.22,
+      "days": 31
+    },
+    {
+      "year": 2013,
+      "month": 8,
+      "shortwave_mj_m2": 443.35,
+      "days": 31
+    },
+    {
+      "year": 2013,
+      "month": 9,
+      "shortwave_mj_m2": 309.44,
+      "days": 30
+    },
+    {
+      "year": 2013,
+      "month": 10,
+      "shortwave_mj_m2": 212.44,
+      "days": 31
+    },
+    {
+      "year": 2013,
+      "month": 11,
+      "shortwave_mj_m2": 99.42,
+      "days": 30
+    },
+    {
+      "year": 2013,
+      "month": 12,
+      "shortwave_mj_m2": 63.28,
+      "days": 31
+    },
+    {
+      "year": 2014,
+      "month": 1,
+      "shortwave_mj_m2": 92.61,
+      "days": 31
+    },
+    {
+      "year": 2014,
+      "month": 2,
+      "shortwave_mj_m2": 158.2,
+      "days": 28
+    },
+    {
+      "year": 2014,
+      "month": 3,
+      "shortwave_mj_m2": 317.48,
+      "days": 31
+    },
+    {
+      "year": 2014,
+      "month": 4,
+      "shortwave_mj_m2": 464.45,
+      "days": 30
+    },
+    {
+      "year": 2014,
+      "month": 5,
+      "shortwave_mj_m2": 551.85,
+      "days": 31
+    },
+    {
+      "year": 2014,
+      "month": 6,
+      "shortwave_mj_m2": 632.73,
+      "days": 30
+    },
+    {
+      "year": 2014,
+      "month": 7,
+      "shortwave_mj_m2": 534.36,
+      "days": 31
+    },
+    {
+      "year": 2014,
+      "month": 8,
+      "shortwave_mj_m2": 485.63,
+      "days": 31
+    },
+    {
+      "year": 2014,
+      "month": 9,
+      "shortwave_mj_m2": 372.54,
+      "days": 30
+    },
+    {
+      "year": 2014,
+      "month": 10,
+      "shortwave_mj_m2": 198.05,
+      "days": 31
+    },
+    {
+      "year": 2014,
+      "month": 11,
+      "shortwave_mj_m2": 110.17,
+      "days": 30
+    },
+    {
+      "year": 2014,
+      "month": 12,
+      "shortwave_mj_m2": 60.86,
+      "days": 31
+    },
+    {
+      "year": 2015,
+      "month": 1,
+      "shortwave_mj_m2": 87.32,
+      "days": 31
+    },
+    {
+      "year": 2015,
+      "month": 2,
+      "shortwave_mj_m2": 155.94,
+      "days": 28
+    },
+    {
+      "year": 2015,
+      "month": 3,
+      "shortwave_mj_m2": 314.24,
+      "days": 31
+    },
+    {
+      "year": 2015,
+      "month": 4,
+      "shortwave_mj_m2": 532.46,
+      "days": 30
+    },
+    {
+      "year": 2015,
+      "month": 5,
+      "shortwave_mj_m2": 508.97,
+      "days": 31
+    },
+    {
+      "year": 2015,
+      "month": 6,
+      "shortwave_mj_m2": 588.42,
+      "days": 30
+    },
+    {
+      "year": 2015,
+      "month": 7,
+      "shortwave_mj_m2": 538.98,
+      "days": 31
+    },
+    {
+      "year": 2015,
+      "month": 8,
+      "shortwave_mj_m2": 483.33,
+      "days": 31
+    },
+    {
+      "year": 2015,
+      "month": 9,
+      "shortwave_mj_m2": 345.45,
+      "days": 30
+    },
+    {
+      "year": 2015,
+      "month": 10,
+      "shortwave_mj_m2": 214.41,
+      "days": 31
+    },
+    {
+      "year": 2015,
+      "month": 11,
+      "shortwave_mj_m2": 92.71,
+      "days": 30
+    },
+    {
+      "year": 2015,
+      "month": 12,
+      "shortwave_mj_m2": 55.95,
+      "days": 31
+    },
+    {
+      "year": 2016,
+      "month": 1,
+      "shortwave_mj_m2": 78.04,
+      "days": 31
+    },
+    {
+      "year": 2016,
+      "month": 2,
+      "shortwave_mj_m2": 155.65,
+      "days": 29
+    },
+    {
+      "year": 2016,
+      "month": 3,
+      "shortwave_mj_m2": 330.88,
+      "days": 31
+    },
+    {
+      "year": 2016,
+      "month": 4,
+      "shortwave_mj_m2": 457.45,
+      "days": 30
+    },
+    {
+      "year": 2016,
+      "month": 5,
+      "shortwave_mj_m2": 585.86,
+      "days": 31
+    },
+    {
+      "year": 2016,
+      "month": 6,
+      "shortwave_mj_m2": 572.13,
+      "days": 30
+    },
+    {
+      "year": 2016,
+      "month": 7,
+      "shortwave_mj_m2": 515.21,
+      "days": 31
+    },
+    {
+      "year": 2016,
+      "month": 8,
+      "shortwave_mj_m2": 468.48,
+      "days": 31
+    },
+    {
+      "year": 2016,
+      "month": 9,
+      "shortwave_mj_m2": 285.96,
+      "days": 30
+    },
+    {
+      "year": 2016,
+      "month": 10,
+      "shortwave_mj_m2": 215.22,
+      "days": 31
+    },
+    {
+      "year": 2016,
+      "month": 11,
+      "shortwave_mj_m2": 118.8,
+      "days": 30
+    },
+    {
+      "year": 2016,
+      "month": 12,
+      "shortwave_mj_m2": 68.55,
+      "days": 31
+    },
+    {
+      "year": 2017,
+      "month": 1,
+      "shortwave_mj_m2": 87.61,
+      "days": 31
+    },
+    {
+      "year": 2017,
+      "month": 2,
+      "shortwave_mj_m2": 141.94,
+      "days": 28
+    },
+    {
+      "year": 2017,
+      "month": 3,
+      "shortwave_mj_m2": 296.68,
+      "days": 31
+    },
+    {
+      "year": 2017,
+      "month": 4,
+      "shortwave_mj_m2": 457.58,
+      "days": 30
+    },
+    {
+      "year": 2017,
+      "month": 5,
+      "shortwave_mj_m2": 619.05,
+      "days": 31
+    },
+    {
+      "year": 2017,
+      "month": 6,
+      "shortwave_mj_m2": 529.75,
+      "days": 30
+    },
+    {
+      "year": 2017,
+      "month": 7,
+      "shortwave_mj_m2": 515.16,
+      "days": 31
+    },
+    {
+      "year": 2017,
+      "month": 8,
+      "shortwave_mj_m2": 436.3,
+      "days": 31
+    },
+    {
+      "year": 2017,
+      "month": 9,
+      "shortwave_mj_m2": 307.53,
+      "days": 30
+    },
+    {
+      "year": 2017,
+      "month": 10,
+      "shortwave_mj_m2": 149.58,
+      "days": 31
+    },
+    {
+      "year": 2017,
+      "month": 11,
+      "shortwave_mj_m2": 93.32,
+      "days": 30
+    },
+    {
+      "year": 2017,
+      "month": 12,
+      "shortwave_mj_m2": 57.53,
+      "days": 31
+    },
+    {
+      "year": 2018,
+      "month": 1,
+      "shortwave_mj_m2": 84.12,
+      "days": 31
+    },
+    {
+      "year": 2018,
+      "month": 2,
+      "shortwave_mj_m2": 156.25,
+      "days": 28
+    },
+    {
+      "year": 2018,
+      "month": 3,
+      "shortwave_mj_m2": 289.29,
+      "days": 31
+    },
+    {
+      "year": 2018,
+      "month": 4,
+      "shortwave_mj_m2": 407.23,
+      "days": 30
+    },
+    {
+      "year": 2018,
+      "month": 5,
+      "shortwave_mj_m2": 548.1,
+      "days": 31
+    },
+    {
+      "year": 2018,
+      "month": 6,
+      "shortwave_mj_m2": 658.49,
+      "days": 30
+    },
+    {
+      "year": 2018,
+      "month": 7,
+      "shortwave_mj_m2": 636.37,
+      "days": 31
+    },
+    {
+      "year": 2018,
+      "month": 8,
+      "shortwave_mj_m2": 412.51,
+      "days": 31
+    },
+    {
+      "year": 2018,
+      "month": 9,
+      "shortwave_mj_m2": 314.56,
+      "days": 30
+    },
+    {
+      "year": 2018,
+      "month": 10,
+      "shortwave_mj_m2": 205.99,
+      "days": 31
+    },
+    {
+      "year": 2018,
+      "month": 11,
+      "shortwave_mj_m2": 100.4,
+      "days": 30
+    },
+    {
+      "year": 2018,
+      "month": 12,
+      "shortwave_mj_m2": 53.07,
+      "days": 31
+    },
+    {
+      "year": 2019,
+      "month": 1,
+      "shortwave_mj_m2": 73.47,
+      "days": 31
+    },
+    {
+      "year": 2019,
+      "month": 2,
+      "shortwave_mj_m2": 141.29,
+      "days": 28
+    },
+    {
+      "year": 2019,
+      "month": 3,
+      "shortwave_mj_m2": 255.12,
+      "days": 31
+    },
+    {
+      "year": 2019,
+      "month": 4,
+      "shortwave_mj_m2": 439.56,
+      "days": 30
+    },
+    {
+      "year": 2019,
+      "month": 5,
+      "shortwave_mj_m2": 564.44,
+      "days": 31
+    },
+    {
+      "year": 2019,
+      "month": 6,
+      "shortwave_mj_m2": 617.02,
+      "days": 30
+    },
+    {
+      "year": 2019,
+      "month": 7,
+      "shortwave_mj_m2": 578.15,
+      "days": 31
+    },
+    {
+      "year": 2019,
+      "month": 8,
+      "shortwave_mj_m2": 447.32,
+      "days": 31
+    },
+    {
+      "year": 2019,
+      "month": 9,
+      "shortwave_mj_m2": 323.62,
+      "days": 30
+    },
+    {
+      "year": 2019,
+      "month": 10,
+      "shortwave_mj_m2": 197.71,
+      "days": 31
+    },
+    {
+      "year": 2019,
+      "month": 11,
+      "shortwave_mj_m2": 101.31,
+      "days": 30
+    },
+    {
+      "year": 2019,
+      "month": 12,
+      "shortwave_mj_m2": 66.5,
+      "days": 31
+    },
+    {
+      "year": 2020,
+      "month": 1,
+      "shortwave_mj_m2": 83.75,
+      "days": 31
+    },
+    {
+      "year": 2020,
+      "month": 2,
+      "shortwave_mj_m2": 135.89,
+      "days": 29
+    },
+    {
+      "year": 2020,
+      "month": 3,
+      "shortwave_mj_m2": 276.0,
+      "days": 31
+    },
+    {
+      "year": 2020,
+      "month": 4,
+      "shortwave_mj_m2": 477.88,
+      "days": 30
+    },
+    {
+      "year": 2020,
+      "month": 5,
+      "shortwave_mj_m2": 634.36,
+      "days": 31
+    },
+    {
+      "year": 2020,
+      "month": 6,
+      "shortwave_mj_m2": 534.04,
+      "days": 30
+    },
+    {
+      "year": 2020,
+      "month": 7,
+      "shortwave_mj_m2": 500.62,
+      "days": 31
+    },
+    {
+      "year": 2020,
+      "month": 8,
+      "shortwave_mj_m2": 464.96,
+      "days": 31
+    },
+    {
+      "year": 2020,
+      "month": 9,
+      "shortwave_mj_m2": 333.97,
+      "days": 30
+    },
+    {
+      "year": 2020,
+      "month": 10,
+      "shortwave_mj_m2": 205.53,
+      "days": 31
+    },
+    {
+      "year": 2020,
+      "month": 11,
+      "shortwave_mj_m2": 94.31,
+      "days": 30
+    },
+    {
+      "year": 2020,
+      "month": 12,
+      "shortwave_mj_m2": 67.83,
+      "days": 31
+    },
+    {
+      "year": 2021,
+      "month": 1,
+      "shortwave_mj_m2": 89.49,
+      "days": 31
+    },
+    {
+      "year": 2021,
+      "month": 2,
+      "shortwave_mj_m2": 138.07,
+      "days": 28
+    },
+    {
+      "year": 2021,
+      "month": 3,
+      "shortwave_mj_m2": 268.99,
+      "days": 31
+    },
+    {
+      "year": 2021,
+      "month": 4,
+      "shortwave_mj_m2": 502.58,
+      "days": 30
+    },
+    {
+      "year": 2021,
+      "month": 5,
+      "shortwave_mj_m2": 565.27,
+      "days": 31
+    },
+    {
+      "year": 2021,
+      "month": 6,
+      "shortwave_mj_m2": 530.75,
+      "days": 30
+    },
+    {
+      "year": 2021,
+      "month": 7,
+      "shortwave_mj_m2": 579.19,
+      "days": 31
+    },
+    {
+      "year": 2021,
+      "month": 8,
+      "shortwave_mj_m2": 469.79,
+      "days": 31
+    },
+    {
+      "year": 2021,
+      "month": 9,
+      "shortwave_mj_m2": 319.52,
+      "days": 30
+    },
+    {
+      "year": 2021,
+      "month": 10,
+      "shortwave_mj_m2": 200.23,
+      "days": 31
+    },
+    {
+      "year": 2021,
+      "month": 11,
+      "shortwave_mj_m2": 91.5,
+      "days": 30
+    },
+    {
+      "year": 2021,
+      "month": 12,
+      "shortwave_mj_m2": 68.15,
+      "days": 31
+    },
+    {
+      "year": 2022,
+      "month": 1,
+      "shortwave_mj_m2": 90.93,
+      "days": 31
+    },
+    {
+      "year": 2022,
+      "month": 2,
+      "shortwave_mj_m2": 130.75,
+      "days": 28
+    },
+    {
+      "year": 2022,
+      "month": 3,
+      "shortwave_mj_m2": 377.86,
+      "days": 31
+    },
+    {
+      "year": 2022,
+      "month": 4,
+      "shortwave_mj_m2": 448.0,
+      "days": 30
+    },
+    {
+      "year": 2022,
+      "month": 5,
+      "shortwave_mj_m2": 569.69,
+      "days": 31
+    },
+    {
+      "year": 2022,
+      "month": 6,
+      "shortwave_mj_m2": 549.58,
+      "days": 30
+    },
+    {
+      "year": 2022,
+      "month": 7,
+      "shortwave_mj_m2": 553.68,
+      "days": 31
+    },
+    {
+      "year": 2022,
+      "month": 8,
+      "shortwave_mj_m2": 554.01,
+      "days": 31
+    },
+    {
+      "year": 2022,
+      "month": 9,
+      "shortwave_mj_m2": 349.53,
+      "days": 30
+    },
+    {
+      "year": 2022,
+      "month": 10,
+      "shortwave_mj_m2": 193.37,
+      "days": 31
+    },
+    {
+      "year": 2022,
+      "month": 11,
+      "shortwave_mj_m2": 98.2,
+      "days": 30
+    },
+    {
+      "year": 2022,
+      "month": 12,
+      "shortwave_mj_m2": 81.32,
+      "days": 31
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "shortwave_mj_m2": 80.71,
+      "days": 31
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "shortwave_mj_m2": 140.84,
+      "days": 28
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "shortwave_mj_m2": 246.36,
+      "days": 31
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "shortwave_mj_m2": 414.3,
+      "days": 30
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "shortwave_mj_m2": 619.1,
+      "days": 31
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "shortwave_mj_m2": 630.19,
+      "days": 30
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "shortwave_mj_m2": 543.54,
+      "days": 31
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "shortwave_mj_m2": 466.06,
+      "days": 31
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "shortwave_mj_m2": 334.89,
+      "days": 30
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "shortwave_mj_m2": 185.99,
+      "days": 31
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "shortwave_mj_m2": 118.94,
+      "days": 30
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "shortwave_mj_m2": 62.26,
+      "days": 31
+    },
+    {
+      "year": 2024,
+      "month": 1,
+      "shortwave_mj_m2": 96.77,
+      "days": 31
+    },
+    {
+      "year": 2024,
+      "month": 2,
+      "shortwave_mj_m2": 140.9,
+      "days": 29
+    },
+    {
+      "year": 2024,
+      "month": 3,
+      "shortwave_mj_m2": 284.67,
+      "days": 31
+    },
+    {
+      "year": 2024,
+      "month": 4,
+      "shortwave_mj_m2": 395.57,
+      "days": 30
+    },
+    {
+      "year": 2024,
+      "month": 5,
+      "shortwave_mj_m2": 590.6,
+      "days": 31
+    },
+    {
+      "year": 2024,
+      "month": 6,
+      "shortwave_mj_m2": 596.7,
+      "days": 30
+    },
+    {
+      "year": 2024,
+      "month": 7,
+      "shortwave_mj_m2": 564.65,
+      "days": 31
+    },
+    {
+      "year": 2024,
+      "month": 8,
+      "shortwave_mj_m2": 488.93,
+      "days": 31
+    },
+    {
+      "year": 2024,
+      "month": 9,
+      "shortwave_mj_m2": 342.36,
+      "days": 30
+    },
+    {
+      "year": 2024,
+      "month": 10,
+      "shortwave_mj_m2": 195.86,
+      "days": 31
+    },
+    {
+      "year": 2024,
+      "month": 11,
+      "shortwave_mj_m2": 87.52,
+      "days": 30
+    },
+    {
+      "year": 2024,
+      "month": 12,
+      "shortwave_mj_m2": 61.44,
+      "days": 31
+    },
+    {
+      "year": 2025,
+      "month": 1,
+      "shortwave_mj_m2": 94.57,
+      "days": 31
+    },
+    {
+      "year": 2025,
+      "month": 2,
+      "shortwave_mj_m2": 158.0,
+      "days": 28
+    },
+    {
+      "year": 2025,
+      "month": 3,
+      "shortwave_mj_m2": 320.09,
+      "days": 31
+    },
+    {
+      "year": 2025,
+      "month": 4,
+      "shortwave_mj_m2": 509.9,
+      "days": 30
+    },
+    {
+      "year": 2025,
+      "month": 5,
+      "shortwave_mj_m2": 664.76,
+      "days": 31
+    },
+    {
+      "year": 2025,
+      "month": 6,
+      "shortwave_mj_m2": 530.71,
+      "days": 30
+    },
+    {
+      "year": 2025,
+      "month": 7,
+      "shortwave_mj_m2": 554.95,
+      "days": 31
+    },
+    {
+      "year": 2025,
+      "month": 8,
+      "shortwave_mj_m2": 487.64,
+      "days": 31
+    },
+    {
+      "year": 2025,
+      "month": 9,
+      "shortwave_mj_m2": 345.01,
+      "days": 30
+    },
+    {
+      "year": 2025,
+      "month": 10,
+      "shortwave_mj_m2": 188.1,
+      "days": 31
+    },
+    {
+      "year": 2025,
+      "month": 11,
+      "shortwave_mj_m2": 95.36,
+      "days": 30
+    },
+    {
+      "year": 2025,
+      "month": 12,
+      "shortwave_mj_m2": 70.1,
+      "days": 31
+    },
+    {
+      "year": 2026,
+      "month": 1,
+      "shortwave_mj_m2": 90.48,
+      "days": 31
+    },
+    {
+      "year": 2026,
+      "month": 2,
+      "shortwave_mj_m2": 147.35,
+      "days": 28
+    },
+    {
+      "year": 2026,
+      "month": 3,
+      "shortwave_mj_m2": 275.4,
+      "days": 31
+    },
+    {
+      "year": 2026,
+      "month": 4,
+      "shortwave_mj_m2": 441.09,
+      "days": 30
+    },
+    {
+      "year": 2026,
+      "month": 5,
+      "shortwave_mj_m2": 551.94,
+      "days": 31
+    },
+    {
+      "year": 2026,
+      "month": 6,
+      "shortwave_mj_m2": 567.78,
+      "days": 28
+    }
+  ]
+}

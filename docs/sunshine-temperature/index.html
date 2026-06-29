@@ -1,710 +1,802 @@
-<!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>labs.klymot • Sunshine &amp; Temperature</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Ccircle cx='16' cy='16' r='13' fill='%230a1628'/%3E%3Ccircle cx='16' cy='16' r='13' stroke='%23d4a855' stroke-width='1.25'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.2' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='9.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='22.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='3' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='9' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Ccircle cx='19.5' cy='10.5' r='4' stroke='%23d4a855' stroke-width='1' fill='none' opacity='0.45'/%3E%3Ccircle cx='19.5' cy='10.5' r='2' fill='%23d4a855'/%3E%3C/svg%3E"><script>
-        (function () {
-            var h = window.location.hostname;
-            if (h === 'localhost' || h === '127.0.0.1') return;
-            var payload = JSON.stringify({ path: 'labs.klymot.com' + window.location.pathname, referrer: document.referrer || '' });
-            var blob = new Blob([payload], { type: 'text/plain' });
-            if (navigator.sendBeacon) {
-                navigator.sendBeacon('https://api.klymot.com/api/v1/usage', blob);
-            } else {
-                fetch('https://api.klymot.com/api/v1/usage', { method: 'POST', body: blob, keepalive: true }).catch(function () {});
-            }
-        }());
-    </script><script src="/js/klymot-chart.js"></script><link rel="stylesheet" href="/_astro/index.GIC9yEWZ.css"></head><body class="bg-slate-50 text-slate-900"><!-- Header --><header class="klymot-header sticky top-0 z-50"><div class="max-w-[420px] sm:max-w-[600px] mx-auto px-4 py-3 flex items-center justify-between"><div class="flex items-center gap-x-3 min-w-0"><a href="https://klymot.com" class="flex items-center gap-x-2 shrink-0" aria-label="klymot home"><span class="brand-logo" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="24" height="24"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"></circle><ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"></circle><circle cx="19.5" cy="10.5" r="2" fill="currentColor"></circle></svg></span><div class="leading-none"><span class="header-title text-xl font-semibold">klymot</span><span class="header-subtitle block text-[9px]">labs</span></div></a></div><div class="flex items-center gap-x-2 text-sm"><a href=".." class="px-3 py-1.5 brand-control active text-sm font-medium">Labs</a></div></div></header><div class="max-w-[420px] sm:max-w-[600px] mx-auto px-4 pb-12"><!-- Hero / Intro --><div class="pt-6 pb-4"><div class="flex items-center gap-x-2 mb-1"><span class="px-3 py-1 bg-sky-100 text-sky-700 text-xs font-semibold rounded">LAB</span></div><h1 class="font-display text-3xl tracking-tighter font-semibold leading-none">Sunshine &amp; Temperature</h1><p class="mt-2 text-slate-600 text-[16px]">Exploring the relationship between surface solar radiation (sunshine) and surface air temperature.</p></div><!-- Quick Explainer --><div class="section-card p-4 mb-6"><div class="flex items-start gap-3"><div class="w-5 h-5 mt-0.5 flex-shrink-0 text-sky-600">☀️</div><div class="text-sm explanation"><strong>Incoming sunshine</strong> delivers energy to the surface. More sunshine generally supports higher temperatures, but the relationship is complex.<span class="text-slate-500">Clouds, aerosols, albedo (ice/snow reflection), elevation, latitude, and ocean/land effects all play major roles.</span></div></div></div><!-- Station Selection --><div class="mb-6"><div class="flex items-center justify-between mb-2 px-1"><div class="font-semibold text-sm">Select Station Pair</div><div class="text-xs text-slate-500">Raw + Adjusted loaded</div></div><select id="stationSelect" onchange="updateStation()" class="w-full bg-white border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-sky-400"><!-- Populated by JS --></select><div id="stationInfo" class="mt-2 flex gap-2 text-xs"></div></div><!-- Complications Note --><div class="section-card p-4 mb-6 bg-amber-50 border-amber-200"><div class="text-xs font-semibold text-amber-700 mb-1.5">IMPORTANT CAVEATS</div><div id="stationCaveats" class="text-xs text-amber-800 space-y-1.5 explanation"><!-- Populated by JS --></div></div><!-- Data Controls --><div class="section-card p-4 mb-6"><div class="grid grid-cols-2 gap-3"><!-- Data Type --><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Temperature Data</div><div class="flex bg-slate-100 rounded-2xl p-1"><button onclick="setDataType('qcu')" id="btn-qcu" class="flex-1 py-1.5 text-xs font-medium rounded-[14px] bg-white shadow-sm">Raw</button><button onclick="setDataType('qcf')" id="btn-qcf" class="flex-1 py-1.5 text-xs font-medium rounded-[14px]">Adjusted</button></div></div><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Comparison</div><div class="flex bg-slate-100 rounded-2xl p-1"><button onclick="setResolution('monthly')" id="btn-monthly" class="flex-1 py-1.5 text-xs font-medium rounded-[14px] bg-white shadow-sm">Monthly</button><button onclick="setResolution('yearly')" id="btn-yearly" class="flex-1 py-1.5 text-xs font-medium rounded-[14px]">Yearly</button></div></div><!-- Solar Metric --><div class="col-span-2"><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Solar Measure</div><div class="flex bg-slate-100 rounded-2xl p-1"><button onclick="setSolarMetric('shortwave')" id="btn-shortwave" class="flex-1 py-1.5 text-xs font-medium rounded-[14px] bg-white shadow-sm">Pyranometer (MJ/m²)</button><button onclick="setSolarMetric('sunshine')" id="btn-sunshine" class="flex-1 py-1.5 text-xs font-medium rounded-[14px]">Sunshine hours</button></div></div></div><div class="mt-3 text-[10px] text-slate-500 px-1 space-y-1"><div><strong>Pyranometer (MJ/m²)</strong> — total incoming solar energy at the surface per month (direct + diffuse), from ERA5 <span class="font-mono">shortwave_radiation_sum</span>. This is what a pyranometer measures: global horizontal irradiance.</div><div><strong>Sunshine hours</strong> — hours of "bright" sunshine per month (irradiance above ~120&nbsp;W/m²), from ERA5 <span class="font-mono">sunshine_duration</span>. Analogous to a Campbell-Stokes recorder. Does not capture diffuse radiation on overcast days.</div></div><div class="mt-2 text-[10px] text-slate-500 px-1">Raw is unadjusted monthly GHCN temperature from Klymot; Adjusted is homogenized. Solar data loaded from <span class="font-mono">data/sunshine-qc.json</span>.</div><div id="loadStatus" class="mt-2 text-[10px] text-slate-500 px-1"></div></div><div class="section-card p-4 mb-6"><div class="grid grid-cols-2 gap-3"><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Sunshine Lag</div><div class="flex items-center gap-1"><button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Lag sunshine one quarter month earlier">−</button><span id="lagReadout" class="control-readout">0 mo</span><button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Lag sunshine one quarter month later">+</button></div></div><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Time Axis</div><div class="flex items-center gap-1"><button onclick="panTime(-1)" class="mini-tool" aria-label="Pan time axis earlier">‹</button><button onclick="zoomTime(1)" class="mini-tool" aria-label="Zoom in time axis">+</button><button onclick="zoomTime(-1)" class="mini-tool" aria-label="Zoom out time axis">−</button><button onclick="panTime(1)" class="mini-tool" aria-label="Pan time axis later">›</button><button onclick="resetTimeAxis()" class="mini-tool" aria-label="Reset time axis to default">↺</button></div></div></div><div id="timeWindowReadout" class="mt-3 text-[10px] text-slate-500 px-1"></div></div><!-- Visualizations --><div class="mb-6"><div class="flex items-center justify-between mb-3 px-1"><div class="font-semibold">Visualizations</div><div id="resolutionBadge" class="text-xs px-2 py-0.5 bg-white border rounded-full text-slate-500">Monthly pairs</div></div><!-- Time Series --><div class="section-card p-4 mb-4"><div class="flex justify-between items-center mb-3"><div class="font-medium text-sm">Time Series</div><div class="text-[10px] text-slate-400">Aligned observations</div></div><div id="timeSeriesChart" class="chart-container"></div></div><!-- Scatter Plot --><div class="section-card p-4"><div class="flex justify-between items-center mb-3"><div class="font-medium text-sm">Scatter: Sunshine vs Temperature</div></div><div id="scatterChart" class="chart-container"></div><div id="scatterNote" class="text-[10px] text-center text-slate-500 mt-1"></div></div></div><!-- Correlation Analysis --><div class="section-card p-4 mb-6"><div class="font-semibold mb-3">Correlation Analysis</div><div class="metric-grid mb-4"><div class="metric-card"><div class="metric-label text-xs text-slate-500">Pearson r</div><div id="pearsonR" class="text-3xl font-semibold tabular-nums text-sky-600">0.72</div></div><div class="metric-card"><div class="metric-label text-xs text-slate-500">r² (explained variance)</div><div id="rSquared" class="text-3xl font-semibold tabular-nums">0.52</div></div><div class="metric-card"><div class="metric-label text-xs text-slate-500">p-value (approx)</div><div id="pValue" class="text-3xl font-semibold tabular-nums text-emerald-600">&lt;0.001</div></div></div><div class="bg-slate-50 rounded-2xl p-3 text-xs"><div class="font-medium mb-1">Contribution Score</div><div id="contributionScore" class="text-lg font-semibold text-emerald-600">Strong positive contribution (r = 0.72)</div><div class="text-[10px] text-slate-600 mt-1">Sunshine explains a meaningful portion of temperature variance at this location. Other factors (clouds, circulation, etc.) account for the remainder.</div></div></div><!-- Footer / Notes --><div class="section-card p-4 mb-6 text-[13px] text-slate-400 source-list"><div class="font-semibold text-sm mb-2 text-slate-700">Sources &amp; References</div><p class="mb-2"><strong>Temperature:</strong> Klymot station CSVs derived from GHCN-Monthly v4 Raw and Adjusted records. GHCNm is the Global Historical Climatology Network Monthly temperature dataset; Klymot uses station records as the primary climate observation source. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018 DOI</a>.</p><p class="mb-2"><strong>Homogenization:</strong> Adjusted records follow the GHCN processing lineage, including pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009 DOI</a>.</p><p class="mb-2"><strong>Pyranometer / Shortwave radiation:</strong> Monthly totals of <span class="font-mono">shortwave_radiation_sum</span> from the Open-Meteo Historical Weather API (ERA5 reanalysis). ERA5 derives surface downwelling shortwave radiation from the ECMWF atmospheric model; it represents global horizontal irradiance — the same physical quantity measured by a pyranometer — but is a gridded model estimate rather than a station instrument record. <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo documentation</a>. <a href="https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5" target="_blank" rel="noopener">ERA5 dataset</a>.</p><p class="mb-2"><strong>Sunshine hours:</strong> Monthly totals of <span class="font-mono">sunshine_duration</span> from the same ERA5/Open-Meteo source. Counts hours where surface solar irradiance exceeds approximately 120&nbsp;W/m², analogous to a Campbell-Stokes sunshine recorder. Both solar variables are fetched by <span class="font-mono">scripts/fetch_sunshine.py</span> and stored in <span class="font-mono">data/sunshine-qc.json</span>.</p><p>This is a neutral exploration tool. Correlation does not imply causation; circulation, clouds, albedo, elevation, land/sea effects, and station exposure can influence both variables.</p></div></div><script>
-        function cssVar(name) {
-            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Sunshine &amp; Temperature — klymot labs</title><meta name="description" content="Explore the relationship between incoming solar radiation and surface temperature using ERA5 reanalysis and GHCN station records."><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Ccircle cx='16' cy='16' r='13' fill='%230a1628'/%3E%3Ccircle cx='16' cy='16' r='13' stroke='%23d4a855' stroke-width='1.25'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.2' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='9.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='22.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='3' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='9' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Ccircle cx='19.5' cy='10.5' r='4' stroke='%23d4a855' stroke-width='1' fill='none' opacity='0.45'/%3E%3Ccircle cx='19.5' cy='10.5' r='2' fill='%23d4a855'/%3E%3C/svg%3E"><!-- Fonts — matches klymot.com --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Source+Sans+3:wght@300;400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"><!-- FOUC prevention: dark is default; light is opt-in. --><script>
+    (function () {
+      var stored = localStorage.getItem('klymot-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    }());
+  </script><!-- Analytics beacon — first-party only, skips localhost --><script>
+    (function () {
+      var h = window.location.hostname;
+      if (h === 'localhost' || h === '127.0.0.1') return;
+      var payload = JSON.stringify({ path: 'labs.klymot.com' + window.location.pathname, referrer: document.referrer || '' });
+      var blob = new Blob([payload], { type: 'text/plain' });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('https://api.klymot.com/api/v1/usage', blob);
+      } else {
+        fetch('https://api.klymot.com/api/v1/usage', { method: 'POST', body: blob, keepalive: true }).catch(function () {});
+      }
+    }());
+  </script><!-- Chart library --><script src="/js/klymot-chart.js"></script><style>:root{--font-sans:"Source Sans 3", system-ui, -apple-system, sans-serif;--font-mono:"JetBrains Mono", ui-monospace, monospace;--font-display:"Playfair Display", Georgia, serif;--step-0:clamp(1rem, .96rem + .2vw, 1.0625rem);--step-1:clamp(1.125rem, 1.05rem + .4vw, 1.25rem);--step-2:clamp(1.375rem, 1.2rem + .8vw, 1.75rem);--step-3:clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);--bg:#0a1628;--bg-secondary:#0f2047;--surface:#152c4a;--text:#e8e4d8;--text-secondary:#a8a090;--muted:#5a6880;--border:#d4a85533;--border-strong:#d4a8556b;--accent:#d4a855;--accent-hover:#e0bc72;--link:#d4a855;--btn-bg:#0f2047eb;--btn-hover:#152c4af7}:root[data-theme=light]{--bg:#f4f0e8;--bg-secondary:#ede7d6;--surface:#fff;--text:#2a2218;--text-secondary:#6b5d48;--muted:#9a8a70;--border:#7a5f2033;--border-strong:#7a5f206b;--accent:#7a5f20;--accent-hover:#5a4518;--link:#7a5f20;--btn-bg:#f4f0e8f0;--btn-hover:#ede7d6fc}*,:before,:after{box-sizing:border-box}html{-webkit-text-size-adjust:100%;font-size:16px}body{font-family:var(--font-sans);font-size:var(--step-0);color:var(--text);background-color:var(--bg);flex-direction:column;min-height:100dvh;margin:0;line-height:1.6;transition:background-color .25s,color .25s;display:flex}a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}.container{width:min(920px,100% - 2rem);margin-inline:auto}.site-header{z-index:10;background-color:var(--bg-secondary);border-bottom:1px solid var(--border);height:3.25rem;transition:background-color .25s,border-color .25s;position:sticky;top:0}.header-inner{justify-content:space-between;align-items:center;gap:1rem;height:100%;display:flex}.brand-link{color:var(--text);align-items:center;gap:.5rem;text-decoration:none;display:inline-flex}.brand-link:hover{text-decoration:none}.brand-link:hover .brand-title{color:var(--accent)}.brand-logo{color:var(--accent);flex-shrink:0;align-items:center;transition:color .15s;display:flex}.brand-title{font-family:var(--font-display);letter-spacing:.02em;color:var(--text);font-size:1.2rem;font-weight:600;line-height:1;transition:color .15s}.brand-sub{color:var(--muted);letter-spacing:.14em;font-size:.7rem;font-variant-caps:all-small-caps;line-height:1}.theme-toggle{border:1px solid var(--border);background:var(--btn-bg);width:44px;height:44px;color:var(--text-secondary);cursor:pointer;border-radius:.375rem;flex-shrink:0;justify-content:center;align-items:center;font-size:1rem;line-height:1;transition:color .15s,border-color .15s,background .15s;display:inline-flex}.theme-toggle:hover{color:var(--accent);border-color:var(--border-strong);background:var(--btn-hover)}.theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}main{flex:1;padding-block:3rem}.site-footer{border-top:1px solid var(--border);padding-block:1.5rem}.site-footer p{color:var(--muted);margin:0;font-size:.8125rem}
+</style><link rel="stylesheet" href="/_astro/index.Be0rT91-.css"></head><body><header class="site-header"><div class="container header-inner"><nav class="header-nav" aria-label="Site navigation"><a class="brand-link" href="https://klymot.com" aria-label="klymot home"><span class="brand-logo" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="22" height="22"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"></circle><ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"></circle><circle cx="19.5" cy="10.5" r="2" fill="currentColor"></circle></svg></span><span class="brand-title">klymot</span><span class="brand-sub">· labs</span></a><a href="/" class="back-link" aria-label="Back to labs index">← Labs</a></nav><button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" type="button">◐</button></div></header><main><!-- ── Hero ──────────────────────────────────────────────────── --><div class="container"><div class="page-hero"><span class="eyebrow" aria-hidden="true">Lab 01</span><h1>Sunshine &amp; Temperature</h1><p class="lede">Exploring the relationship between incoming solar radiation and surface air temperature.</p></div></div><!-- ── Section 1: What is a pyranometer? ─────────────────────── --><section class="lab-section" id="pyranometer" aria-labelledby="pyranometer-heading"><div class="container"><div class="prose"><h2 id="pyranometer-heading">What is a pyranometer?</h2><p>A pyranometer measures <strong>global horizontal irradiance (GHI)</strong> — the total downwelling shortwave solar radiation arriving at Earth's surface from all directions (direct sunlight plus diffuse skylight). Instantaneous readings are in watts per square metre (W/m²); for climate work we sum these into monthly totals in megajoules per square metre (MJ/m²).</p><p>Inside the instrument, a black thermopile absorber disk sits under one or two precision glass domes. The domes transmit solar wavelengths while blocking long-wave thermal emission and shielding the sensor from wind and rain. The thermopile converts the temperature difference between the hot absorber and the cooler instrument body into a millivolt signal proportional to irradiance. A desiccant cartridge keeps the dome interior dry so condensation never distorts the reading.</p><p>The <strong>ERA5 reanalysis variable <code>shortwave_radiation_sum</code></strong>, served here via Open-Meteo, is the gridded-model estimate of this same physical quantity — surface downwelling shortwave radiation integrated over each day and summed to monthly totals. It is not a station instrument record, but it represents the same energy-balance quantity that a pyranometer measures.</p><details class="expander"><summary>How does a thermopile convert light into voltage?</summary><div class="expander-body"><p>A thermopile is a series of thermocouple junctions — pairs of two dissimilar metals joined at two points. When one junction (the "hot" side, on the absorber) is at a different temperature from the other (the "cold" side, on the instrument body), a small voltage appears across the pair. Stack many such junctions in series and the voltages add up to a measurable signal. In a pyranometer, absorbed solar radiation heats the black disk; the voltage the thermopile produces is calibrated against a reference standard so the reading can be expressed directly in W/m².</p></div></details></div><div class="diagram-wrap"><img src="/sunshine-temperature/pyranometer-diagram.svg" alt="Cross-section diagram of a thermopile pyranometer showing outer and inner glass domes, thermopile absorber disk, desiccant cartridge, instrument body, and voltage output" class="pyranometer-diagram" width="480" height="320" loading="lazy"></div></div></section><!-- ── Section 2: Global network ─────────────────────────────── --><section class="lab-section" id="network" aria-labelledby="network-heading"><div class="container"><div class="prose"><h2 id="network-heading">A global measurement network</h2><p>The first systematic shortwave radiation measurements began in the 1890s with Knut Ångström's work in Sweden. Over the following century, the Baseline Surface Radiation Network (BSRN) established rigorous international standards; today several hundred stations worldwide make continuous radiation measurements. Hover over — or long-press on mobile — the dashed lines to read milestone events.</p></div><div class="chart-bleed" style="margin-top:1.25rem"><div class="section-card" style="padding:1rem"><div class="chart-header"><span class="chart-title">Active pyranometer stations, 1893–present</span><span class="chart-meta" id="networkChartMeta"></span></div><div class="network-chart-container" id="networkChartContainer"><canvas id="networkChartCanvas" aria-label="Line chart of active pyranometer station count over time"></canvas><div id="networkChartTooltip" class="nc-tooltip" hidden></div><p class="chart-loading" id="networkChartLoading">Loading…</p></div></div></div></div></section><!-- ── Section 3: The lab ─────────────────────────────────────── --><section class="lab-section" id="lab" aria-labelledby="lab-heading"><div class="container"><div class="prose" style="margin-bottom:1.5rem"><h2 id="lab-heading">Explore the data</h2><p>Select one of the longest-running measurement locations. For each, compare incoming shortwave radiation against the raw (unadjusted) and homogenised temperature records from the nearest Klymot station.</p></div><!-- Station selection --><div class="section-card"><div style="display:flex;justify-content:space-between;align-items:center"><div class="control-label">Location</div><span class="meta-note" id="loadStatus"></span></div><select id="stationSelect" onchange="updateStation()"></select><div id="stationInfo" class="station-pills"></div></div><!-- Caveats --><div class="section-card caveat-card"><div class="caveat-heading">Important caveats</div><div id="stationCaveats" class="caveat-body"></div></div><!-- Data controls --><div class="section-card"><div class="controls-grid"><div class="control-group"><div class="control-label">Temperature data</div><div class="toggle-row"><button onclick="setDataType('qcu')" id="btn-qcu" class="toggle-btn active">Raw</button><button onclick="setDataType('qcf')" id="btn-qcf" class="toggle-btn">Adjusted</button></div></div><div class="control-group"><div class="control-label">Aggregation</div><div class="toggle-row"><button onclick="setResolution('monthly')" id="btn-monthly" class="toggle-btn active">Monthly</button><button onclick="setResolution('yearly')" id="btn-yearly" class="toggle-btn">Yearly</button></div></div></div><div class="control-note"><strong>Shortwave radiation (MJ/m²)</strong> — monthly total incoming solar energy (direct + diffuse) from ERA5 <code>shortwave_radiation_sum</code>. Raw temperature is unadjusted monthly GHCN; Adjusted is homogenised.</div></div><!-- Time controls --><div class="section-card"><div class="controls-grid"><div class="control-group"><div class="control-label">Sunshine lag</div><div class="control-row-tight"><button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Shift lag earlier">−</button><span id="lagReadout" class="control-readout">0 mo</span><button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Shift lag later">+</button></div></div><div class="control-group"><div class="control-label">Time axis</div><div class="control-row-tight"><button onclick="panTime(-1)" class="mini-tool" aria-label="Pan earlier">‹</button><button onclick="zoomTime(1)" class="mini-tool" aria-label="Zoom in">+</button><button onclick="zoomTime(-1)" class="mini-tool" aria-label="Zoom out">−</button><button onclick="panTime(1)" class="mini-tool" aria-label="Pan later">›</button><button onclick="resetTimeAxis()" class="mini-tool" aria-label="Reset time axis">↺</button></div></div></div><div id="timeWindowReadout" class="control-note"></div></div><!-- Time series chart --><div class="section-card" style="padding:1rem"><div class="chart-header"><span class="chart-title">Time series</span><span class="chart-meta">Aligned observations</span></div><div id="timeSeriesChart" class="chart-container"></div></div><!-- Scatter chart --><div class="section-card" style="padding:1rem"><div class="chart-header"><span class="chart-title">Scatter: radiation vs temperature</span><span class="chart-meta" id="resolutionBadge">Monthly pairs</span></div><div id="scatterChart" class="chart-container"></div><div id="scatterNote" class="chart-footnote"></div></div><!-- Correlation analysis --><div class="section-card"><div class="section-heading">Correlation analysis</div><div class="metric-grid"><div class="metric-card"><div class="metric-label">Pearson r</div><div id="pearsonR" class="metric-value accent">—</div></div><div class="metric-card"><div class="metric-label">r² (explained variance)</div><div id="rSquared" class="metric-value">—</div></div><div class="metric-card"><div class="metric-label">p-value (approx)</div><div id="pValue" class="metric-value success">—</div></div></div><div class="contribution-box"><div class="contribution-label">Contribution score</div><div id="contributionScore" class="contribution-value">—</div><div class="contribution-note">Sunshine explains a portion of temperature variance. Clouds, circulation, albedo, land/sea effects, and station exposure also play major roles.</div></div></div><!-- Sources --><div class="section-card sources-card"><h2 class="sources-heading">Data sources &amp; references</h2><dl class="sources-list"><dt>Temperature — GHCN-Monthly v4</dt><dd>Klymot station CSVs derived from the Global Historical Climatology Network Monthly dataset. Raw and Adjusted (homogenised) records. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018</a>.</dd><dt>Homogenisation</dt><dd>Adjusted records use pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009</a>.</dd><dt>Shortwave radiation — ERA5 / Open-Meteo</dt><dd>Monthly totals of <code>shortwave_radiation_sum</code> from the Open-Meteo Historical Weather API (ERA5 reanalysis). Represents total downwelling shortwave radiation — the same physical quantity measured by a pyranometer — but is a gridded model estimate rather than a station instrument record. <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo docs</a>. <a href="https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5" target="_blank" rel="noopener">ERA5 dataset</a>.</dd><dt>Station network history</dt><dd>Cumulative station counts derived from the <a href="https://github.com/AssessingSolar/solarstations" target="_blank" rel="noopener">AssessingSolar/solarstations</a> catalog on GitHub. Milestone events curated by hand.</dd></dl><p class="sources-footer">This is a neutral exploration tool. Correlation does not imply causation.</p></div></div></section></main><footer class="site-footer"><div class="container"><p>© Klymot</p></div></footer><!-- Theme toggle wiring --><script>
+    (function () {
+      var btn = document.getElementById('themeToggle');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'light' ? 'dark' : 'light';
+        if (next === 'dark') {
+          document.documentElement.removeAttribute('data-theme');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
         }
+        localStorage.setItem('klymot-theme', next);
+      });
+    }());
+  </script><script>
+    // ── CSS var helper ─────────────────────────────────────────────
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
 
-        const KLYMOT_DATA_BASE = 'https://www.klymot.com/data';
-        const FALLBACK_SUNSHINE = {
-            source: 'Built-in fallback sample; run scripts/fetch_sunshine.py for latest QC sunshine',
-            stations: [{
-                key: 'VAL',
-                name: 'Valentia Observatory, Ireland',
-                lat: 51.9394,
-                lon: -10.2219,
-                source: 'fallback sample',
-                qc: true,
-                temperature_station: {
-                    id: 'EI000003953',
-                    name: 'VALENTIA OBSERVATORY',
-                    lat: 51.9394,
-                    lon: -10.2219,
-                    elevation_m: 9,
-                    first_year: 1869,
-                    last_year: 2026,
-                    distance_km: 0
-                },
-                monthly: [
-                    { year: 2022, month: 1, sunshine_hours: 53, shortwave_mj_m2: 83, days: 31 },
-                    { year: 2022, month: 2, sunshine_hours: 68, shortwave_mj_m2: 140, days: 28 },
-                    { year: 2022, month: 3, sunshine_hours: 121, shortwave_mj_m2: 285, days: 31 },
-                    { year: 2022, month: 4, sunshine_hours: 162, shortwave_mj_m2: 445, days: 30 },
-                    { year: 2022, month: 5, sunshine_hours: 180, shortwave_mj_m2: 560, days: 31 },
-                    { year: 2022, month: 6, sunshine_hours: 155, shortwave_mj_m2: 565, days: 30 },
-                    { year: 2022, month: 7, sunshine_hours: 170, shortwave_mj_m2: 575, days: 31 },
-                    { year: 2022, month: 8, sunshine_hours: 150, shortwave_mj_m2: 485, days: 31 },
-                    { year: 2022, month: 9, sunshine_hours: 118, shortwave_mj_m2: 330, days: 30 },
-                    { year: 2022, month: 10, sunshine_hours: 83, shortwave_mj_m2: 190, days: 31 },
-                    { year: 2022, month: 11, sunshine_hours: 56, shortwave_mj_m2: 95, days: 30 },
-                    { year: 2022, month: 12, sunshine_hours: 45, shortwave_mj_m2: 62, days: 31 },
-                    { year: 2023, month: 1, sunshine_hours: 50, shortwave_mj_m2: 78, days: 31 },
-                    { year: 2023, month: 2, sunshine_hours: 82, shortwave_mj_m2: 154, days: 28 },
-                    { year: 2023, month: 3, sunshine_hours: 105, shortwave_mj_m2: 260, days: 31 },
-                    { year: 2023, month: 4, sunshine_hours: 148, shortwave_mj_m2: 420, days: 30 },
-                    { year: 2023, month: 5, sunshine_hours: 190, shortwave_mj_m2: 585, days: 31 },
-                    { year: 2023, month: 6, sunshine_hours: 205, shortwave_mj_m2: 610, days: 30 },
-                    { year: 2023, month: 7, sunshine_hours: 142, shortwave_mj_m2: 530, days: 31 },
-                    { year: 2023, month: 8, sunshine_hours: 146, shortwave_mj_m2: 455, days: 31 },
-                    { year: 2023, month: 9, sunshine_hours: 123, shortwave_mj_m2: 345, days: 30 },
-                    { year: 2023, month: 10, sunshine_hours: 88, shortwave_mj_m2: 205, days: 31 },
-                    { year: 2023, month: 11, sunshine_hours: 58, shortwave_mj_m2: 98, days: 30 },
-                    { year: 2023, month: 12, sunshine_hours: 47, shortwave_mj_m2: 68, days: 31 }
-                ]
-            }]
-        };
+    // ── URL state ──────────────────────────────────────────────────
+    function readStateFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        station: params.get('s') || null,
+        dataType: params.get('t') || null,
+        resolution: params.get('r') || null,
+        lag: params.has('lag') ? parseFloat(params.get('lag')) : null,
+        windowStart: params.has('ws') ? parseInt(params.get('ws'), 10) : null,
+        windowSize: params.has('wz') ? parseInt(params.get('wz'), 10) : null
+      };
+    }
 
-        let stations = {};
-        let sunshinePayload = null;
-        let currentStation = 'VAL';
-        let currentDataType = 'qcu';
-        let currentResolution = 'monthly';
-        let currentSolarMetric = 'shortwave'; // 'shortwave' (pyranometer) | 'sunshine'
-        let monthLag = 0;
-        let timeWindowStart = 0;
-        let timeWindowSize = null;
-        let timeSeriesChart = null;
-        let scatterChart = null;
-        let lastAlignedData = [];
+    function pushStateToUrl() {
+      const params = new URLSearchParams();
+      params.set('s', currentStation);
+      params.set('t', currentDataType);
+      params.set('r', currentResolution);
+      if (monthLag !== 0) params.set('lag', String(monthLag));
+      if (timeWindowStart !== 0) params.set('ws', String(timeWindowStart));
+      if (timeWindowSize !== null) params.set('wz', String(timeWindowSize));
+      window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+    }
 
-        function readStateFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                station: params.get('s') || null,
-                dataType: params.get('t') || null,
-                resolution: params.get('r') || null,
-                solarMetric: params.get('sm') || null,
-                lag: params.has('lag') ? parseFloat(params.get('lag')) : null,
-                windowStart: params.has('ws') ? parseInt(params.get('ws'), 10) : null,
-                windowSize: params.has('wz') ? parseInt(params.get('wz'), 10) : null
-            };
+    // ── Globals ────────────────────────────────────────────────────
+    const KLYMOT_DATA_BASE = 'https://www.klymot.com/data';
+    let stations = {};
+    let currentStation = 'VAL';
+    let currentDataType = 'qcu';
+    let currentResolution = 'monthly';
+    let monthLag = 0;
+    let timeWindowStart = 0;
+    let timeWindowSize = null;
+    let timeSeriesChart = null;
+    let scatterChart = null;
+
+    // ── Utilities ──────────────────────────────────────────────────
+    function setStatus(msg) {
+      const el = document.getElementById('loadStatus');
+      if (el) el.textContent = msg;
+    }
+
+    function monthKey(year, month) {
+      return `${year}-${String(month).padStart(2, '0')}`;
+    }
+
+    function mean(values) {
+      const valid = values.filter(Number.isFinite);
+      return valid.length ? valid.reduce((s, v) => s + v, 0) / valid.length : null;
+    }
+
+    function clamp(value, lo, hi) {
+      return Math.max(lo, Math.min(hi, value));
+    }
+
+    function addMonths(year, month, offset) {
+      const z = year * 12 + (month - 1) + offset;
+      return { year: Math.floor(z / 12), month: (z % 12) + 1 };
+    }
+
+    // ── Temperature loading ────────────────────────────────────────
+    function klymotCsvUrl(kind, id) {
+      return `${KLYMOT_DATA_BASE}/${kind}/${id}.csv`;
+    }
+
+    async function fetchText(url) {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`${r.status} ${url}`);
+      return r.text();
+    }
+
+    function parseKlymotMonthlyCsv(text) {
+      const pts = new Map();
+      text.trim().split(/\r?\n/).forEach(line => {
+        const p = line.split(',');
+        const yr = Number(p[0]);
+        if (!Number.isFinite(yr)) return;
+        for (let i = 1; i <= 12; i++) {
+          const raw = p[i];
+          if (raw === undefined || raw === '') continue;
+          const v = Number(raw);
+          if (!Number.isFinite(v) || v <= -9000) continue;
+          pts.set(monthKey(yr, i), v / 100);
         }
-
-        function pushStateToUrl() {
-            const params = new URLSearchParams();
-            params.set('s', currentStation);
-            params.set('t', currentDataType);
-            params.set('r', currentResolution);
-            params.set('sm', currentSolarMetric);
-            if (monthLag !== 0) params.set('lag', String(monthLag));
-            if (timeWindowStart !== 0) params.set('ws', String(timeWindowStart));
-            if (timeWindowSize !== null) params.set('wz', String(timeWindowSize));
-            const newUrl = `${window.location.pathname}?${params.toString()}`;
-            window.history.replaceState(null, '', newUrl);
-        }
-
-        function setStatus(message) {
-            document.getElementById('loadStatus').textContent = message;
-        }
-
-        function klymotCsvUrl(kind, stationId) {
-            return `${KLYMOT_DATA_BASE}/${kind}/${stationId}.csv`;
-        }
-
-        function monthKey(year, month) {
-            return `${year}-${String(month).padStart(2, '0')}`;
-        }
-
-        function mean(values) {
-            const valid = values.filter(value => Number.isFinite(value));
-            return valid.length ? valid.reduce((sum, value) => sum + value, 0) / valid.length : null;
-        }
-
-        function clamp(value, min, max) {
-            return Math.max(min, Math.min(max, value));
-        }
-
-        function addMonths(year, month, offset) {
-            const zeroBased = (year * 12) + (month - 1) + offset;
-            return {
-                year: Math.floor(zeroBased / 12),
-                month: (zeroBased % 12) + 1
-            };
-        }
-
-        function parseKlymotMonthlyCsv(text) {
-            const points = new Map();
-            text.trim().split(/\r?\n/).forEach(line => {
-                const parts = line.split(',');
-                const year = Number(parts[0]);
-                if (!Number.isFinite(year)) return;
-                for (let i = 1; i <= 12; i++) {
-                    const raw = parts[i];
-                    if (raw === undefined || raw === '') continue;
-                    const value = Number(raw);
-                    if (!Number.isFinite(value) || value <= -9000) continue;
-                    points.set(monthKey(year, i), value / 100);
-                }
-            });
-            return points;
-        }
-
-        async function fetchText(url) {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`${response.status} ${url}`);
-            return response.text();
-        }
-
-        async function loadTemperatureSeries(station) {
-            const [qcuText, qcfText] = await Promise.all([
-                fetchText(klymotCsvUrl('qcu', station.tempStation.id)),
-                fetchText(klymotCsvUrl('qcf', station.tempStation.id))
-            ]);
-            station.temperature = {
-                qcu: parseKlymotMonthlyCsv(qcuText),
-                qcf: parseKlymotMonthlyCsv(qcfText)
-            };
-        }
-
-        async function loadSunshinePayload() {
-            try {
-                const response = await fetch('data/sunshine-qc.json', { cache: 'no-store' });
-                if (!response.ok) throw new Error(`${response.status} data/sunshine-qc.json`);
-                return await response.json();
-            } catch (error) {
-                console.warn('[Sunshine-Temp Lab] Using fallback sunshine sample:', error);
-                return FALLBACK_SUNSHINE;
-            }
-        }
-
-        function buildStations(payload) {
-            stations = {};
-            payload.stations.forEach(record => {
-                stations[record.key] = {
-                    key: record.key,
-                    name: record.name,
-                    lat: record.lat,
-                    lon: record.lon,
-                    source: record.source || payload.source || 'QC sunshine',
-                    sunshineMonthly: record.monthly || [],
-                    sunshineDaily: record.daily || [],
-                    tempStation: record.temperature_station,
-                    temperature: null
-                };
-            });
-        }
-
-        function populateStationSelect() {
-            const select = document.getElementById('stationSelect');
-            select.innerHTML = '';
-
-            Object.keys(stations).forEach(key => {
-                const opt = document.createElement('option');
-                opt.value = key;
-                opt.textContent = stations[key].name;
-                select.appendChild(opt);
-            });
-
-            select.value = currentStation;
-        }
-
-        function updateStationInfo() {
-            const infoDiv = document.getElementById('stationInfo');
-            const s = stations[currentStation];
-            if (!s) return;
-
-            infoDiv.innerHTML = `
-                <div class="station-pill flex items-center gap-1">
-                    <span class="font-mono text-[10px]">Raw/Adjusted: ${s.tempStation.id}</span>
-                </div>
-                <div class="station-pill flex items-center gap-1">
-                    <span class="font-mono text-[10px]">Sun: QC</span>
-                </div>
-                <div class="text-[10px] text-slate-500 self-center">${s.tempStation.name}, ${Number(s.tempStation.distance_km || 0).toFixed(1)} km</div>
-            `;
-            updateStationCaveats();
-        }
-
-        function stationCaveatItems(station) {
-            const items = [];
-            const distance = Number(station.tempStation.distance_km || 0);
-            const elevation = Number(station.tempStation.elevation_m);
-            if (distance > 25) {
-                items.push(`<strong>Temperature pairing</strong>: sunshine is for ${station.name}, but the covering temperature station is ${station.tempStation.name}, ${distance.toFixed(1)} km away.`);
-            }
-            if (Number.isFinite(elevation) && elevation > 1000) {
-                items.push(`<strong>High elevation</strong>: ${station.tempStation.name} is ${elevation.toFixed(0)} m above sea level, so lapse-rate effects can dominate local temperature.`);
-            }
-            if (/TOKYO/i.test(station.name) || /TOKYO/i.test(station.tempStation.name)) {
-                items.push('<strong>Urban station</strong>: Tokyo has strong urban heat-island exposure, especially in minimum temperatures.');
-            }
-            if (/POTSDAM/i.test(station.name) || /POTSDAM/i.test(station.tempStation.name)) {
-                items.push('<strong>Urban influence</strong>: Potsdam is near the Berlin urban region, so land-use change and UHI can affect temperature independently of sunshine.');
-            }
-            if (/STOCKHOLM/i.test(station.name) || /STOCKHOLM/i.test(station.tempStation.name)) {
-                items.push('<strong>Urban influence</strong>: Stockholm has a meaningful urban heat-island signal, especially in recent decades.');
-            }
-            if (/STOCKHOLM/i.test(station.name) || /POTSDAM/i.test(station.name)) {
-                items.push('<strong>Seasonal snow</strong>: winter albedo and cloudiness can weaken direct sunshine-temperature coupling.');
-            }
-            if (/VALENTIA/i.test(station.name)) {
-                items.push('<strong>Maritime exposure</strong>: Atlantic circulation and sea-surface temperatures can mute local sunshine-temperature changes.');
-            }
-            if (/DAVOS/i.test(station.name)) {
-                items.push('<strong>Davos pairing</strong>: Davos sunshine is paired to Saentis because the Davos Klymot temperature record does not cover the full 1940-current span.');
-            }
-            items.push('<strong>Lag control</strong>: offsetting sunshine by ±2 months tests delayed thermal response rather than same-month correlation.');
-            return items;
-        }
-
-        function updateStationCaveats() {
-            const caveats = document.getElementById('stationCaveats');
-            const station = stations[currentStation];
-            if (!caveats || !station) return;
-            caveats.innerHTML = stationCaveatItems(station).map(item => `<div>• ${item}</div>`).join('');
-        }
-
-        async function ensureCurrentTemperatureLoaded() {
-            const station = stations[currentStation];
-            if (!station || station.temperature) return;
-            setStatus(`Loading Raw and Adjusted temperature for ${station.tempStation.id} from www.klymot.com...`);
-            await loadTemperatureSeries(station);
-            setStatus(`Loaded ${station.tempStation.id} Raw/Adjusted and QC sunshine (${sunshinePayload.source}).`);
-        }
-
-        async function updateStation() {
-            currentStation = document.getElementById('stationSelect').value;
-            resetTimeWindow();
-            updateStationInfo();
-            await ensureCurrentTemperatureLoaded();
-            updateAllVisuals();
-            pushStateToUrl();
-        }
-
-        function setDataType(type) {
-            currentDataType = type;
-
-            document.getElementById('btn-qcu').classList.toggle('bg-white', type === 'qcu');
-            document.getElementById('btn-qcu').classList.toggle('shadow-sm', type === 'qcu');
-            document.getElementById('btn-qcf').classList.toggle('bg-white', type === 'qcf');
-            document.getElementById('btn-qcf').classList.toggle('shadow-sm', type === 'qcf');
-
-            updateAllVisuals();
-            pushStateToUrl();
-        }
-
-        function setResolution(type) {
-            currentResolution = type;
-            resetTimeWindow();
-
-            document.getElementById('btn-monthly').classList.toggle('bg-white', type === 'monthly');
-            document.getElementById('btn-monthly').classList.toggle('shadow-sm', type === 'monthly');
-            document.getElementById('btn-yearly').classList.toggle('bg-white', type === 'yearly');
-            document.getElementById('btn-yearly').classList.toggle('shadow-sm', type === 'yearly');
-
-            updateAllVisuals();
-            pushStateToUrl();
-        }
-
-        function setSolarMetric(metric) {
-            currentSolarMetric = metric;
-            document.getElementById('btn-shortwave').classList.toggle('bg-white', metric === 'shortwave');
-            document.getElementById('btn-shortwave').classList.toggle('shadow-sm', metric === 'shortwave');
-            document.getElementById('btn-sunshine').classList.toggle('bg-white', metric === 'sunshine');
-            document.getElementById('btn-sunshine').classList.toggle('shadow-sm', metric === 'sunshine');
-            updateAllVisuals();
-            pushStateToUrl();
-        }
-
-        function shiftLag(delta) {
-            monthLag = clamp(monthLag + delta, -2, 2);
-            monthLag = Math.round(monthLag * 4) / 4;
-            updateAllVisuals();
-            pushStateToUrl();
-        }
-
-        function resetTimeWindow() {
-            timeWindowStart = 0;
-            timeWindowSize = null;
-        }
-
-        function resetTimeAxis() {
-            const data = getCurrentData();
-            timeWindowStart = 0;
-            timeWindowSize = data.rows.length || null;
-            updateTimeSeriesChart();
-            pushStateToUrl();
-        }
-
-        function ensureTimeWindow(rows) {
-            if (!rows.length) {
-                timeWindowStart = 0;
-                timeWindowSize = 0;
-                return;
-            }
-            const defaultSize = currentResolution === 'monthly' ? Math.min(rows.length, 12 * 20) : Math.min(rows.length, 40);
-            if (!timeWindowSize || timeWindowSize > rows.length) timeWindowSize = defaultSize;
-            timeWindowSize = clamp(timeWindowSize, currentResolution === 'monthly' ? 24 : 10, rows.length);
-            timeWindowStart = clamp(timeWindowStart, 0, Math.max(0, rows.length - timeWindowSize));
-        }
-
-        function zoomTime(direction) {
-            const data = getCurrentData();
-            const total = data.rows.length;
-            if (!total) return;
-            ensureTimeWindow(data.rows);
-            const factor = direction > 0 ? 0.7 : 1.4;
-            const minSize = currentResolution === 'monthly' ? 24 : 10;
-            const center = timeWindowStart + (timeWindowSize / 2);
-            timeWindowSize = clamp(Math.round(timeWindowSize * factor), minSize, total);
-            timeWindowStart = clamp(Math.round(center - (timeWindowSize / 2)), 0, Math.max(0, total - timeWindowSize));
-            updateTimeSeriesChart();
-            pushStateToUrl();
-        }
-
-        function panTime(direction) {
-            const data = getCurrentData();
-            if (!data.rows.length) return;
-            ensureTimeWindow(data.rows);
-            const step = Math.max(1, Math.round(timeWindowSize * 0.25));
-            timeWindowStart = clamp(timeWindowStart + (direction * step), 0, Math.max(0, data.rows.length - timeWindowSize));
-            updateTimeSeriesChart();
-            pushStateToUrl();
-        }
-
-        function visibleTimeRows(rows) {
-            ensureTimeWindow(rows);
-            return rows.slice(timeWindowStart, timeWindowStart + timeWindowSize);
-        }
-
-        function yearTickStep(rows) {
-            if (!rows.length) return 1;
-            const first = rows[0].year;
-            const last = rows[rows.length - 1].year;
-            const span = Math.max(1, last - first);
-            const rawStep = Math.ceil(span / 6);
-            const niceSteps = [1, 2, 5, 10, 20, 25, 50];
-            return niceSteps.find(step => step >= rawStep) || 100;
-        }
-
-        function timeAxisLabel(row, rows) {
-            if (!row) return '';
-            const step = yearTickStep(rows);
-            const firstYear = rows[0]?.year || row.year;
-            if ((row.year - firstYear) % step !== 0) return '';
-            if (currentResolution === 'monthly' && row.month !== 1) return '';
-            return String(row.year);
-        }
-
-        function updateControlsReadout(rows) {
-            const lagText = monthLag === 0 ? '0 mo' : `${monthLag > 0 ? '+' : ''}${monthLag} mo`;
-            document.getElementById('lagReadout').textContent = lagText;
-            const readout = document.getElementById('timeWindowReadout');
-            if (!readout || !rows.length) return;
-            const visible = visibleTimeRows(rows);
-            const first = visible[0]?.label || 'n/a';
-            const last = visible[visible.length - 1]?.label || 'n/a';
-            readout.textContent = `Visible: ${first} to ${last}`;
-        }
-
-        function alignMonthlyData(station) {
-            const tempMap = station.temperature[currentDataType];
-            const sunshineByMonth = station.sunshineDaily.length
-                ? laggedDailySunshineByMonth(station.sunshineDaily, monthLag)
-                : fallbackLaggedMonthlySunshine(station.sunshineMonthly, monthLag);
-            const rows = [];
-            [...tempMap.keys()].sort().forEach(key => {
-                const shiftedSunshine = sunshineByMonth.get(key);
-                const temp = tempMap.get(key);
-                if (!shiftedSunshine || !Number.isFinite(temp)) return;
-                if (!Number.isFinite(shiftedSunshine.sunshine_hours) && !Number.isFinite(shiftedSunshine.shortwave_mj_m2)) return;
-                const [year, month] = key.split('-').map(Number);
-                rows.push({
-                    key,
-                    label: key,
-                    year,
-                    month,
-                    temp,
-                    sunshine: shiftedSunshine.sunshine_hours,
-                    shortwave: shiftedSunshine.shortwave_mj_m2,
-                    days: shiftedSunshine.days
-                });
-            });
-            return rows;
-        }
-
-        function laggedDailySunshineByMonth(dailyRows, lagMonths) {
-            const lagDays = Math.round(lagMonths * 30.4375);
-            const buckets = new Map();
-            dailyRows.forEach(row => {
-                const sourceDate = new Date(`${row.date}T00:00:00Z`);
-                if (Number.isNaN(sourceDate.getTime())) return;
-                const targetDate = new Date(sourceDate);
-                targetDate.setUTCDate(targetDate.getUTCDate() - lagDays);
-                const key = monthKey(targetDate.getUTCFullYear(), targetDate.getUTCMonth() + 1);
-                if (!buckets.has(key)) {
-                    buckets.set(key, { sunshine_hours: 0, shortwave_mj_m2: 0, days: 0 });
-                }
-                const bucket = buckets.get(key);
-                bucket.sunshine_hours += row.sunshine_hours || 0;
-                bucket.shortwave_mj_m2 += row.shortwave_mj_m2 || 0;
-                bucket.days += 1;
-            });
-            buckets.forEach(bucket => {
-                bucket.sunshine_hours = Number(bucket.sunshine_hours.toFixed(2));
-                bucket.shortwave_mj_m2 = Number(bucket.shortwave_mj_m2.toFixed(2));
-            });
-            return buckets;
-        }
-
-        function fallbackLaggedMonthlySunshine(monthlyRows, lagMonths) {
-            const roundedLag = Math.round(lagMonths);
-            const buckets = new Map();
-            monthlyRows.forEach(row => {
-                const shifted = addMonths(row.year, row.month, -roundedLag);
-                buckets.set(monthKey(shifted.year, shifted.month), row);
-            });
-            return buckets;
-        }
-
-        function aggregateYearly(monthlyRows) {
-            const byYear = new Map();
-            monthlyRows.forEach(row => {
-                if (!byYear.has(row.year)) byYear.set(row.year, []);
-                byYear.get(row.year).push(row);
-            });
-            return [...byYear.entries()].sort((a, b) => a[0] - b[0]).map(([year, rows]) => ({
-                key: String(year),
-                label: String(year),
-                year,
-                temp: mean(rows.map(row => row.temp)),
-                sunshine: rows.reduce((sum, row) => sum + row.sunshine, 0),
-                shortwave: rows.reduce((sum, row) => sum + (row.shortwave || 0), 0),
-                monthCount: rows.length
-            })).filter(row => row.monthCount >= 9 && Number.isFinite(row.temp) && Number.isFinite(row.sunshine));
-        }
-
-        function solarLabel() {
-            return currentSolarMetric === 'shortwave' ? 'Shortwave radiation (MJ/m²)' : 'QC sunshine (hours)';
-        }
-
-        function solarAxisLabel() {
-            return currentSolarMetric === 'shortwave' ? 'MJ/m²' : 'Sunshine hours';
-        }
-
-        function getCurrentData() {
-            const s = stations[currentStation];
-            if (!s || !s.temperature) return { labels: [], temp: [], sunshine: [], rows: [], station: s };
-            const monthly = alignMonthlyData(s);
-            const rows = currentResolution === 'monthly' ? monthly : aggregateYearly(monthly);
-            lastAlignedData = rows;
-            updateControlsReadout(rows);
-
-            return {
-                labels: rows.map(row => row.label),
-                temp: rows.map(row => row.temp),
-                sunshine: rows.map(row => currentSolarMetric === 'shortwave' ? row.shortwave : row.sunshine),
-                rows,
-                station: s
-            };
-        }
-
-        function updateTimeSeriesChart() {
-            const container = document.getElementById('timeSeriesChart');
-            const data = getCurrentData();
-            const rows = visibleTimeRows(data.rows);
-
-            if (timeSeriesChart) { timeSeriesChart.destroy(); timeSeriesChart = null; }
-            timeSeriesChart = new KlymotChart.DualAxisChart(container);
-
-            timeSeriesChart.load({
-                labels:      rows.map(row => row.label),
-                leftData:    rows.map(row => row.temp),
-                rightData:   rows.map(row => currentSolarMetric === 'shortwave' ? row.shortwave : row.sunshine),
-                leftLabel:   'Temp °C',
-                rightLabel:  solarAxisLabel(),
-                leftColor:   cssVar('--success'),
-                rightColor:  cssVar('--accent-primary'),
-                labelFilter: (label, index) => timeAxisLabel(rows[index], rows),
-            });
-        }
-
-        function updateScatterChart() {
-            const container = document.getElementById('scatterChart');
-            const data = getCurrentData();
-
-            if (scatterChart) { scatterChart.destroy(); scatterChart = null; }
-            scatterChart = new KlymotChart.ScatterChart(container);
-
-            const points = data.rows.map((row, i) => ({
-                x: data.sunshine[i],
-                y: data.temp[i],
-                label: row.label
-            }));
-            const fit = regressionFit(points);
-
-            scatterChart.load({
-                points,
-                fitLine:    fit.points.length >= 2 ? { points: fit.points } : null,
-                xLabel:     solarLabel(),
-                yLabel:     'Temperature (°C)',
-                pointColor: cssVar('--accent-primary'),
-                fitColor:   cssVar('--success'),
-            });
-
-            document.getElementById('scatterNote').innerHTML =
-                `Fit: y = ${fit.slope.toFixed(4)}x ${fit.intercept < 0 ? '-' : '+'} ${Math.abs(fit.intercept).toFixed(2)}. ` +
-                `X: ${solarLabel()}. Lag: ${monthLag === 0 ? '0' : `${monthLag > 0 ? '+' : ''}${monthLag}`} month(s).`;
-        }
-
-        function regressionFit(points) {
-            const valid = points.filter(point => Number.isFinite(point.x) && Number.isFinite(point.y));
-            if (valid.length < 2) return { slope: 0, intercept: 0, points: [] };
-            const meanX = mean(valid.map(point => point.x));
-            const meanY = mean(valid.map(point => point.y));
-            let numerator = 0;
-            let denominator = 0;
-            valid.forEach(point => {
-                numerator += (point.x - meanX) * (point.y - meanY);
-                denominator += (point.x - meanX) ** 2;
-            });
-            const slope = denominator ? numerator / denominator : 0;
-            const intercept = meanY - (slope * meanX);
-            const xs = valid.map(point => point.x);
-            const minX = Math.min(...xs);
-            const maxX = Math.max(...xs);
-            return {
-                slope,
-                intercept,
-                points: [
-                    { x: minX, y: (slope * minX) + intercept },
-                    { x: maxX, y: (slope * maxX) + intercept }
-                ]
-            };
-        }
-
-        function calculateCorrelation() {
-            const data = getCurrentData();
-            const n = data.rows.length;
-            if (n < 3) return { r: NaN, r2: NaN, p: 'n/a' };
-
-            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
-
-            for (let i = 0; i < n; i++) {
-                const x = data.sunshine[i];
-                const y = data.temp[i];
-                sumX += x;
-                sumY += y;
-                sumXY += x * y;
-                sumX2 += x * x;
-                sumY2 += y * y;
-            }
-
-            const meanX = sumX / n;
-            const meanY = sumY / n;
-
-            let numerator = 0;
-            let denomX = 0;
-            let denomY = 0;
-
-            for (let i = 0; i < n; i++) {
-                const dx = data.sunshine[i] - meanX;
-                const dy = data.temp[i] - meanY;
-                numerator += dx * dy;
-                denomX += dx * dx;
-                denomY += dy * dy;
-            }
-
-            const r = numerator / Math.sqrt(denomX * denomY);
-            const r2 = r * r;
-
-            // Simple p-value approximation.
-            const t = r * Math.sqrt((n - 2) / (1 - r2));
-            const p = 2 * (1 - Math.abs(t) / (Math.abs(t) + 2)); // very rough approx
-
-            return { r: parseFloat(r.toFixed(3)), r2: parseFloat(r2.toFixed(3)), p: p < 0.001 ? '<0.001' : p.toFixed(3) };
-        }
-
-        function updateCorrelationMetrics() {
-            const corr = calculateCorrelation();
-
-            document.getElementById('pearsonR').textContent = Number.isFinite(corr.r) ? corr.r : 'n/a';
-            document.getElementById('rSquared').textContent = Number.isFinite(corr.r2) ? corr.r2 : 'n/a';
-            document.getElementById('pValue').textContent = corr.p;
-
-            let scoreText = '';
-            let scoreColor = 'text-emerald-600';
-
-            if (!Number.isFinite(corr.r)) {
-                scoreText = 'Not enough overlapping paired observations';
-                scoreColor = 'text-amber-600';
-            } else if (corr.r > 0.7) {
-                scoreText = `Strong positive contribution (r = ${corr.r})`;
-                scoreColor = 'text-emerald-600';
-            } else if (corr.r > 0.4) {
-                scoreText = `Moderate positive contribution (r = ${corr.r})`;
-                scoreColor = 'text-amber-600';
-            } else if (corr.r > 0) {
-                scoreText = `Weak positive contribution (r = ${corr.r})`;
-                scoreColor = 'text-orange-600';
-            } else {
-                scoreText = `Weak or negative relationship (r = ${corr.r})`;
-                scoreColor = 'text-red-600';
-            }
-
-            const scoreEl = document.getElementById('contributionScore');
-            scoreEl.textContent = scoreText;
-            scoreEl.className = `text-lg font-semibold ${scoreColor}`;
-        }
-
-        function updateAllVisuals() {
-            document.getElementById('resolutionBadge').textContent = currentResolution === 'monthly' ? 'Monthly pairs' : 'Annual means';
-            updateTimeSeriesChart();
-            updateScatterChart();
-            updateCorrelationMetrics();
-        }
-
-        async function initialize() {
-            const urlState = readStateFromUrl();
-            if (urlState.station) currentStation = urlState.station;
-            if (urlState.dataType === 'qcu' || urlState.dataType === 'qcf') currentDataType = urlState.dataType;
-            if (urlState.resolution === 'monthly' || urlState.resolution === 'yearly') currentResolution = urlState.resolution;
-            if (urlState.solarMetric === 'shortwave' || urlState.solarMetric === 'sunshine') currentSolarMetric = urlState.solarMetric;
-            if (urlState.lag !== null && Number.isFinite(urlState.lag)) monthLag = clamp(Math.round(urlState.lag * 4) / 4, -2, 2);
-            if (urlState.windowStart !== null && Number.isFinite(urlState.windowStart)) timeWindowStart = Math.max(0, urlState.windowStart);
-            if (urlState.windowSize !== null && Number.isFinite(urlState.windowSize)) timeWindowSize = Math.max(1, urlState.windowSize);
-
-            setStatus('Loading QC sunshine station pairs...');
-            sunshinePayload = await loadSunshinePayload();
-            buildStations(sunshinePayload);
-            populateStationSelect();
-            if (!stations[currentStation]) currentStation = Object.keys(stations)[0];
-            document.getElementById('stationSelect').value = currentStation;
-            updateStationInfo();
-
-            document.getElementById('btn-qcu').classList.toggle('bg-white', currentDataType === 'qcu');
-            document.getElementById('btn-qcu').classList.toggle('shadow-sm', currentDataType === 'qcu');
-            document.getElementById('btn-qcf').classList.toggle('bg-white', currentDataType === 'qcf');
-            document.getElementById('btn-qcf').classList.toggle('shadow-sm', currentDataType === 'qcf');
-            document.getElementById('btn-monthly').classList.toggle('bg-white', currentResolution === 'monthly');
-            document.getElementById('btn-monthly').classList.toggle('shadow-sm', currentResolution === 'monthly');
-            document.getElementById('btn-yearly').classList.toggle('bg-white', currentResolution === 'yearly');
-            document.getElementById('btn-yearly').classList.toggle('shadow-sm', currentResolution === 'yearly');
-            document.getElementById('btn-shortwave').classList.toggle('bg-white', currentSolarMetric === 'shortwave');
-            document.getElementById('btn-shortwave').classList.toggle('shadow-sm', currentSolarMetric === 'shortwave');
-            document.getElementById('btn-sunshine').classList.toggle('bg-white', currentSolarMetric === 'sunshine');
-            document.getElementById('btn-sunshine').classList.toggle('shadow-sm', currentSolarMetric === 'sunshine');
-
-            await ensureCurrentTemperatureLoaded();
-            updateAllVisuals();
-            pushStateToUrl();
-
-            console.log('%c[Sunshine-Temp Lab] SPA initialized with Klymot Raw/Adjusted temperature and QC sunshine.', 'color:#a8a090');
-        }
-
-        // Boot
-        window.onload = () => initialize().catch(error => {
-            console.error(error);
-            setStatus(`Data could not be loaded: ${error.message}`);
+      });
+      return pts;
+    }
+
+    async function loadTemperatureSeries(station) {
+      const [qcuText, qcfText] = await Promise.all([
+        fetchText(klymotCsvUrl('qcu', station.tempStation.id)),
+        fetchText(klymotCsvUrl('qcf', station.tempStation.id))
+      ]);
+      station.temperature = {
+        qcu: parseKlymotMonthlyCsv(qcuText),
+        qcf: parseKlymotMonthlyCsv(qcfText)
+      };
+    }
+
+    async function ensureCurrentTemperatureLoaded() {
+      const s = stations[currentStation];
+      if (!s || s.temperature) return;
+      setStatus(`Loading temperature for ${s.tempStation.id}…`);
+      await loadTemperatureSeries(s);
+      setStatus(`Loaded ${s.tempStation.id} temperature.`);
+    }
+
+    // ── Station data loading (manifest + per-station) ──────────────
+    async function loadManifest() {
+      const r = await fetch('data/manifest.json', { cache: 'no-store' });
+      if (!r.ok) throw new Error(`${r.status} data/manifest.json`);
+      return r.json();
+    }
+
+    async function loadStationFile(key) {
+      const r = await fetch(`data/${key}.json`, { cache: 'no-store' });
+      if (!r.ok) throw new Error(`${r.status} data/${key}.json`);
+      return r.json();
+    }
+
+    function buildStation(record) {
+      return {
+        key: record.key,
+        name: record.name,
+        lat: record.lat,
+        lon: record.lon,
+        source: record.source || 'ERA5 shortwave',
+        sunshineMonthly: record.monthly || [],
+        tempStation: record.temperature_station,
+        temperature: null
+      };
+    }
+
+    // ── Station UI ─────────────────────────────────────────────────
+    function populateStationSelect() {
+      const sel = document.getElementById('stationSelect');
+      if (!sel) return;
+      sel.innerHTML = '';
+      Object.values(stations).forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.key;
+        opt.textContent = s.name;
+        sel.appendChild(opt);
+      });
+      sel.value = currentStation;
+    }
+
+    function updateStationInfo() {
+      const el = document.getElementById('stationInfo');
+      const s = stations[currentStation];
+      if (!el || !s) return;
+      const dist = Number(s.tempStation.distance_km || 0).toFixed(1);
+      el.innerHTML = `
+        <span class="station-pill">${s.tempStation.id}</span>
+        <span class="station-pill">ERA5 shortwave</span>
+        <span class="station-dist">${s.tempStation.name}, ${dist} km</span>
+      `;
+      updateStationCaveats();
+    }
+
+    function stationCaveatItems(station) {
+      const items = [];
+      const dist = Number(station.tempStation.distance_km || 0);
+      const elev = Number(station.tempStation.elevation_m);
+      if (dist > 25) {
+        items.push(`<strong>Station pairing:</strong> sunshine is for ${station.name}, but the covering temperature station is ${station.tempStation.name}, ${dist.toFixed(1)} km away.`);
+      }
+      if (Number.isFinite(elev) && elev > 1000) {
+        items.push(`<strong>High elevation:</strong> ${station.tempStation.name} is at ${elev.toFixed(0)} m; lapse-rate effects may dominate local temperature.`);
+      }
+      if (/TOKYO/i.test(station.name) || /TOKYO/i.test(station.tempStation.name)) {
+        items.push('<strong>Urban heat island:</strong> Tokyo has strong UHI exposure, especially in minimum temperatures.');
+      }
+      if (/POTSDAM/i.test(station.name) || /POTSDAM/i.test(station.tempStation.name)) {
+        items.push('<strong>Urban influence:</strong> Potsdam is near the Berlin urban region; land-use change and UHI affect temperature independently of sunshine.');
+      }
+      if (/STOCKHOLM/i.test(station.name) || /STOCKHOLM/i.test(station.tempStation.name)) {
+        items.push('<strong>Urban influence:</strong> Stockholm has a meaningful UHI signal, especially in recent decades.');
+      }
+      if (/STOCKHOLM/i.test(station.name) || /POTSDAM/i.test(station.name)) {
+        items.push('<strong>Seasonal snow:</strong> winter albedo and cloudiness weaken direct sunshine-temperature coupling.');
+      }
+      if (/VALENTIA/i.test(station.name)) {
+        items.push('<strong>Maritime:</strong> Atlantic circulation and sea-surface temperatures mute local sunshine-temperature changes.');
+      }
+      if (/DAVOS/i.test(station.name)) {
+        items.push('<strong>Davos pairing:</strong> Davos sunshine is paired to Säntis because the Davos temperature record does not cover the full span.');
+      }
+      items.push('<strong>Lag control:</strong> offsetting shortwave by ±2 months tests delayed thermal response rather than same-month correlation.');
+      return items;
+    }
+
+    function updateStationCaveats() {
+      const el = document.getElementById('stationCaveats');
+      const s = stations[currentStation];
+      if (!el || !s) return;
+      el.innerHTML = stationCaveatItems(s).map(i => `<div>• ${i}</div>`).join('');
+    }
+
+    async function updateStation() {
+      currentStation = document.getElementById('stationSelect').value;
+      resetTimeWindow();
+      updateStationInfo();
+      await ensureCurrentTemperatureLoaded();
+      updateAllVisuals();
+      pushStateToUrl();
+    }
+
+    // ── Controls ───────────────────────────────────────────────────
+    function setDataType(type) {
+      currentDataType = type;
+      document.getElementById('btn-qcu').classList.toggle('active', type === 'qcu');
+      document.getElementById('btn-qcf').classList.toggle('active', type === 'qcf');
+      updateAllVisuals();
+      pushStateToUrl();
+    }
+
+    function setResolution(type) {
+      currentResolution = type;
+      resetTimeWindow();
+      document.getElementById('btn-monthly').classList.toggle('active', type === 'monthly');
+      document.getElementById('btn-yearly').classList.toggle('active', type === 'yearly');
+      updateAllVisuals();
+      pushStateToUrl();
+    }
+
+    function shiftLag(delta) {
+      monthLag = clamp(Math.round((monthLag + delta) * 4) / 4, -2, 2);
+      updateAllVisuals();
+      pushStateToUrl();
+    }
+
+    function resetTimeWindow() {
+      timeWindowStart = 0;
+      timeWindowSize = null;
+    }
+
+    function resetTimeAxis() {
+      const data = getCurrentData();
+      timeWindowStart = 0;
+      timeWindowSize = data.rows.length || null;
+      updateTimeSeriesChart();
+      pushStateToUrl();
+    }
+
+    // ── Data processing ────────────────────────────────────────────
+    function fallbackLaggedMonthlySunshine(monthlyRows, lagMonths) {
+      const rounded = Math.round(lagMonths);
+      const buckets = new Map();
+      monthlyRows.forEach(row => {
+        const shifted = addMonths(row.year, row.month, -rounded);
+        buckets.set(monthKey(shifted.year, shifted.month), row);
+      });
+      return buckets;
+    }
+
+    function alignMonthlyData(station) {
+      const tempMap = station.temperature[currentDataType];
+      const sunshineByMonth = fallbackLaggedMonthlySunshine(station.sunshineMonthly, monthLag);
+      const rows = [];
+      [...tempMap.keys()].sort().forEach(key => {
+        const sw = sunshineByMonth.get(key);
+        const temp = tempMap.get(key);
+        if (!sw || !Number.isFinite(temp) || !Number.isFinite(sw.shortwave_mj_m2)) return;
+        const [yr, mo] = key.split('-').map(Number);
+        rows.push({
+          key,
+          label: key,
+          year: yr,
+          month: mo,
+          temp,
+          shortwave: sw.shortwave_mj_m2,
+          days: sw.days
         });
-    </script></body></html>
+      });
+      return rows;
+    }
+
+    function aggregateYearly(monthlyRows) {
+      const byYear = new Map();
+      monthlyRows.forEach(row => {
+        if (!byYear.has(row.year)) byYear.set(row.year, []);
+        byYear.get(row.year).push(row);
+      });
+      return [...byYear.entries()].sort((a, b) => a[0] - b[0]).map(([year, rows]) => ({
+        key: String(year),
+        label: String(year),
+        year,
+        temp: mean(rows.map(r => r.temp)),
+        shortwave: rows.reduce((s, r) => s + (r.shortwave || 0), 0),
+        monthCount: rows.length
+      })).filter(r => r.monthCount >= 9 && Number.isFinite(r.temp) && Number.isFinite(r.shortwave));
+    }
+
+    function ensureTimeWindow(rows) {
+      if (!rows.length) { timeWindowStart = 0; timeWindowSize = 0; return; }
+      const defaultSize = currentResolution === 'monthly' ? Math.min(rows.length, 12 * 20) : Math.min(rows.length, 40);
+      if (!timeWindowSize || timeWindowSize > rows.length) timeWindowSize = defaultSize;
+      timeWindowSize = clamp(timeWindowSize, currentResolution === 'monthly' ? 24 : 10, rows.length);
+      timeWindowStart = clamp(timeWindowStart, 0, Math.max(0, rows.length - timeWindowSize));
+    }
+
+    function zoomTime(direction) {
+      const data = getCurrentData();
+      const total = data.rows.length;
+      if (!total) return;
+      ensureTimeWindow(data.rows);
+      const factor = direction > 0 ? 0.7 : 1.4;
+      const minSize = currentResolution === 'monthly' ? 24 : 10;
+      const center = timeWindowStart + timeWindowSize / 2;
+      timeWindowSize = clamp(Math.round(timeWindowSize * factor), minSize, total);
+      timeWindowStart = clamp(Math.round(center - timeWindowSize / 2), 0, Math.max(0, total - timeWindowSize));
+      updateTimeSeriesChart();
+      pushStateToUrl();
+    }
+
+    function panTime(direction) {
+      const data = getCurrentData();
+      if (!data.rows.length) return;
+      ensureTimeWindow(data.rows);
+      const step = Math.max(1, Math.round(timeWindowSize * 0.25));
+      timeWindowStart = clamp(timeWindowStart + direction * step, 0, Math.max(0, data.rows.length - timeWindowSize));
+      updateTimeSeriesChart();
+      pushStateToUrl();
+    }
+
+    function visibleTimeRows(rows) {
+      ensureTimeWindow(rows);
+      return rows.slice(timeWindowStart, timeWindowStart + timeWindowSize);
+    }
+
+    function yearTickStep(rows) {
+      if (!rows.length) return 1;
+      const span = Math.max(1, rows[rows.length - 1].year - rows[0].year);
+      const rawStep = Math.ceil(span / 6);
+      return [1, 2, 5, 10, 20, 25, 50].find(s => s >= rawStep) || 100;
+    }
+
+    function timeAxisLabel(row, rows) {
+      if (!row) return '';
+      const step = yearTickStep(rows);
+      const firstYear = rows[0]?.year || row.year;
+      if ((row.year - firstYear) % step !== 0) return '';
+      if (currentResolution === 'monthly' && row.month !== 1) return '';
+      return String(row.year);
+    }
+
+    function updateControlsReadout(rows) {
+      const lagEl = document.getElementById('lagReadout');
+      if (lagEl) lagEl.textContent = monthLag === 0 ? '0 mo' : `${monthLag > 0 ? '+' : ''}${monthLag} mo`;
+      const readout = document.getElementById('timeWindowReadout');
+      if (!readout || !rows.length) return;
+      const visible = visibleTimeRows(rows);
+      readout.textContent = visible.length ? `Visible: ${visible[0].label} to ${visible[visible.length - 1].label}` : '';
+    }
+
+    function getCurrentData() {
+      const s = stations[currentStation];
+      if (!s || !s.temperature) return { labels: [], sunshine: [], rows: [], station: s };
+      const monthly = alignMonthlyData(s);
+      const rows = currentResolution === 'monthly' ? monthly : aggregateYearly(monthly);
+      updateControlsReadout(rows);
+      return {
+        labels: rows.map(r => r.label),
+        sunshine: rows.map(r => r.shortwave), // always shortwave
+        rows,
+        station: s
+      };
+    }
+
+    // ── Chart rendering ────────────────────────────────────────────
+    function updateTimeSeriesChart() {
+      const container = document.getElementById('timeSeriesChart');
+      if (!container) return;
+      const data = getCurrentData();
+      const rows = visibleTimeRows(data.rows);
+
+      if (timeSeriesChart) { timeSeriesChart.destroy(); timeSeriesChart = null; }
+
+      if (!rows.length) {
+        container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:2rem;font-size:.85rem">No overlapping data in this view.</p>';
+        return;
+      }
+
+      timeSeriesChart = new KlymotChart.DualAxisChart(container);
+      timeSeriesChart.load({
+        labels:      rows.map(r => r.label),
+        leftData:    rows.map(r => r.temp),
+        rightData:   rows.map(r => r.shortwave),
+        leftLabel:   'Temp °C',
+        rightLabel:  'MJ/m²',
+        leftColor:   cssVar('--success'),
+        rightColor:  cssVar('--accent-primary'),
+        labelFilter: (label, index) => timeAxisLabel(rows[index], rows)
+      });
+    }
+
+    function updateScatterChart() {
+      const container = document.getElementById('scatterChart');
+      if (!container) return;
+      const data = getCurrentData();
+
+      if (scatterChart) { scatterChart.destroy(); scatterChart = null; }
+
+      const points = data.rows.map((row, i) => ({
+        x: data.sunshine[i],
+        y: row.temp,
+        label: row.label
+      }));
+      const fit = regressionFit(points);
+
+      scatterChart = new KlymotChart.ScatterChart(container);
+      scatterChart.load({
+        points,
+        fitLine:    fit.points.length >= 2 ? { points: fit.points } : null,
+        xLabel:     'Shortwave radiation (MJ/m²)',
+        yLabel:     'Temperature (°C)',
+        pointColor: cssVar('--accent-primary'),
+        fitColor:   cssVar('--success')
+      });
+
+      const noteEl = document.getElementById('scatterNote');
+      if (noteEl) {
+        noteEl.innerHTML = `Fit: y = ${fit.slope.toFixed(4)}x ${fit.intercept < 0 ? '−' : '+'} ${Math.abs(fit.intercept).toFixed(2)}. Lag: ${monthLag === 0 ? '0' : `${monthLag > 0 ? '+' : ''}${monthLag}`} month(s).`;
+      }
+
+      const badge = document.getElementById('resolutionBadge');
+      if (badge) badge.textContent = currentResolution === 'monthly' ? 'Monthly pairs' : 'Annual means';
+    }
+
+    function regressionFit(points) {
+      const valid = points.filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+      if (valid.length < 2) return { slope: 0, intercept: 0, points: [] };
+      const mX = mean(valid.map(p => p.x));
+      const mY = mean(valid.map(p => p.y));
+      let num = 0, den = 0;
+      valid.forEach(p => { num += (p.x - mX) * (p.y - mY); den += (p.x - mX) ** 2; });
+      const slope = den ? num / den : 0;
+      const intercept = mY - slope * mX;
+      const xs = valid.map(p => p.x);
+      const minX = Math.min(...xs), maxX = Math.max(...xs);
+      return {
+        slope, intercept,
+        points: [{ x: minX, y: slope * minX + intercept }, { x: maxX, y: slope * maxX + intercept }]
+      };
+    }
+
+    function calculateCorrelation() {
+      const data = getCurrentData();
+      const n = data.rows.length;
+      if (n < 3) return { r: NaN, r2: NaN, p: 'n/a' };
+      let mX = 0, mY = 0;
+      for (let i = 0; i < n; i++) { mX += data.sunshine[i]; mY += data.rows[i].temp; }
+      mX /= n; mY /= n;
+      let num = 0, dX = 0, dY = 0;
+      for (let i = 0; i < n; i++) {
+        const dx = data.sunshine[i] - mX;
+        const dy = data.rows[i].temp - mY;
+        num += dx * dy; dX += dx * dx; dY += dy * dy;
+      }
+      const r = num / Math.sqrt(dX * dY);
+      const r2 = r * r;
+      const t = r * Math.sqrt((n - 2) / (1 - r2));
+      const p = 2 * (1 - Math.abs(t) / (Math.abs(t) + 2));
+      return {
+        r: parseFloat(r.toFixed(3)),
+        r2: parseFloat(r2.toFixed(3)),
+        p: p < 0.001 ? '<0.001' : p.toFixed(3)
+      };
+    }
+
+    function updateCorrelationMetrics() {
+      const corr = calculateCorrelation();
+      document.getElementById('pearsonR').textContent = Number.isFinite(corr.r) ? corr.r : '—';
+      document.getElementById('rSquared').textContent = Number.isFinite(corr.r2) ? corr.r2 : '—';
+      document.getElementById('pValue').textContent = corr.p;
+      const scoreEl = document.getElementById('contributionScore');
+      if (!scoreEl) return;
+      let text, color;
+      if (!Number.isFinite(corr.r)) {
+        text = 'Not enough overlapping paired observations'; color = 'var(--warning)';
+      } else if (corr.r > 0.7) {
+        text = `Strong positive contribution (r = ${corr.r})`; color = 'var(--success)';
+      } else if (corr.r > 0.4) {
+        text = `Moderate positive contribution (r = ${corr.r})`; color = 'var(--warning)';
+      } else if (corr.r > 0) {
+        text = `Weak positive contribution (r = ${corr.r})`; color = 'var(--warning)';
+      } else {
+        text = `Weak or negative relationship (r = ${corr.r})`; color = 'var(--danger)';
+      }
+      scoreEl.textContent = text;
+      scoreEl.style.color = color;
+    }
+
+    function updateAllVisuals() {
+      updateTimeSeriesChart();
+      updateScatterChart();
+      updateCorrelationMetrics();
+    }
+
+    // ── Network chart (Section 2) ──────────────────────────────────
+    async function loadAndDrawNetworkChart() {
+      const canvas = document.getElementById('networkChartCanvas');
+      const loading = document.getElementById('networkChartLoading');
+      if (!canvas) return;
+
+      try {
+        const [countsResp, histResp] = await Promise.all([
+          fetch('data/pyranometer-network-counts.json'),
+          fetch('data/pyranometer-network-history.json')
+        ]);
+        if (!countsResp.ok) throw new Error(`HTTP ${countsResp.status}`);
+        const countsPayload = await countsResp.json();
+        const histPayload = histResp.ok ? await histResp.json() : { milestones: [] };
+
+        const series = countsPayload.series || [];
+        const milestones = histPayload.milestones || [];
+
+        if (loading) loading.remove();
+
+        const meta = document.getElementById('networkChartMeta');
+        if (meta && series.length) {
+          const last = series[series.length - 1];
+          meta.textContent = `${last.active_stations} active stations as of ${last.year}`;
+        }
+
+        let xOfYear = () => 0;
+
+        function redraw() {
+          xOfYear = drawNetworkChart(canvas, series, milestones);
+        }
+
+        redraw();
+        wireNetworkTooltip(canvas, () => xOfYear, milestones);
+
+        window.addEventListener('resize', redraw, { passive: true });
+
+      } catch (err) {
+        if (loading) loading.textContent = `Could not load: ${err.message}`;
+      }
+    }
+
+    function drawNetworkChart(canvas, series, milestones) {
+      const container = canvas.parentElement;
+      const W = container.offsetWidth || 600;
+      const H = container.offsetHeight || 220;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const gold = '#d4a855';
+      const textColor = cssVar('--text-secondary') || '#a8a090';
+      const gridColor = 'rgba(212,168,85,0.12)';
+      const pad = { top: 16, right: 20, bottom: 36, left: 52 };
+      const cW = W - pad.left - pad.right;
+      const cH = H - pad.top - pad.bottom;
+
+      const years = series.map(d => d.year);
+      const counts = series.map(d => d.active_stations);
+      const minYear = Math.min(...years);
+      const maxYear = Math.max(...years);
+      const maxCount = Math.max(...counts);
+
+      // Returns CSS pixel x position for a given year (used by tooltip hit-test)
+      function xp(year) {
+        return pad.left + (year - minYear) / Math.max(1, maxYear - minYear) * cW;
+      }
+      function yp(count) {
+        return pad.top + cH - (count / maxCount) * cH;
+      }
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Grid lines
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.top + (cH / 4) * i;
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
+      }
+
+      // Y axis labels
+      ctx.fillStyle = textColor;
+      ctx.font = '11px system-ui, sans-serif';
+      ctx.textAlign = 'right';
+      for (let i = 0; i <= 4; i++) {
+        const c = Math.round(maxCount - (maxCount / 4) * i);
+        const y = pad.top + (cH / 4) * i;
+        ctx.fillText(c, pad.left - 8, y + 4);
+      }
+
+      // X axis labels
+      ctx.textAlign = 'center';
+      const xStep = Math.ceil((maxYear - minYear) / 6 / 10) * 10 || 10;
+      for (let y = Math.ceil(minYear / xStep) * xStep; y <= maxYear; y += xStep) {
+        ctx.fillText(y, xp(y), H - 8);
+      }
+
+      // Milestone vertical lines (dashed)
+      milestones.forEach(m => {
+        if (m.year < minYear || m.year > maxYear) return;
+        const x = xp(m.year);
+        ctx.save();
+        ctx.setLineDash([3, 4]);
+        ctx.strokeStyle = 'rgba(212,168,85,0.35)';
+        ctx.lineWidth = 1.25;
+        ctx.beginPath();
+        ctx.moveTo(x, pad.top);
+        ctx.lineTo(x, pad.top + cH);
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      // Area fill
+      ctx.fillStyle = 'rgba(212,168,85,0.07)';
+      ctx.beginPath();
+      ctx.moveTo(xp(years[0]), pad.top + cH);
+      series.forEach(d => ctx.lineTo(xp(d.year), yp(d.active_stations)));
+      ctx.lineTo(xp(years[years.length - 1]), pad.top + cH);
+      ctx.closePath();
+      ctx.fill();
+
+      // Main line
+      ctx.strokeStyle = gold;
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = 'round';
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      series.forEach((d, i) => {
+        if (i === 0) ctx.moveTo(xp(d.year), yp(d.active_stations));
+        else ctx.lineTo(xp(d.year), yp(d.active_stations));
+      });
+      ctx.stroke();
+
+      return xp; // expose coordinate function for tooltip hit-test
+    }
+
+    function wireNetworkTooltip(canvas, getXOfYear, milestones) {
+      const tooltip = document.getElementById('networkChartTooltip');
+      if (!tooltip || !milestones.length) return;
+
+      function hitTest(clientX) {
+        const rect = canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const threshold = 14;
+        let best = null, bestDist = Infinity;
+        const xOf = getXOfYear();
+        milestones.forEach(m => {
+          const dist = Math.abs(x - xOf(m.year));
+          if (dist < threshold && dist < bestDist) { best = m; bestDist = dist; }
+        });
+        return best;
+      }
+
+      function showTooltip(clientX, clientY, milestone) {
+        const rect = canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        tooltip.textContent = `${milestone.year}: ${milestone.event}`;
+        tooltip.removeAttribute('hidden');
+        const ttW = Math.min(280, rect.width * 0.7);
+        let left = x + 14;
+        if (left + ttW > rect.width - 8) left = x - ttW - 14;
+        tooltip.style.left = Math.max(4, left) + 'px';
+        tooltip.style.top = Math.max(4, Math.min(y - 8, rect.height - 80)) + 'px';
+        tooltip.style.maxWidth = ttW + 'px';
+      }
+
+      function hideTooltip() {
+        tooltip.setAttribute('hidden', '');
+      }
+
+      canvas.addEventListener('mousemove', e => {
+        const hit = hitTest(e.clientX);
+        if (hit) showTooltip(e.clientX, e.clientY, hit);
+        else hideTooltip();
+      });
+
+      canvas.addEventListener('mouseleave', hideTooltip);
+
+      canvas.addEventListener('touchstart', e => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const hit = hitTest(touch.clientX);
+        if (hit) showTooltip(touch.clientX, touch.clientY, hit);
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', () => {
+        setTimeout(hideTooltip, 2200);
+      }, { passive: true });
+    }
+
+    // ── Initialization ─────────────────────────────────────────────
+    async function initialize() {
+      // Restore URL state
+      const urlState = readStateFromUrl();
+      if (urlState.station) currentStation = urlState.station;
+      if (urlState.dataType === 'qcu' || urlState.dataType === 'qcf') currentDataType = urlState.dataType;
+      if (urlState.resolution === 'monthly' || urlState.resolution === 'yearly') currentResolution = urlState.resolution;
+      if (urlState.lag !== null && Number.isFinite(urlState.lag)) monthLag = clamp(Math.round(urlState.lag * 4) / 4, -2, 2);
+      if (urlState.windowStart !== null && Number.isFinite(urlState.windowStart)) timeWindowStart = Math.max(0, urlState.windowStart);
+      if (urlState.windowSize !== null && Number.isFinite(urlState.windowSize)) timeWindowSize = Math.max(1, urlState.windowSize);
+
+      // Apply initial control active states
+      document.getElementById('btn-qcu')?.classList.toggle('active', currentDataType === 'qcu');
+      document.getElementById('btn-qcf')?.classList.toggle('active', currentDataType === 'qcf');
+      document.getElementById('btn-monthly')?.classList.toggle('active', currentResolution === 'monthly');
+      document.getElementById('btn-yearly')?.classList.toggle('active', currentResolution === 'yearly');
+
+      // Network chart runs in parallel with station loading
+      loadAndDrawNetworkChart();
+
+      // Load stations from manifest
+      setStatus('Loading station list…');
+      let manifest;
+      try {
+        manifest = await loadManifest();
+      } catch (err) {
+        setStatus(`Could not load manifest: ${err.message}`);
+        return;
+      }
+
+      // Load all per-station files (parallel, ~5 small files)
+      try {
+        await Promise.all(manifest.stations.map(async key => {
+          const record = await loadStationFile(key);
+          stations[key] = buildStation(record);
+        }));
+      } catch (err) {
+        setStatus(`Could not load station data: ${err.message}`);
+        return;
+      }
+
+      if (!Object.keys(stations).length) {
+        setStatus('No stations found in manifest.');
+        return;
+      }
+
+      if (!stations[currentStation]) currentStation = Object.keys(stations)[0];
+
+      populateStationSelect();
+      updateStationInfo();
+
+      await ensureCurrentTemperatureLoaded();
+      updateAllVisuals();
+      pushStateToUrl();
+
+      console.log('%c[Sunshine-Temp Lab] initialized.', 'color:#a8a090');
+    }
+
+    window.onload = () => initialize().catch(err => {
+      console.error(err);
+      setStatus(`Could not load data: ${err.message}`);
+    });
+  </script></body></html>
