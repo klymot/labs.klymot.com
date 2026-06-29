@@ -37,7 +37,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add public/sunshine-temperature/data/ docs/sunshine-temperature/data/
+          git add public/sunshine-temperature/data/ docs/
           if git diff --cached --quiet; then
             echo "Data unchanged — nothing to commit"
           else
