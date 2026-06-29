@@ -67,12 +67,15 @@
     }
 
     function pushStateToUrl() {
-      if (!currentStation || !currentResolution || !currentDataType || !currentComparison) return;
+      if (!currentStation) {
+        window.history.replaceState(null, '', window.location.pathname);
+        return;
+      }
       const params = new URLSearchParams();
-      params.set('s',   currentStation);
-      params.set('t',   currentDataType);
-      params.set('r',   currentResolution);
-      params.set('cmp', currentComparison);
+      params.set('s', currentStation);
+      if (currentDataType)     params.set('t',   currentDataType);
+      if (currentResolution)   params.set('r',   currentResolution);
+      if (currentComparison)   params.set('cmp', currentComparison);
       if (monthLag !== 0)        params.set('lag', String(monthLag));
       if (timeWindowStart !== 0) params.set('ws',  String(timeWindowStart));
       if (timeWindowSize !== null) params.set('wz', String(timeWindowSize));
@@ -279,7 +282,7 @@
       revealToCurrentState();
       renderStationCards();
       updateStationInfo();
-      window.history.replaceState(null, '', window.location.pathname);
+      pushStateToUrl();
     }
 
     async function selectStation(key) {
@@ -292,6 +295,7 @@
       renderStationCards();
       updateStationInfo();
       revealToCurrentState();
+      pushStateToUrl();
       await ensureCurrentTemperatureLoaded();
     }
 
@@ -409,34 +413,22 @@
         resetTimeWindow();
       }
       revealToCurrentState();
-      if (currentResolution && currentDataType && currentComparison) {
-        updateAllVisuals();
-        pushStateToUrl();
-      } else {
-        window.history.replaceState(null, '', window.location.pathname);
-      }
+      if (currentResolution && currentDataType && currentComparison) updateAllVisuals();
+      pushStateToUrl();
     }
 
     function selectDataType(value) {
       currentDataType = (value === currentDataType) ? null : value;
       revealToCurrentState();
-      if (currentResolution && currentDataType && currentComparison) {
-        updateAllVisuals();
-        pushStateToUrl();
-      } else {
-        window.history.replaceState(null, '', window.location.pathname);
-      }
+      if (currentResolution && currentDataType && currentComparison) updateAllVisuals();
+      pushStateToUrl();
     }
 
     function selectComparison(value) {
       currentComparison = (value === currentComparison) ? null : value;
       revealToCurrentState();
-      if (currentResolution && currentDataType && currentComparison) {
-        updateAllVisuals();
-        pushStateToUrl();
-      } else {
-        window.history.replaceState(null, '', window.location.pathname);
-      }
+      if (currentResolution && currentDataType && currentComparison) updateAllVisuals();
+      pushStateToUrl();
     }
 
     function shiftLag(delta) {
@@ -997,10 +989,10 @@
       revealToCurrentState();
       if (currentStation && currentResolution && currentDataType && currentComparison) {
         updateAllVisuals();
-        pushStateToUrl();
       } else {
         setStatus('');
       }
+      pushStateToUrl();
 
       console.log('%c[Sunshine-Temp Lab] initialized.', 'color:#a8a090');
     }
