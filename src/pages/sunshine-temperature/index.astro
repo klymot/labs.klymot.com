@@ -1010,11 +1010,6 @@ import '../../styles/theme.css';
             <div class="chart-header">
               <span class="chart-title">Time series</span>
               <div class="chart-toolbar">
-                <span class="toolbar-label">Lag</span>
-                <button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Shift lag earlier" type="button">−</button>
-                <span id="lagReadout" class="control-readout">0 mo</span>
-                <button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Shift lag later" type="button">+</button>
-                <span class="toolbar-sep"></span>
                 <button onclick="panTime(-1)" class="mini-tool" aria-label="Pan earlier" type="button">‹</button>
                 <button onclick="zoomTime(1)" class="mini-tool" aria-label="Zoom in" type="button">+</button>
                 <button onclick="zoomTime(-1)" class="mini-tool" aria-label="Zoom out" type="button">−</button>
@@ -1028,6 +1023,37 @@ import '../../styles/theme.css';
               <button class="legend-btn" id="legendTemp" onclick="toggleSeries('temp')" type="button">Temperature</button>
               <button class="legend-btn" id="legendSolar" onclick="toggleSeries('solar')" type="button">Solar radiation</button>
             </div>
+          </div>
+
+          <!-- Sunshine lag -->
+          <div class="section-card">
+            <div class="section-heading">Sunshine lag</div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.65;max-width:58ch;margin-block:0 0.75rem">
+              Sunlight heats the land surface gradually — the temperature response lags peak radiation by days to weeks depending on the season, location, and local thermal mass. Shift the solar series here to explore whether a small offset improves the alignment between the two records.
+            </p>
+            <div class="control-row-tight">
+              <button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Shift lag earlier" type="button">−</button>
+              <span id="lagReadout" class="control-readout">0 mo</span>
+              <button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Shift lag later" type="button">+</button>
+            </div>
+            <details class="expander" style="margin-top:1rem">
+              <summary>Why does solar radiation lead temperature?</summary>
+              <div class="expander-body">
+                <p>The land surface, water bodies, and overlying air all have thermal inertia — they absorb incoming radiation and release heat slowly. On seasonal timescales, ocean heat storage can delay the warmest month by four to six weeks relative to peak insolation. The daily version of the same effect means the hottest hour of the day is mid-afternoon, not local solar noon.</p>
+              </div>
+            </details>
+            <details class="expander">
+              <summary>When should I use a non-zero lag?</summary>
+              <div class="expander-body">
+                <p>A lag of zero is often correct for monthly data — monthly averaging already smooths over the within-month diurnal cycle, and the dominant seasonal swing is largely in phase between radiation and temperature. Some stations do show a systematic offset of a week or two, particularly maritime sites where ocean heat storage delays the temperature peak. Try shifting by ±0.25 months and watch whether the scatter plot tightens or the Pearson r improves.</p>
+              </div>
+            </details>
+            <details class="expander">
+              <summary>Why does lag matter less in anomaly mode?</summary>
+              <div class="expander-body">
+                <p>Anomalies are deviations from the long-term mean for each calendar month, so the seasonal cycle is already removed. What remains are year-to-year fluctuations driven by slower processes — large-scale circulation patterns, cloud cover anomalies, ocean–atmosphere coupling — that tend to affect both radiation and temperature on similar monthly timescales. Sub-monthly lag effects average out once you compute monthly means, so the optimal lag in anomaly mode is almost always zero.</p>
+              </div>
+            </details>
           </div>
 
           <!-- Scatter chart -->
