@@ -20,11 +20,7 @@
             }
         }());
     </script>
-    <!-- TODO: replace with bundled CSS before style-guide migration; Tailwind play CDN serves dynamic content and cannot have an SRI hash -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
-            integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4"
-            crossorigin="anonymous"></script>
+    <script is:inline src="/js/klymot-chart.js"></script>
     <style is:global>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Source+Sans+3:wght@300;400;600&family=JetBrains+Mono:wght@400&display=swap');
 
@@ -339,6 +335,111 @@
         .source-list a:hover {
             color: var(--accent-hover) !important;
         }
+
+        /* ── Chart tooltip (used by klymot-chart.js) ── */
+        .chart-tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-strong);
+            border-radius: 0.375rem;
+            padding: 0.3125rem 0.625rem;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            white-space: pre;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        .chart-tooltip[hidden] { display: none; }
+
+        /* ── Layout utilities (replaces Tailwind CDN) ── */
+        .flex { display: flex; }
+        .flex-1 { flex: 1 1 0%; }
+        .flex-wrap { flex-wrap: wrap; }
+        .shrink-0 { flex-shrink: 0; }
+        .min-w-0 { min-width: 0; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-between { justify-content: space-between; }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-x-2 { column-gap: 0.5rem; }
+        .gap-x-3 { column-gap: 0.75rem; }
+        .grid { display: grid; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .col-span-2 { grid-column: span 2 / span 2; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .w-5 { width: 1.25rem; }
+        .h-5 { height: 1.25rem; }
+        .w-full { width: 100%; }
+        .sticky { position: sticky; }
+        .top-0 { top: 0; }
+        .z-50 { z-index: 50; }
+        .text-center { text-align: center; }
+        .leading-none { line-height: 1; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+        .font-semibold { font-weight: 600; }
+        .font-medium { font-weight: 500; }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .text-\[9px\] { font-size: 9px; }
+        .text-\[10px\] { font-size: 10px; }
+        .text-\[13px\] { font-size: 13px; }
+        .text-\[16px\] { font-size: 16px; }
+        .rounded { border-radius: 0.25rem; }
+        .rounded-full { border-radius: 9999px; }
+        .rounded-2xl { border-radius: 1rem; }
+        .rounded-\[14px\] { border-radius: 14px; }
+        .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+        .p-1 { padding: 0.25rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .pb-12 { padding-bottom: 3rem; }
+        .pb-4 { padding-bottom: 1rem; }
+        .pt-6 { padding-top: 1.5rem; }
+        .mt-0\.5 { margin-top: 0.125rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-1\.5 { margin-top: 0.375rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-1\.5 { margin-bottom: 0.375rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .space-y-1 > * + * { margin-top: 0.25rem; }
+        .space-y-1\.5 > * + * { margin-top: 0.375rem; }
+        .max-w-\[420px\] { max-width: 420px; }
+        @media (min-width: 640px) {
+            .sm\:max-w-\[600px\] { max-width: 600px; }
+        }
+        /* Tailwind semantic colour overrides — keep theme consistent */
+        .bg-white, .bg-slate-50, .bg-slate-100 { background-color: var(--bg-elevated) !important; }
+        .bg-amber-50, .bg-sky-100 { background-color: rgba(212, 168, 85, 0.11) !important; }
+        .bg-slate-900 { background-color: var(--accent-primary) !important; color: var(--bg-primary) !important; }
+        .shadow-sm { background-color: var(--accent-primary) !important; color: var(--bg-primary) !important; box-shadow: none !important; }
+        .text-slate-900, .text-slate-700 { color: var(--text-primary) !important; }
+        .text-slate-600, .text-slate-500, .text-slate-400 { color: var(--text-secondary) !important; }
+        .text-sky-600, .text-sky-700 { color: var(--accent-primary) !important; }
+        .text-emerald-600 { color: var(--success) !important; }
+        .text-amber-600, .text-amber-700, .text-amber-800, .text-orange-600 { color: var(--warning) !important; }
+        .text-red-600 { color: var(--danger) !important; }
+        .border, .border-b, .border-slate-300, .border-amber-200 { border-color: var(--border-color) !important; }
+        .font-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace !important; }
+        .tracking-tighter { letter-spacing: -0.05em; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -492,9 +593,7 @@
                     <div class="font-medium text-sm">Time Series</div>
                     <div class="text-[10px] text-slate-400">Aligned observations</div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="timeSeriesChart"></canvas>
-                </div>
+                <div id="timeSeriesChart" class="chart-container"></div>
             </div>
 
             <!-- Scatter Plot -->
@@ -502,9 +601,7 @@
                 <div class="flex justify-between items-center mb-3">
                     <div class="font-medium text-sm">Scatter: Sunshine vs Temperature</div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="scatterChart"></canvas>
-                </div>
+                <div id="scatterChart" class="chart-container"></div>
                 <div id="scatterNote" class="text-[10px] text-center text-slate-500 mt-1"></div>
             </div>
         </div>
@@ -551,40 +648,8 @@
     </div>
 
     <script is:inline>
-        // Tailwind script
-        function initTailwind() {
-            document.documentElement.style.setProperty('--accent', '#d4a855');
-        }
-
         function cssVar(name) {
             return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-        }
-
-        function themedChartOptions(extra = {}) {
-            const text = cssVar('--text-secondary');
-            const grid = 'rgba(212, 168, 85, 0.14)';
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        ticks: { color: text },
-                        grid: { color: grid },
-                        title: { color: text }
-                    },
-                    y: {
-                        ticks: { color: text },
-                        grid: { color: grid },
-                        title: { color: text }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: { color: text }
-                    }
-                },
-                ...extra
-            };
         }
 
         const KLYMOT_DATA_BASE = 'https://www.klymot.com/data';
@@ -1082,138 +1147,46 @@
         }
 
         function updateTimeSeriesChart() {
-            const ctx = document.getElementById('timeSeriesChart');
+            const container = document.getElementById('timeSeriesChart');
             const data = getCurrentData();
             const rows = visibleTimeRows(data.rows);
 
-            if (timeSeriesChart) timeSeriesChart.destroy();
+            if (timeSeriesChart) { timeSeriesChart.destroy(); timeSeriesChart = null; }
+            timeSeriesChart = new KlymotChart.DualAxisChart(container);
 
-            timeSeriesChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: rows.map(row => row.label),
-                    datasets: [
-                        {
-                            label: `${currentDataType.toUpperCase()} temperature (°C)`,
-                            data: rows.map(row => row.temp),
-                            borderColor: cssVar('--success'),
-                            backgroundColor: 'rgba(48, 200, 128, 0.12)',
-                            borderWidth: 2,
-                            yAxisID: 'y',
-                            tension: 0.3,
-                            pointRadius: 0,
-                            pointHoverRadius: 0
-                        },
-                        {
-                            label: solarLabel(),
-                            data: rows.map(row => currentSolarMetric === 'shortwave' ? row.shortwave : row.sunshine),
-                            borderColor: cssVar('--accent-primary'),
-                            backgroundColor: 'rgba(212, 168, 85, 0.12)',
-                            borderWidth: 2,
-                            yAxisID: 'y1',
-                            tension: 0.3,
-                            pointRadius: 0,
-                            pointHoverRadius: 0
-                        }
-                    ]
-                },
-                options: themedChartOptions({
-                    scales: {
-                        x: {
-                            ticks: {
-                                color: cssVar('--text-secondary'),
-                                maxRotation: 0,
-                                autoSkip: false,
-                                callback: (value, index) => {
-                                    const row = rows[index];
-                                    return timeAxisLabel(row, rows);
-                                }
-                            },
-                            grid: { color: 'rgba(212, 168, 85, 0.10)' },
-                            title: { display: true, text: 'Year', color: cssVar('--text-secondary') }
-                        },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            ticks: { color: cssVar('--text-secondary') },
-                            grid: { color: 'rgba(212, 168, 85, 0.14)' },
-                            title: { display: true, text: 'Temp °C', color: cssVar('--text-secondary') }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            ticks: { color: cssVar('--text-secondary') },
-                            title: { display: true, text: solarAxisLabel(), color: cssVar('--text-secondary') },
-                            grid: { drawOnChartArea: false, color: 'rgba(212, 168, 85, 0.14)' }
-                        }
-                    },
-                    plugins: {
-                        legend: { position: 'top', align: 'end', labels: { color: cssVar('--text-secondary') } }
-                    }
-                })
+            timeSeriesChart.load({
+                labels:      rows.map(row => row.label),
+                leftData:    rows.map(row => row.temp),
+                rightData:   rows.map(row => currentSolarMetric === 'shortwave' ? row.shortwave : row.sunshine),
+                leftLabel:   'Temp °C',
+                rightLabel:  solarAxisLabel(),
+                leftColor:   cssVar('--success'),
+                rightColor:  cssVar('--accent-primary'),
+                labelFilter: (label, index) => timeAxisLabel(rows[index], rows),
             });
         }
 
         function updateScatterChart() {
-            const ctx = document.getElementById('scatterChart');
+            const container = document.getElementById('scatterChart');
             const data = getCurrentData();
 
-            if (scatterChart) scatterChart.destroy();
+            if (scatterChart) { scatterChart.destroy(); scatterChart = null; }
+            scatterChart = new KlymotChart.ScatterChart(container);
 
-            const scatterData = data.rows.map((row, i) => ({
+            const points = data.rows.map((row, i) => ({
                 x: data.sunshine[i],
                 y: data.temp[i],
                 label: row.label
             }));
-            const fit = regressionFit(scatterData);
+            const fit = regressionFit(points);
 
-            scatterChart = new Chart(ctx, {
-                type: 'scatter',
-                data: {
-                    datasets: [
-                        {
-                            label: `${currentResolution === 'monthly' ? 'Monthly' : 'Annual'} pairs`,
-                            data: scatterData,
-                            backgroundColor: 'rgba(212, 168, 85, 0.45)',
-                            borderColor: cssVar('--accent-hover'),
-                            borderWidth: 1,
-                            pointRadius: 3,
-                            pointHoverRadius: 3
-                        },
-                        {
-                            type: 'line',
-                            label: 'Correlation fit',
-                            data: fit.points,
-                            parsing: false,
-                            borderColor: cssVar('--success'),
-                            backgroundColor: 'transparent',
-                            borderWidth: 2,
-                            pointRadius: 0,
-                            pointHoverRadius: 0,
-                            tension: 0
-                        }
-                    ]
-                },
-                options: themedChartOptions({
-                    scales: {
-                        x: {
-                            ticks: { color: cssVar('--text-secondary') },
-                            grid: { color: 'rgba(212, 168, 85, 0.14)' },
-                            title: { display: true, text: solarLabel(), color: cssVar('--text-secondary') }
-                        },
-                        y: {
-                            ticks: { color: cssVar('--text-secondary') },
-                            grid: { color: 'rgba(212, 168, 85, 0.14)' },
-                            title: { display: true, text: 'Temperature (°C)', color: cssVar('--text-secondary') }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false }
-                    }
-                })
+            scatterChart.load({
+                points,
+                fitLine:    fit.points.length >= 2 ? { points: fit.points } : null,
+                xLabel:     solarLabel(),
+                yLabel:     'Temperature (°C)',
+                pointColor: cssVar('--accent-primary'),
+                fitColor:   cssVar('--success'),
             });
 
             document.getElementById('scatterNote').innerHTML =
@@ -1329,8 +1302,6 @@
         }
 
         async function initialize() {
-            initTailwind();
-
             const urlState = readStateFromUrl();
             if (urlState.station) currentStation = urlState.station;
             if (urlState.dataType === 'qcu' || urlState.dataType === 'qcf') currentDataType = urlState.dataType;

@@ -10,41 +10,9 @@
                 fetch('https://api.klymot.com/api/v1/usage', { method: 'POST', body: blob, keepalive: true }).catch(function () {});
             }
         }());
-    </script><!-- TODO: replace with bundled CSS before style-guide migration; Tailwind play CDN serves dynamic content and cannot have an SRI hash --><script type="module" src="/_astro/index.astro_astro_type_script_index_0_lang.bLgrAK4X.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script><link rel="stylesheet" href="/_astro/index.CLB1Rhuf.css"></head><body class="bg-slate-50 text-slate-900"><!-- Header --><header class="klymot-header sticky top-0 z-50"><div class="max-w-[420px] sm:max-w-[600px] mx-auto px-4 py-3 flex items-center justify-between"><div class="flex items-center gap-x-3 min-w-0"><a href="https://klymot.com" class="flex items-center gap-x-2 shrink-0" aria-label="klymot home"><span class="brand-logo" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="24" height="24"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"></circle><ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"></circle><circle cx="19.5" cy="10.5" r="2" fill="currentColor"></circle></svg></span><div class="leading-none"><span class="header-title text-xl font-semibold">klymot</span><span class="header-subtitle block text-[9px]">labs</span></div></a></div><div class="flex items-center gap-x-2 text-sm"><a href=".." class="px-3 py-1.5 brand-control active text-sm font-medium">Labs</a></div></div></header><div class="max-w-[420px] sm:max-w-[600px] mx-auto px-4 pb-12"><!-- Hero / Intro --><div class="pt-6 pb-4"><div class="flex items-center gap-x-2 mb-1"><span class="px-3 py-1 bg-sky-100 text-sky-700 text-xs font-semibold rounded">LAB</span></div><h1 class="font-display text-3xl tracking-tighter font-semibold leading-none">Sunshine &amp; Temperature</h1><p class="mt-2 text-slate-600 text-[16px]">Exploring the relationship between surface solar radiation (sunshine) and surface air temperature.</p></div><!-- Quick Explainer --><div class="section-card p-4 mb-6"><div class="flex items-start gap-3"><div class="w-5 h-5 mt-0.5 flex-shrink-0 text-sky-600">☀️</div><div class="text-sm explanation"><strong>Incoming sunshine</strong> delivers energy to the surface. More sunshine generally supports higher temperatures, but the relationship is complex.<span class="text-slate-500">Clouds, aerosols, albedo (ice/snow reflection), elevation, latitude, and ocean/land effects all play major roles.</span></div></div></div><!-- Station Selection --><div class="mb-6"><div class="flex items-center justify-between mb-2 px-1"><div class="font-semibold text-sm">Select Station Pair</div><div class="text-xs text-slate-500">Raw + Adjusted loaded</div></div><select id="stationSelect" onchange="updateStation()" class="w-full bg-white border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-sky-400"><!-- Populated by JS --></select><div id="stationInfo" class="mt-2 flex gap-2 text-xs"></div></div><!-- Complications Note --><div class="section-card p-4 mb-6 bg-amber-50 border-amber-200"><div class="text-xs font-semibold text-amber-700 mb-1.5">IMPORTANT CAVEATS</div><div id="stationCaveats" class="text-xs text-amber-800 space-y-1.5 explanation"><!-- Populated by JS --></div></div><!-- Data Controls --><div class="section-card p-4 mb-6"><div class="grid grid-cols-2 gap-3"><!-- Data Type --><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Temperature Data</div><div class="flex bg-slate-100 rounded-2xl p-1"><button onclick="setDataType('qcu')" id="btn-qcu" class="flex-1 py-1.5 text-xs font-medium rounded-[14px] bg-white shadow-sm">Raw</button><button onclick="setDataType('qcf')" id="btn-qcf" class="flex-1 py-1.5 text-xs font-medium rounded-[14px]">Adjusted</button></div></div><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Comparison</div><div class="flex bg-slate-100 rounded-2xl p-1"><button onclick="setResolution('monthly')" id="btn-monthly" class="flex-1 py-1.5 text-xs font-medium rounded-[14px] bg-white shadow-sm">Monthly</button><button onclick="setResolution('yearly')" id="btn-yearly" class="flex-1 py-1.5 text-xs font-medium rounded-[14px]">Yearly</button></div></div><!-- Solar Metric --><div class="col-span-2"><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Solar Measure</div><div class="flex bg-slate-100 rounded-2xl p-1"><button onclick="setSolarMetric('shortwave')" id="btn-shortwave" class="flex-1 py-1.5 text-xs font-medium rounded-[14px] bg-white shadow-sm">Pyranometer (MJ/m²)</button><button onclick="setSolarMetric('sunshine')" id="btn-sunshine" class="flex-1 py-1.5 text-xs font-medium rounded-[14px]">Sunshine hours</button></div></div></div><div class="mt-3 text-[10px] text-slate-500 px-1 space-y-1"><div><strong>Pyranometer (MJ/m²)</strong> — total incoming solar energy at the surface per month (direct + diffuse), from ERA5 <span class="font-mono">shortwave_radiation_sum</span>. This is what a pyranometer measures: global horizontal irradiance.</div><div><strong>Sunshine hours</strong> — hours of "bright" sunshine per month (irradiance above ~120&nbsp;W/m²), from ERA5 <span class="font-mono">sunshine_duration</span>. Analogous to a Campbell-Stokes recorder. Does not capture diffuse radiation on overcast days.</div></div><div class="mt-2 text-[10px] text-slate-500 px-1">Raw is unadjusted monthly GHCN temperature from Klymot; Adjusted is homogenized. Solar data loaded from <span class="font-mono">data/sunshine-qc.json</span>.</div><div id="loadStatus" class="mt-2 text-[10px] text-slate-500 px-1"></div></div><div class="section-card p-4 mb-6"><div class="grid grid-cols-2 gap-3"><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Sunshine Lag</div><div class="flex items-center gap-1"><button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Lag sunshine one quarter month earlier">−</button><span id="lagReadout" class="control-readout">0 mo</span><button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Lag sunshine one quarter month later">+</button></div></div><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Time Axis</div><div class="flex items-center gap-1"><button onclick="panTime(-1)" class="mini-tool" aria-label="Pan time axis earlier">‹</button><button onclick="zoomTime(1)" class="mini-tool" aria-label="Zoom in time axis">+</button><button onclick="zoomTime(-1)" class="mini-tool" aria-label="Zoom out time axis">−</button><button onclick="panTime(1)" class="mini-tool" aria-label="Pan time axis later">›</button><button onclick="resetTimeAxis()" class="mini-tool" aria-label="Reset time axis to default">↺</button></div></div></div><div id="timeWindowReadout" class="mt-3 text-[10px] text-slate-500 px-1"></div></div><!-- Visualizations --><div class="mb-6"><div class="flex items-center justify-between mb-3 px-1"><div class="font-semibold">Visualizations</div><div id="resolutionBadge" class="text-xs px-2 py-0.5 bg-white border rounded-full text-slate-500">Monthly pairs</div></div><!-- Time Series --><div class="section-card p-4 mb-4"><div class="flex justify-between items-center mb-3"><div class="font-medium text-sm">Time Series</div><div class="text-[10px] text-slate-400">Aligned observations</div></div><div class="chart-container"><canvas id="timeSeriesChart"></canvas></div></div><!-- Scatter Plot --><div class="section-card p-4"><div class="flex justify-between items-center mb-3"><div class="font-medium text-sm">Scatter: Sunshine vs Temperature</div></div><div class="chart-container"><canvas id="scatterChart"></canvas></div><div id="scatterNote" class="text-[10px] text-center text-slate-500 mt-1"></div></div></div><!-- Correlation Analysis --><div class="section-card p-4 mb-6"><div class="font-semibold mb-3">Correlation Analysis</div><div class="metric-grid mb-4"><div class="metric-card"><div class="metric-label text-xs text-slate-500">Pearson r</div><div id="pearsonR" class="text-3xl font-semibold tabular-nums text-sky-600">0.72</div></div><div class="metric-card"><div class="metric-label text-xs text-slate-500">r² (explained variance)</div><div id="rSquared" class="text-3xl font-semibold tabular-nums">0.52</div></div><div class="metric-card"><div class="metric-label text-xs text-slate-500">p-value (approx)</div><div id="pValue" class="text-3xl font-semibold tabular-nums text-emerald-600">&lt;0.001</div></div></div><div class="bg-slate-50 rounded-2xl p-3 text-xs"><div class="font-medium mb-1">Contribution Score</div><div id="contributionScore" class="text-lg font-semibold text-emerald-600">Strong positive contribution (r = 0.72)</div><div class="text-[10px] text-slate-600 mt-1">Sunshine explains a meaningful portion of temperature variance at this location. Other factors (clouds, circulation, etc.) account for the remainder.</div></div></div><!-- Footer / Notes --><div class="section-card p-4 mb-6 text-[13px] text-slate-400 source-list"><div class="font-semibold text-sm mb-2 text-slate-700">Sources &amp; References</div><p class="mb-2"><strong>Temperature:</strong> Klymot station CSVs derived from GHCN-Monthly v4 Raw and Adjusted records. GHCNm is the Global Historical Climatology Network Monthly temperature dataset; Klymot uses station records as the primary climate observation source. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018 DOI</a>.</p><p class="mb-2"><strong>Homogenization:</strong> Adjusted records follow the GHCN processing lineage, including pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009 DOI</a>.</p><p class="mb-2"><strong>Pyranometer / Shortwave radiation:</strong> Monthly totals of <span class="font-mono">shortwave_radiation_sum</span> from the Open-Meteo Historical Weather API (ERA5 reanalysis). ERA5 derives surface downwelling shortwave radiation from the ECMWF atmospheric model; it represents global horizontal irradiance — the same physical quantity measured by a pyranometer — but is a gridded model estimate rather than a station instrument record. <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo documentation</a>. <a href="https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5" target="_blank" rel="noopener">ERA5 dataset</a>.</p><p class="mb-2"><strong>Sunshine hours:</strong> Monthly totals of <span class="font-mono">sunshine_duration</span> from the same ERA5/Open-Meteo source. Counts hours where surface solar irradiance exceeds approximately 120&nbsp;W/m², analogous to a Campbell-Stokes sunshine recorder. Both solar variables are fetched by <span class="font-mono">scripts/fetch_sunshine.py</span> and stored in <span class="font-mono">data/sunshine-qc.json</span>.</p><p>This is a neutral exploration tool. Correlation does not imply causation; circulation, clouds, albedo, elevation, land/sea effects, and station exposure can influence both variables.</p></div></div><script>
-        // Tailwind script
-        function initTailwind() {
-            document.documentElement.style.setProperty('--accent', '#d4a855');
-        }
-
+    </script><script src="/js/klymot-chart.js"></script><link rel="stylesheet" href="/_astro/index.GIC9yEWZ.css"></head><body class="bg-slate-50 text-slate-900"><!-- Header --><header class="klymot-header sticky top-0 z-50"><div class="max-w-[420px] sm:max-w-[600px] mx-auto px-4 py-3 flex items-center justify-between"><div class="flex items-center gap-x-3 min-w-0"><a href="https://klymot.com" class="flex items-center gap-x-2 shrink-0" aria-label="klymot home"><span class="brand-logo" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="24" height="24"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"></circle><ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"></ellipse><circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"></circle><circle cx="19.5" cy="10.5" r="2" fill="currentColor"></circle></svg></span><div class="leading-none"><span class="header-title text-xl font-semibold">klymot</span><span class="header-subtitle block text-[9px]">labs</span></div></a></div><div class="flex items-center gap-x-2 text-sm"><a href=".." class="px-3 py-1.5 brand-control active text-sm font-medium">Labs</a></div></div></header><div class="max-w-[420px] sm:max-w-[600px] mx-auto px-4 pb-12"><!-- Hero / Intro --><div class="pt-6 pb-4"><div class="flex items-center gap-x-2 mb-1"><span class="px-3 py-1 bg-sky-100 text-sky-700 text-xs font-semibold rounded">LAB</span></div><h1 class="font-display text-3xl tracking-tighter font-semibold leading-none">Sunshine &amp; Temperature</h1><p class="mt-2 text-slate-600 text-[16px]">Exploring the relationship between surface solar radiation (sunshine) and surface air temperature.</p></div><!-- Quick Explainer --><div class="section-card p-4 mb-6"><div class="flex items-start gap-3"><div class="w-5 h-5 mt-0.5 flex-shrink-0 text-sky-600">☀️</div><div class="text-sm explanation"><strong>Incoming sunshine</strong> delivers energy to the surface. More sunshine generally supports higher temperatures, but the relationship is complex.<span class="text-slate-500">Clouds, aerosols, albedo (ice/snow reflection), elevation, latitude, and ocean/land effects all play major roles.</span></div></div></div><!-- Station Selection --><div class="mb-6"><div class="flex items-center justify-between mb-2 px-1"><div class="font-semibold text-sm">Select Station Pair</div><div class="text-xs text-slate-500">Raw + Adjusted loaded</div></div><select id="stationSelect" onchange="updateStation()" class="w-full bg-white border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-sky-400"><!-- Populated by JS --></select><div id="stationInfo" class="mt-2 flex gap-2 text-xs"></div></div><!-- Complications Note --><div class="section-card p-4 mb-6 bg-amber-50 border-amber-200"><div class="text-xs font-semibold text-amber-700 mb-1.5">IMPORTANT CAVEATS</div><div id="stationCaveats" class="text-xs text-amber-800 space-y-1.5 explanation"><!-- Populated by JS --></div></div><!-- Data Controls --><div class="section-card p-4 mb-6"><div class="grid grid-cols-2 gap-3"><!-- Data Type --><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Temperature Data</div><div class="flex bg-slate-100 rounded-2xl p-1"><button onclick="setDataType('qcu')" id="btn-qcu" class="flex-1 py-1.5 text-xs font-medium rounded-[14px] bg-white shadow-sm">Raw</button><button onclick="setDataType('qcf')" id="btn-qcf" class="flex-1 py-1.5 text-xs font-medium rounded-[14px]">Adjusted</button></div></div><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Comparison</div><div class="flex bg-slate-100 rounded-2xl p-1"><button onclick="setResolution('monthly')" id="btn-monthly" class="flex-1 py-1.5 text-xs font-medium rounded-[14px] bg-white shadow-sm">Monthly</button><button onclick="setResolution('yearly')" id="btn-yearly" class="flex-1 py-1.5 text-xs font-medium rounded-[14px]">Yearly</button></div></div><!-- Solar Metric --><div class="col-span-2"><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Solar Measure</div><div class="flex bg-slate-100 rounded-2xl p-1"><button onclick="setSolarMetric('shortwave')" id="btn-shortwave" class="flex-1 py-1.5 text-xs font-medium rounded-[14px] bg-white shadow-sm">Pyranometer (MJ/m²)</button><button onclick="setSolarMetric('sunshine')" id="btn-sunshine" class="flex-1 py-1.5 text-xs font-medium rounded-[14px]">Sunshine hours</button></div></div></div><div class="mt-3 text-[10px] text-slate-500 px-1 space-y-1"><div><strong>Pyranometer (MJ/m²)</strong> — total incoming solar energy at the surface per month (direct + diffuse), from ERA5 <span class="font-mono">shortwave_radiation_sum</span>. This is what a pyranometer measures: global horizontal irradiance.</div><div><strong>Sunshine hours</strong> — hours of "bright" sunshine per month (irradiance above ~120&nbsp;W/m²), from ERA5 <span class="font-mono">sunshine_duration</span>. Analogous to a Campbell-Stokes recorder. Does not capture diffuse radiation on overcast days.</div></div><div class="mt-2 text-[10px] text-slate-500 px-1">Raw is unadjusted monthly GHCN temperature from Klymot; Adjusted is homogenized. Solar data loaded from <span class="font-mono">data/sunshine-qc.json</span>.</div><div id="loadStatus" class="mt-2 text-[10px] text-slate-500 px-1"></div></div><div class="section-card p-4 mb-6"><div class="grid grid-cols-2 gap-3"><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Sunshine Lag</div><div class="flex items-center gap-1"><button onclick="shiftLag(-0.25)" class="mini-tool" aria-label="Lag sunshine one quarter month earlier">−</button><span id="lagReadout" class="control-readout">0 mo</span><button onclick="shiftLag(0.25)" class="mini-tool" aria-label="Lag sunshine one quarter month later">+</button></div></div><div><div class="text-xs font-medium text-slate-600 mb-1.5 px-1">Time Axis</div><div class="flex items-center gap-1"><button onclick="panTime(-1)" class="mini-tool" aria-label="Pan time axis earlier">‹</button><button onclick="zoomTime(1)" class="mini-tool" aria-label="Zoom in time axis">+</button><button onclick="zoomTime(-1)" class="mini-tool" aria-label="Zoom out time axis">−</button><button onclick="panTime(1)" class="mini-tool" aria-label="Pan time axis later">›</button><button onclick="resetTimeAxis()" class="mini-tool" aria-label="Reset time axis to default">↺</button></div></div></div><div id="timeWindowReadout" class="mt-3 text-[10px] text-slate-500 px-1"></div></div><!-- Visualizations --><div class="mb-6"><div class="flex items-center justify-between mb-3 px-1"><div class="font-semibold">Visualizations</div><div id="resolutionBadge" class="text-xs px-2 py-0.5 bg-white border rounded-full text-slate-500">Monthly pairs</div></div><!-- Time Series --><div class="section-card p-4 mb-4"><div class="flex justify-between items-center mb-3"><div class="font-medium text-sm">Time Series</div><div class="text-[10px] text-slate-400">Aligned observations</div></div><div id="timeSeriesChart" class="chart-container"></div></div><!-- Scatter Plot --><div class="section-card p-4"><div class="flex justify-between items-center mb-3"><div class="font-medium text-sm">Scatter: Sunshine vs Temperature</div></div><div id="scatterChart" class="chart-container"></div><div id="scatterNote" class="text-[10px] text-center text-slate-500 mt-1"></div></div></div><!-- Correlation Analysis --><div class="section-card p-4 mb-6"><div class="font-semibold mb-3">Correlation Analysis</div><div class="metric-grid mb-4"><div class="metric-card"><div class="metric-label text-xs text-slate-500">Pearson r</div><div id="pearsonR" class="text-3xl font-semibold tabular-nums text-sky-600">0.72</div></div><div class="metric-card"><div class="metric-label text-xs text-slate-500">r² (explained variance)</div><div id="rSquared" class="text-3xl font-semibold tabular-nums">0.52</div></div><div class="metric-card"><div class="metric-label text-xs text-slate-500">p-value (approx)</div><div id="pValue" class="text-3xl font-semibold tabular-nums text-emerald-600">&lt;0.001</div></div></div><div class="bg-slate-50 rounded-2xl p-3 text-xs"><div class="font-medium mb-1">Contribution Score</div><div id="contributionScore" class="text-lg font-semibold text-emerald-600">Strong positive contribution (r = 0.72)</div><div class="text-[10px] text-slate-600 mt-1">Sunshine explains a meaningful portion of temperature variance at this location. Other factors (clouds, circulation, etc.) account for the remainder.</div></div></div><!-- Footer / Notes --><div class="section-card p-4 mb-6 text-[13px] text-slate-400 source-list"><div class="font-semibold text-sm mb-2 text-slate-700">Sources &amp; References</div><p class="mb-2"><strong>Temperature:</strong> Klymot station CSVs derived from GHCN-Monthly v4 Raw and Adjusted records. GHCNm is the Global Historical Climatology Network Monthly temperature dataset; Klymot uses station records as the primary climate observation source. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018 DOI</a>.</p><p class="mb-2"><strong>Homogenization:</strong> Adjusted records follow the GHCN processing lineage, including pairwise homogeneity methods for non-climatic shifts. <a href="https://doi.org/10.1175/2008JCLI2263.1" target="_blank" rel="noopener">Menne &amp; Williams, 2009 DOI</a>.</p><p class="mb-2"><strong>Pyranometer / Shortwave radiation:</strong> Monthly totals of <span class="font-mono">shortwave_radiation_sum</span> from the Open-Meteo Historical Weather API (ERA5 reanalysis). ERA5 derives surface downwelling shortwave radiation from the ECMWF atmospheric model; it represents global horizontal irradiance — the same physical quantity measured by a pyranometer — but is a gridded model estimate rather than a station instrument record. <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo documentation</a>. <a href="https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5" target="_blank" rel="noopener">ERA5 dataset</a>.</p><p class="mb-2"><strong>Sunshine hours:</strong> Monthly totals of <span class="font-mono">sunshine_duration</span> from the same ERA5/Open-Meteo source. Counts hours where surface solar irradiance exceeds approximately 120&nbsp;W/m², analogous to a Campbell-Stokes sunshine recorder. Both solar variables are fetched by <span class="font-mono">scripts/fetch_sunshine.py</span> and stored in <span class="font-mono">data/sunshine-qc.json</span>.</p><p>This is a neutral exploration tool. Correlation does not imply causation; circulation, clouds, albedo, elevation, land/sea effects, and station exposure can influence both variables.</p></div></div><script>
         function cssVar(name) {
             return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-        }
-
-        function themedChartOptions(extra = {}) {
-            const text = cssVar('--text-secondary');
-            const grid = 'rgba(212, 168, 85, 0.14)';
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        ticks: { color: text },
-                        grid: { color: grid },
-                        title: { color: text }
-                    },
-                    y: {
-                        ticks: { color: text },
-                        grid: { color: grid },
-                        title: { color: text }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: { color: text }
-                    }
-                },
-                ...extra
-            };
         }
 
         const KLYMOT_DATA_BASE = 'https://www.klymot.com/data';
@@ -542,138 +510,46 @@
         }
 
         function updateTimeSeriesChart() {
-            const ctx = document.getElementById('timeSeriesChart');
+            const container = document.getElementById('timeSeriesChart');
             const data = getCurrentData();
             const rows = visibleTimeRows(data.rows);
 
-            if (timeSeriesChart) timeSeriesChart.destroy();
+            if (timeSeriesChart) { timeSeriesChart.destroy(); timeSeriesChart = null; }
+            timeSeriesChart = new KlymotChart.DualAxisChart(container);
 
-            timeSeriesChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: rows.map(row => row.label),
-                    datasets: [
-                        {
-                            label: `${currentDataType.toUpperCase()} temperature (°C)`,
-                            data: rows.map(row => row.temp),
-                            borderColor: cssVar('--success'),
-                            backgroundColor: 'rgba(48, 200, 128, 0.12)',
-                            borderWidth: 2,
-                            yAxisID: 'y',
-                            tension: 0.3,
-                            pointRadius: 0,
-                            pointHoverRadius: 0
-                        },
-                        {
-                            label: solarLabel(),
-                            data: rows.map(row => currentSolarMetric === 'shortwave' ? row.shortwave : row.sunshine),
-                            borderColor: cssVar('--accent-primary'),
-                            backgroundColor: 'rgba(212, 168, 85, 0.12)',
-                            borderWidth: 2,
-                            yAxisID: 'y1',
-                            tension: 0.3,
-                            pointRadius: 0,
-                            pointHoverRadius: 0
-                        }
-                    ]
-                },
-                options: themedChartOptions({
-                    scales: {
-                        x: {
-                            ticks: {
-                                color: cssVar('--text-secondary'),
-                                maxRotation: 0,
-                                autoSkip: false,
-                                callback: (value, index) => {
-                                    const row = rows[index];
-                                    return timeAxisLabel(row, rows);
-                                }
-                            },
-                            grid: { color: 'rgba(212, 168, 85, 0.10)' },
-                            title: { display: true, text: 'Year', color: cssVar('--text-secondary') }
-                        },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            ticks: { color: cssVar('--text-secondary') },
-                            grid: { color: 'rgba(212, 168, 85, 0.14)' },
-                            title: { display: true, text: 'Temp °C', color: cssVar('--text-secondary') }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            ticks: { color: cssVar('--text-secondary') },
-                            title: { display: true, text: solarAxisLabel(), color: cssVar('--text-secondary') },
-                            grid: { drawOnChartArea: false, color: 'rgba(212, 168, 85, 0.14)' }
-                        }
-                    },
-                    plugins: {
-                        legend: { position: 'top', align: 'end', labels: { color: cssVar('--text-secondary') } }
-                    }
-                })
+            timeSeriesChart.load({
+                labels:      rows.map(row => row.label),
+                leftData:    rows.map(row => row.temp),
+                rightData:   rows.map(row => currentSolarMetric === 'shortwave' ? row.shortwave : row.sunshine),
+                leftLabel:   'Temp °C',
+                rightLabel:  solarAxisLabel(),
+                leftColor:   cssVar('--success'),
+                rightColor:  cssVar('--accent-primary'),
+                labelFilter: (label, index) => timeAxisLabel(rows[index], rows),
             });
         }
 
         function updateScatterChart() {
-            const ctx = document.getElementById('scatterChart');
+            const container = document.getElementById('scatterChart');
             const data = getCurrentData();
 
-            if (scatterChart) scatterChart.destroy();
+            if (scatterChart) { scatterChart.destroy(); scatterChart = null; }
+            scatterChart = new KlymotChart.ScatterChart(container);
 
-            const scatterData = data.rows.map((row, i) => ({
+            const points = data.rows.map((row, i) => ({
                 x: data.sunshine[i],
                 y: data.temp[i],
                 label: row.label
             }));
-            const fit = regressionFit(scatterData);
+            const fit = regressionFit(points);
 
-            scatterChart = new Chart(ctx, {
-                type: 'scatter',
-                data: {
-                    datasets: [
-                        {
-                            label: `${currentResolution === 'monthly' ? 'Monthly' : 'Annual'} pairs`,
-                            data: scatterData,
-                            backgroundColor: 'rgba(212, 168, 85, 0.45)',
-                            borderColor: cssVar('--accent-hover'),
-                            borderWidth: 1,
-                            pointRadius: 3,
-                            pointHoverRadius: 3
-                        },
-                        {
-                            type: 'line',
-                            label: 'Correlation fit',
-                            data: fit.points,
-                            parsing: false,
-                            borderColor: cssVar('--success'),
-                            backgroundColor: 'transparent',
-                            borderWidth: 2,
-                            pointRadius: 0,
-                            pointHoverRadius: 0,
-                            tension: 0
-                        }
-                    ]
-                },
-                options: themedChartOptions({
-                    scales: {
-                        x: {
-                            ticks: { color: cssVar('--text-secondary') },
-                            grid: { color: 'rgba(212, 168, 85, 0.14)' },
-                            title: { display: true, text: solarLabel(), color: cssVar('--text-secondary') }
-                        },
-                        y: {
-                            ticks: { color: cssVar('--text-secondary') },
-                            grid: { color: 'rgba(212, 168, 85, 0.14)' },
-                            title: { display: true, text: 'Temperature (°C)', color: cssVar('--text-secondary') }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false }
-                    }
-                })
+            scatterChart.load({
+                points,
+                fitLine:    fit.points.length >= 2 ? { points: fit.points } : null,
+                xLabel:     solarLabel(),
+                yLabel:     'Temperature (°C)',
+                pointColor: cssVar('--accent-primary'),
+                fitColor:   cssVar('--success'),
             });
 
             document.getElementById('scatterNote').innerHTML =
@@ -789,8 +665,6 @@
         }
 
         async function initialize() {
-            initTailwind();
-
             const urlState = readStateFromUrl();
             if (urlState.station) currentStation = urlState.station;
             if (urlState.dataType === 'qcu' || urlState.dataType === 'qcf') currentDataType = urlState.dataType;
