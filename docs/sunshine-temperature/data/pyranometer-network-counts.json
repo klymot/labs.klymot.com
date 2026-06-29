@@ -1,7 +1,7 @@
 {
   "source": "AssessingSolar/solarstations GitHub catalog",
   "source_url": "https://github.com/AssessingSolar/solarstations/blob/65aad53872a60bc97428a4c5d002b8ca3f378a7b/solarstations.csv",
-  "generated_at": "2026-06-29T12:12:07+00:00",
+  "generated_at": "2026-06-29T13:29:32+00:00",
   "methodology": "Active station count per year from the AssessingSolar/solarstations catalog, supplemented by EXTRA_HISTORICAL_STATIONS and STATION_START_OVERRIDES.",
   "note": "The solarstations.org catalog is not exhaustive and under-represents historical stations. Key corrections: Norrk\u00f6ping\u21921893, Davos\u21921909, Tateno\u21921931, Potsdam 1937 and De Bilt 1957 added as extra stations, Uccle\u21921951. The 1977\u20131980 spike reflects US NOAA/WEST regional campaigns that ended in 1980.",
   "series": [

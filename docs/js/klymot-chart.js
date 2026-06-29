@@ -3528,8 +3528,9 @@ class AdjChart {
       this._fitLine    = null;
       this._xLabel     = '';
       this._yLabel     = '';
-      this._pointColor = '#d4a855';
-      this._fitColor   = '#30c880';
+      this._pointColor     = '#d4a855';
+      this._fitColor       = '#30c880';
+      this._pointFillAlpha = null;
 
       this._raf     = null;
       this._geom    = null;
@@ -3548,12 +3549,13 @@ class AdjChart {
       this._ro.observe(container);
     }
 
-    load({ points, fitLine, xLabel, yLabel, pointColor, fitColor }) {
+    load({ points, fitLine, xLabel, yLabel, pointColor, fitColor, pointFillAlpha }) {
       this._points     = points     || [];
       this._fitLine    = fitLine    || null;
       this._xLabel     = xLabel     || '';
       this._yLabel     = yLabel     || '';
       if (pointColor) this._pointColor = pointColor;
+      this._pointFillAlpha = (typeof pointFillAlpha === 'number') ? pointFillAlpha : null;
       if (fitColor)   this._fitColor   = fitColor;
       this._hoverPt = null;
       this._tooltip.hidden = true;
@@ -3689,9 +3691,14 @@ class AdjChart {
       // Points
       for (const p of pts) {
         ctx.beginPath(); ctx.arc(toX(p.x), toY(p.y), 3 * dpr, 0, Math.PI * 2);
-        ctx.fillStyle = this._pointColor + '73';
-        ctx.fill();
-        ctx.strokeStyle = this._pointColor; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+        if (this._pointFillAlpha !== null) {
+          ctx.save(); ctx.globalAlpha = this._pointFillAlpha;
+          ctx.fillStyle = this._pointColor; ctx.fill();
+          ctx.restore();
+        } else {
+          ctx.fillStyle = this._pointColor + '73'; ctx.fill();
+          ctx.strokeStyle = this._pointColor; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+        }
       }
 
       // Hover dot
