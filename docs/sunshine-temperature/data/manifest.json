@@ -1,12 +1,14 @@
 {
-  "generated_at": "2026-06-29T09:50:49+00:00",
-  "source": "Open-Meteo Historical Weather API (ERA5 reanalysis)",
-  "station_pairing_rule": "Choose the nearest Klymot temperature station whose GHCN record starts no later than the sunshine start year and ends no earlier than the sunshine end year. Valentia is fixed to EI000003953.",
+  "generated_at": "2026-06-29T11:42:08+00:00",
+  "source": "Open-Meteo Historical Weather API (placeholder \u2014 to be replaced with actual station records)",
+  "station_pairing_rule": "Choose the nearest GHCN temperature station whose record starts no later than the sunshine start year and ends no earlier than the sunshine end year. Valentia is fixed to EI000003953.",
   "stations": [
     "VAL",
     "POT",
     "TOK",
     "STO",
-    "DAV"
+    "DAV",
+    "UCL",
+    "DBL"
   ]
 }
