@@ -1028,7 +1028,7 @@ import '../../styles/theme.css';
           <!-- Sunshine lag -->
           <div class="section-card">
             <div class="section-heading">Sunshine lag</div>
-            <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.65;max-width:58ch;margin-block:0 0.75rem">
+            <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.65;margin-block:0 0.75rem">
               Sunlight heats the land surface gradually — the temperature response lags peak radiation by days to weeks depending on the season, location, and local thermal mass. Shift the solar series here to explore whether a small offset improves the alignment between the two records.
             </p>
             <div class="control-row-tight">
@@ -2126,7 +2126,7 @@ import '../../styles/theme.css';
       // Scroll to resume point when page loaded with URL state
       if (urlState.station && currentStation) {
         const target = (currentResolution && currentDataType && currentComparison)
-          ? document.getElementById('labContent')
+          ? document.getElementById('timeSeriesChart')
           : document.getElementById('compareSection');
         if (target) requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
       }
