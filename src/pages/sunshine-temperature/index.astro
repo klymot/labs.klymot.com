@@ -1289,6 +1289,27 @@ import '../../styles/theme.css';
     let showTemp  = true;
     let showSolar = true;
 
+    // ── Feature beacons ────────────────────────────────────────────
+    function sendFeatureBeacon(feature) {
+      var h = window.location.hostname;
+      if (h === 'localhost' || h === '127.0.0.1') return;
+      var payload = JSON.stringify({ path: '/__feature__/' + feature, referrer: '' });
+      var blob = new Blob([payload], { type: 'text/plain' });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('https://api.klymot.com/api/v1/usage', blob);
+      } else {
+        fetch('https://api.klymot.com/api/v1/usage', { method: 'POST', body: blob, keepalive: true }).catch(function () {});
+      }
+    }
+    let _stationBeaconSent  = false;
+    let _unlockedBeaconSent = false;
+    function maybeFireUnlockBeacon() {
+      if (!_unlockedBeaconSent && _stationBeaconSent && currentResolution && currentDataType && currentComparison) {
+        _unlockedBeaconSent = true;
+        sendFeatureBeacon('labs/sunshine-temperature/03-unlocked');
+      }
+    }
+
     // ── Utilities ──────────────────────────────────────────────────
     function setStatus(msg) {
       const el = document.getElementById('loadStatus');
@@ -1494,6 +1515,7 @@ import '../../styles/theme.css';
     async function selectStation(key) {
       if (key === currentStation) { deselectStation(); return; }
       currentStation = key;
+      if (!_stationBeaconSent) { _stationBeaconSent = true; sendFeatureBeacon('labs/sunshine-temperature/02-station-selected'); }
       resetTimeWindow();
       renderStationCards();
       updateStationInfo();
@@ -1637,6 +1659,7 @@ import '../../styles/theme.css';
       }
       revealToCurrentState();
       if (currentResolution && currentDataType && currentComparison) updateAllVisuals();
+      maybeFireUnlockBeacon();
       pushStateToUrl();
     }
 
@@ -1644,6 +1667,7 @@ import '../../styles/theme.css';
       currentDataType = (value === currentDataType) ? null : value;
       revealToCurrentState();
       if (currentResolution && currentDataType && currentComparison) updateAllVisuals();
+      maybeFireUnlockBeacon();
       pushStateToUrl();
     }
 
@@ -1651,6 +1675,7 @@ import '../../styles/theme.css';
       currentComparison = (value === currentComparison) ? null : value;
       revealToCurrentState();
       if (currentResolution && currentDataType && currentComparison) updateAllVisuals();
+      maybeFireUnlockBeacon();
       pushStateToUrl();
     }
 
@@ -2414,6 +2439,7 @@ import '../../styles/theme.css';
         if (target) requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
       }
 
+      sendFeatureBeacon('labs/sunshine-temperature/01-visited');
       console.log('%c[Sunshine-Temp Lab] initialized.', 'color:#a8a090');
     }
 
