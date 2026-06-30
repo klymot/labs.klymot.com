@@ -29,10 +29,11 @@ Labs is a sub‑brand, not a new brand. It should feel like the same hand drew i
 
 ### 1.1 Colour
 
-The Klymot palette is **navy and gold** — confirmed from `klymot.com/docs/css/style.css`
-(source of truth). Dark mode is the default; light is opt‑in.
+The Klymot palette is **navy and gold** — all tokens verified against
+`klymot.com/docs/css/style.css` (source of truth). Dark mode is the default;
+light is opt‑in.
 
-| Token | Dark hex | Light hex | Role |
+| Token | Dark | Light | Role |
 |---|---|---|---|
 | `--bg` | `#0a1628` | `#f4f0e8` | Page background |
 | `--bg-secondary` | `#0f2047` | `#ede7d6` | Header / elevated surfaces |
@@ -44,6 +45,8 @@ The Klymot palette is **navy and gold** — confirmed from `klymot.com/docs/css/
 | `--border-strong` | `rgba(212,168,85,0.42)` | `rgba(122,95,32,0.42)` | Focused / hover borders |
 | `--accent` | `#d4a855` | `#7a5f20` | Gold — links, icons, CTAs |
 | `--accent-hover` | `#e0bc72` | `#5a4518` | Accent hover state |
+| `--btn-bg` | `rgba(15,32,71,0.92)` | `rgba(244,240,232,0.94)` | Default button fill |
+| `--btn-hover` | `rgba(21,44,74,0.97)` | `rgba(237,231,214,0.99)` | Button hover fill |
 
 Semantic token block (dark is the `:root` default; light is `:root[data-theme="light"]`):
 
@@ -60,6 +63,8 @@ Semantic token block (dark is the `:root` default; light is `:root[data-theme="l
   --accent:        #d4a855;
   --accent-hover:  #e0bc72;
   --link:          #d4a855;
+  --btn-bg:        rgba(15, 32, 71, 0.92);
+  --btn-hover:     rgba(21, 44, 74, 0.97);
 }
 :root[data-theme="light"] {
   --bg:            #f4f0e8;
@@ -73,18 +78,27 @@ Semantic token block (dark is the `:root` default; light is `:root[data-theme="l
   --accent:        #7a5f20;
   --accent-hover:  #5a4518;
   --link:          #7a5f20;
+  --btn-bg:        rgba(244, 240, 232, 0.94);
+  --btn-hover:     rgba(237, 231, 214, 0.99);
 }
 ```
 
 ### 1.2 Typography
 
-The main site uses a sans system referenced as `var(--font-sans)` — reuse it
-verbatim so headings and body match. Set:
+Font stacks verified verbatim from `klymot.com/docs/css/style.css`:
 
-- **Body / display:** the main‑site sans (`var(--font-sans)`). Minimal & modern;
-  no serif display face — that would break from the main site.
-- **Mono:** one mono face for coordinates, station IDs, numeric readouts, code,
-  and DOIs (`var(--font-mono)`). Numbers in tables/tooltips should be tabular.
+```css
+--font-sans:    'Source Sans 3', system-ui, sans-serif;
+--font-mono:    'JetBrains Mono', 'Courier New', monospace;
+--font-display: 'Playfair Display', Georgia, serif;
+```
+
+- **Body:** `var(--font-sans)` — Source Sans 3.
+- **Headings (h1 / h2):** `var(--font-display)` — Playfair Display, matching the
+  main site's header wordmark. Weight 600.
+- **Mono:** `var(--font-mono)` — JetBrains Mono for coordinates, station IDs,
+  numeric readouts, code, and DOIs. Numbers in tables/tooltips should be tabular
+  (`font-variant-numeric: tabular-nums`).
 - **Type scale (fluid, 16px root):** never set body below 16px on mobile, and
   never let any text fall below 14px. Use `clamp()` so it grows on large screens
   without a media‑query thicket:
@@ -97,12 +111,37 @@ verbatim so headings and body match. Set:
 line-height: 1.6 for body, 1.25 for headings.
 ```
 
-### 1.3 Spacing & radii
+### 1.3 Spacing, radii & chrome
 
 4px base scale: `4 · 8 · 12 · 16 · 24 · 32 · 48 · 64`. Section vertical rhythm is
-generous (≥48px between sections) so the scroll‑to‑next feels like turning a
-page. Match the main site's border radius (likely small/0 given the minimal
-logo — confirm).
+generous (≥48px between sections) so the scroll‑to‑next feels like turning a page.
+
+**Border-radius** (verified from main site):
+
+| Context | Value |
+|---|---|
+| Buttons, inputs, tags | `0.375rem` |
+| Panels, cards, modals | `0.5rem` |
+| Inline code / chips | `0.25rem` |
+
+**Theme toggle** — Labs uses a single `◐` glyph (half-circle) that works for
+both themes, in a 44×44 px tap target (WCAG-minimum). The main site uses two
+separate `☀` / `🌙` icons toggled by `[data-theme]`. Both achieve the same
+intent; keep Labs' approach for its accessibility tap-target guarantee:
+
+```css
+.theme-toggle {
+  width: 44px; height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: var(--btn-bg);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.theme-toggle:hover  { color: var(--accent); border-color: var(--border-strong); background: var(--btn-hover); }
+.theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+```
 
 ---
 
@@ -532,13 +571,6 @@ Things worth considering, in rough priority order:
     mobile snappy as datasets grow.
 
 ---
-
-## 13. Open items to confirm
-
-- Exact background/surface/border tokens from the main site's chrome (the brand
-  teals in §1.1 are confirmed; the neutrals are proposed defaults).
-- The main site's `--font-sans` / `--font-mono` stacks (reuse verbatim).
-- The main site's border‑radius and the precise styling of the theme toggle.
 
 ---
 

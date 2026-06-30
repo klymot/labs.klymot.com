@@ -7,8 +7,8 @@
 
 /* Dark is the default — matches klymot.com behaviour. */
 :root {
-  --font-sans:    'Source Sans 3', system-ui, -apple-system, sans-serif;
-  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+  --font-sans:    'Source Sans 3', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
   --font-display: 'Playfair Display', Georgia, serif;
 
   /* Fluid type scale (16px root) */
