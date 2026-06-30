@@ -390,66 +390,94 @@ Labs reuses the main site's privacy‑first model, not a new one. The main site
    explicit opt‑in via the cookie banner (`consent.js`). `trackEvent` forwards to
    GA only when `window.gtag` exists (i.e. consented).
 
-### 10.1 What the labs first‑attempt already does — and what's missing
+### 10.1 What labs pages emit
 
-The current labs pages (`labs.klymot.com/docs/index.html`,
-`.../sunshine-temperature/index.html`) already fire tier‑1: an **inline** beacon
-in `<head>` that posts `{ path: 'labs.klymot.com' + pathname, referrer }` and
-skips localhost. Good — that's the right privacy posture, and the
-`labs.klymot.com`‑prefixed path is a sensible convention for separating subdomain
-traffic in the shared tracker. Keep that prefix.
+Every lab page fires a **page‑view beacon** from an inline `<head>` script:
 
-What it's missing versus the main site:
-- **It's copy‑pasted into every page's `<head>`.** Extract it into one shared
-  `analytics.js` (mirroring the main site's module) and import it, so the beacon
-  logic lives in exactly one place.
-- **No GA tier and no consent banner.** If Labs should match the main site's
-  offering, port `consent.js` + the cookie‑banner markup. If Labs is intended to
-  be GA‑free (tier‑1 only), that's a legitimate choice — but **make it a decision,
-  not an omission**, and then drop the GA mentions so the two sites stay coherent.
-- **No feature‑event taxonomy.** See §10.2.
+```js
+POST https://api.klymot.com/api/v1/usage
+{ path: 'labs.klymot.com' + window.location.pathname, referrer: document.referrer }
+```
 
-### 10.2 Feature events (the bit Labs should add)
+Sent as a `text/plain` Blob via `navigator.sendBeacon` (fetch keepalive fallback).
+Skips `localhost` / `127.0.0.1`. No cookies; no consent needed.
 
-The main site maps interaction events to synthetic `/__feature__/…` paths that
-beacon to the self‑hosted tracker *regardless of consent* (and to GA only if
-consented). Labs has its own meaningful interactions worth measuring with the
-same pattern — phrased neutrally, never capturing *which* answer a reader chose
-in a way that could out them, just that an interaction happened:
+The `labs.klymot.com`‑prefixed path separates subdomain traffic in the shared
+dashboard. Keep that prefix on every labs page.
 
-| Event | Synthetic path | When |
+> **Still a copy‑paste per page.** As Labs grows, extract into one shared
+> `src/lib/analytics.js` so the beacon logic lives in exactly one place.
+
+### 10.2 Funnel beacons — the key scheme
+
+Each lab also emits **funnel step beacons** via synthetic `/__feature__/…` paths.
+The naming convention is:
+
+```
+/__feature__/labs/{lab-slug}/{NN}-{step-name}
+```
+
+- `{lab-slug}` — kebab-case lab identifier matching the page URL segment
+  (e.g. `sunshine-temperature`).
+- `{NN}` — zero-padded step index (`01`, `02`, …). Controls funnel order.
+- `{step-name}` — kebab-case description of the step (e.g. `visited`,
+  `station-selected`, `unlocked`).
+
+**The admin dashboard (`www.klymot.com/docs/admin-dashboard/index.html`) parses
+this pattern automatically.** Any lab that follows the convention gets its own
+funnel card in the dashboard without any dashboard code changes.
+
+#### Sunshine & Temperature — current funnel steps
+
+| Key | When fired | Notes |
 |---|---|---|
-| `blocking_choice_made` | `/__feature__/labs-choice-{slug}` | A gated choice is committed (slug = the question, e.g. `model`, **not** the chosen value) |
-| `section_unlocked` | `/__feature__/labs-unlock-{n}` | Section *n* reveals — a clean funnel of how far readers get |
-| `chart_zoom` / `chart_pan` | `/__feature__/labs-chart-zoom` | First zoom/pan on a chart (debounced; don't beacon every frame) |
-| `series_toggled` | `/__feature__/labs-series` | Legend series toggled |
-| `overlay_toggled` | `/__feature__/labs-overlay-{trend\|loess}` | Trend/LOESS overlay toggled |
-| `share_link_copied` | `/__feature__/labs-share` | "Copy link to this view" used |
-| `shared_link_opened` | `/__feature__/labs-shared-open` | Arrived via a link carrying choices (pairs with §6.3) |
-| `reset_choices` | `/__feature__/labs-reset` | "Start fresh" used |
-| `source_opened` | `/__feature__/labs-source` | A Data Sources DOI/link clicked |
+| `labs/sunshine-temperature/01-visited` | Page initialised (every load) | Fires in `initialize()` after stations load |
+| `labs/sunshine-temperature/02-station-selected` | First station click | One-shot flag; does not re-fire on station change |
+| `labs/sunshine-temperature/03-unlocked` | All three comparison axes chosen | Only fires if step 02 also fired this session (not URL-restore) |
 
-**Bias rule for analytics, too:** beacon the *fact* of a choice and *which
-question* it answered, never the chosen value — the section‑unlock funnel and
-engagement are what you want, not a distribution of answers that you (or anyone
-seeing the dashboard) could read as a "result." Letting the data speak applies to
-your own telemetry.
+#### Rules for adding a new lab
+
+1. Choose a stable `{lab-slug}` matching the page's URL segment.
+2. Identify the blocking choice points (§4.2) — each is a funnel step.
+3. Define steps in order: `01-visited` is always first and fires on every page
+   load; subsequent steps are one-shot (fire the first time the condition is met
+   per page load).
+4. Never encode *which option* was chosen — only that the step completed.
+   The funnel measures progression, not answers.
+5. Call `sendFeatureBeacon('labs/{slug}/{NN}-{step-name}')` at the right moment.
+   Guard one-shot steps with a boolean flag initialised to `false`.
+
+#### `sendFeatureBeacon` helper
+
+Add this once in the lab's main script block:
+
+```js
+function sendFeatureBeacon(feature) {
+  var h = window.location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1') return;
+  var payload = JSON.stringify({ path: '/__feature__/' + feature, referrer: '' });
+  var blob = new Blob([payload], { type: 'text/plain' });
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon('https://api.klymot.com/api/v1/usage', blob);
+  } else {
+    fetch('https://api.klymot.com/api/v1/usage', { method: 'POST', body: blob, keepalive: true })
+      .catch(function () {});
+  }
+}
+```
+
+**Bias rule for analytics:** beacon the *fact* of a step completion, never the
+chosen value. The dashboard shows how far readers get, not what they decided.
 
 ### 10.3 Integration notes
 
-- **Reuse, don't reinvent the endpoint contract.** Same URL, same `{path,
-  referrer}` shape, same `text/plain` Blob, same localhost guard — so the
-  existing `api.klymot.com` `/api/v1/usage` handler needs **zero changes** to
-  absorb Labs traffic (synthetic paths are just more paths).
-- **One module, imported everywhere.** As Labs grows past two pages, the inline
-  copy will drift. Move to `js/analytics.js` now while it's cheap.
-- **Consent + theme are independent.** Consent state (`klymot-consent` in
-  `localStorage`) and theme are both viewing‑side, and neither belongs in the
-  shareable URL (§6).
-- **GA consent visibility:** the main site beacons consent status as
-  `/__consent__/{accepted|declined|pending}` so the self‑hosted dashboard shows a
-  consent breakdown without backend changes. If Labs keeps GA, keep this; if Labs
-  is tier‑1 only, it's moot.
+- **Zero API changes needed.** The `api.klymot.com` `/api/v1/usage` handler
+  treats `/__feature__/labs/…` paths the same as any other feature beacon —
+  they accumulate in `by_feature` and the dashboard slices them by prefix.
+- **Consent + theme are independent.** Neither belongs in the shareable URL (§6).
+- **GA / consent banner:** Labs currently runs tier‑1 only (no GA, no cookie
+  banner). This is a deliberate choice, not an omission — keep it that way unless
+  explicitly decided otherwise.
 
 ---
 
@@ -509,11 +537,11 @@ Things worth considering, in rough priority order:
 
 ## 13. Open items to confirm
 
-- **Analytics scope for Labs:** match the main site's two tiers (anonymous beacon
-  **+** consent‑gated GA4), or run **tier‑1 only** (beacon, no GA, no cookie
-  banner)? Decide explicitly, then make the guide/code consistent (§10).
-- **Extract the inline beacon** into a shared `js/analytics.js` and add the Labs
-  feature‑event taxonomy (§10.2).
+- **Analytics scope:** decided — tier‑1 only (anonymous beacon, no GA, no cookie
+  banner). §10 documents the current implementation.
+- **Extract the inline beacon** into a shared `src/lib/analytics.js` so the page‑view
+  beacon and `sendFeatureBeacon` helper live in one place rather than being
+  copy‑pasted into each lab page.
 - **Brand consistency:** the current first‑attempt lab uses a navy `#0a1628` /
   gold `#d4a855` palette with a Playfair Display serif and a hardcoded dark theme
   — this diverges from the main site's teal/sans identity that §1 assumes. Decide

@@ -32,13 +32,14 @@ import '../styles/theme.css';
     (function () {
       var h = window.location.hostname;
       if (h === 'localhost' || h === '127.0.0.1') return;
-      var payload = JSON.stringify({ path: 'labs.klymot.com' + window.location.pathname, referrer: document.referrer || '' });
-      var blob = new Blob([payload], { type: 'text/plain' });
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon('https://api.klymot.com/api/v1/usage', blob);
-      } else {
-        fetch('https://api.klymot.com/api/v1/usage', { method: 'POST', body: blob, keepalive: true }).catch(function () {});
+      var api = 'https://api.klymot.com/api/v1/usage';
+      function beacon(path, referrer) {
+        var blob = new Blob([JSON.stringify({ path: path, referrer: referrer || '' })], { type: 'text/plain' });
+        if (navigator.sendBeacon) { navigator.sendBeacon(api, blob); }
+        else { fetch(api, { method: 'POST', body: blob, keepalive: true }).catch(function () {}); }
       }
+      beacon('labs.klymot.com' + window.location.pathname, document.referrer);
+      beacon('/__feature__/labs/index/01-visited', '');
     }());
   </script>
 
