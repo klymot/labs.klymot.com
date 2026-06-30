@@ -180,6 +180,13 @@
       if (altitudeData && (observedDataBySeries.qcu || observedDataBySeries.qcf) && predictionKey) redrawCompChart();
     }
 
+    function setTimeControlsEnabled(enabled) {
+      document.querySelectorAll('[data-time-action]').forEach(btn => {
+        btn.disabled = !enabled;
+        btn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+      });
+    }
+
     function normalizeBaselineKey(key) {
       if (!key) return null;
       if (BASELINE_RANGES[key]) return key;
@@ -927,6 +934,7 @@
     function wireTimeControls() {
       document.querySelectorAll('[data-time-action]').forEach(btn => {
         btn.addEventListener('click', () => {
+          if (btn.disabled) return;
           const action = btn.dataset.timeAction;
           if (action === 'pan-earlier') panTime(-1);
           else if (action === 'pan-later') panTime(1);
@@ -989,6 +997,52 @@
       });
     }
 
+    async function loadAltitudeData() {
+      const loading = document.getElementById('altitudeChartLoading');
+      const stationLoading = document.getElementById('stationCountChartLoading');
+      if (loading) {
+        loading.hidden = false;
+        loading.innerHTML = 'Loading…';
+      }
+      if (stationLoading) stationLoading.hidden = false;
+      setTimeControlsEnabled(false);
+
+      const resp = await fetch(DATA_BASE + '/network-altitude.json');
+      if (!resp.ok) throw new Error(resp.status);
+      altitudeData = await resp.json();
+      stationCountData = buildStationCountSeries(altitudeData.monthly, altitudeData.annual.map(d => d.year));
+      normalizeTimeWindow();
+
+      const stationSection = document.getElementById('station-count');
+      if (stationSection && stationSection.hidden) stationSection.removeAttribute('hidden');
+      if (loading) loading.hidden = true;
+      if (stationLoading) stationLoading.hidden = true;
+      setTimeControlsEnabled(true);
+      updateChartRangeState();
+    }
+
+    function showAltitudeLoadError(message) {
+      const loading = document.getElementById('altitudeChartLoading');
+      if (!loading) return;
+      loading.hidden = false;
+      loading.innerHTML = `
+        <span>Could not load altitude data.</span>
+        <button type="button" class="mini-tool" data-retry-altitude style="margin-left:0.5rem">Retry</button>
+      `;
+      const retry = loading.querySelector('[data-retry-altitude]');
+      if (retry) {
+        retry.addEventListener('click', async () => {
+          try {
+            await loadAltitudeData();
+          } catch (err) {
+            console.error('Altitude data load error:', err);
+            showAltitudeLoadError(err.message || 'unknown error');
+          }
+        });
+      }
+      if (message) console.error('Altitude data load error:', message);
+    }
+
     /* ── Initialisation ────────────────────────────────────────────── */
     async function initialize() {
       // Restore URL state
@@ -1017,6 +1071,7 @@
       wireReset();
       wireLegend();
       wireTimeControls();
+      setTimeControlsEnabled(false);
 
       if (restoredBaseline && restoredBaseline !== urlState.baseline) {
         pushStateToUrl();
@@ -1050,12 +1105,6 @@
         }
       }
 
-      const altitudePromise = (async () => {
-        const resp = await fetch(DATA_BASE + '/network-altitude.json');
-        if (!resp.ok) throw new Error(resp.status);
-        return resp.json();
-      })();
-
       const stationIdsPromise = (async () => {
         const resp = await fetch(DATA_BASE + '/station-ids.json');
         if (!resp.ok) throw new Error(resp.status);
@@ -1071,23 +1120,13 @@
       });
 
       try {
-        altitudeData = await altitudePromise;
-        stationCountData = buildStationCountSeries(altitudeData.monthly, altitudeData.annual.map(d => d.year));
-        const normalizedWindow = normalizeTimeWindow();
-        const stationSection = document.getElementById('station-count');
-        if (stationSection && stationSection.hidden) stationSection.removeAttribute('hidden');
-        const loading = document.getElementById('altitudeChartLoading');
-        if (loading) loading.hidden = true;
-        const stationLoading = document.getElementById('stationCountChartLoading');
-        if (stationLoading) stationLoading.hidden = true;
-        updateChartRangeState();
-        if (restoredZoom && normalizedWindow && (normalizedWindow.start !== urlState.ws || normalizedWindow.size !== urlState.wz)) {
+        await loadAltitudeData();
+        const visible = getVisibleYearRange();
+        if (restoredZoom && visible && (visible.start !== urlState.ws || visible.size !== urlState.wz)) {
           pushStateToUrl();
         }
       } catch (err) {
-        const loading = document.getElementById('altitudeChartLoading');
-        if (loading) loading.textContent = 'Could not load altitude data.';
-        console.error('Altitude data load error:', err);
+        showAltitudeLoadError(err.message || 'unknown error');
       }
 
       try {
