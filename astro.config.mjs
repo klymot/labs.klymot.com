@@ -7,4 +7,14 @@ export default defineConfig({
   build: {
     assets: '_astro',
   },
+  vite: {
+    server: {
+      proxy: {
+        '/api': {
+          target: 'https://api.klymot.com',
+          changeOrigin: true,
+        },
+      },
+    },
+  },
 });

@@ -1,0 +1,1494 @@
+---
+import '../../styles/theme.css';
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Network Altitude — klymot labs</title>
+  <meta name="description" content="How has the changing altitude profile of the global temperature station network shifted over time?" />
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Ccircle cx='16' cy='16' r='13' fill='%230a1628'/%3E%3Ccircle cx='16' cy='16' r='13' stroke='%23d4a855' stroke-width='1.25'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.2' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='9.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='22.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='3' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='9' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Ccircle cx='19.5' cy='10.5' r='4' stroke='%23d4a855' stroke-width='1' fill='none' opacity='0.45'/%3E%3Ccircle cx='19.5' cy='10.5' r='2' fill='%23d4a855'/%3E%3C/svg%3E" />
+
+  <!-- Fonts — matches klymot.com -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Source+Sans+3:wght@300;400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+
+  <!-- FOUC prevention: dark default; light opt-in -->
+  <script is:inline>
+    (function () {
+      var stored = localStorage.getItem('klymot-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    }());
+  </script>
+
+  <script>
+    import { sendPageBeacon, sendFeatureBeacon } from '../../lib/analytics.js';
+    sendPageBeacon();
+    window.sendFeatureBeacon = sendFeatureBeacon;
+  </script>
+
+  <style is:global>
+    /* ── Token bridge ─────────────────────────────────────────────── */
+    :root {
+      --bg-primary:     var(--bg);
+      --bg-elevated:    var(--surface);
+      --text-primary:   var(--text);
+      --text-muted:     var(--muted);
+      --accent-primary: var(--accent);
+      --border-color:   var(--border);
+      --success: #30c880;
+      --warning: #f08030;
+      --danger:  #e05050;
+      --series-model: #d4a855;
+      --series-obs:   #5090f8;
+      --series-obs-adjusted: #d45a4f;
+    }
+
+    body {
+      background-image: radial-gradient(circle at top left, rgba(212,168,85,0.07), transparent 24rem);
+    }
+
+    main { padding-block: 0; }
+
+    /* ── Header ───────────────────────────────────────────────────── */
+    .back-link {
+      font-size: 0.825rem;
+      color: var(--muted);
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      text-decoration: none;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .back-link:hover { color: var(--accent); border-color: var(--border-strong); text-decoration: none; }
+
+    .header-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+    .reset-btn {
+      font-size: 0.825rem;
+      font-family: var(--font-sans);
+      color: var(--muted);
+      padding: 0.25rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      background: transparent;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .reset-btn:hover { color: var(--accent); border-color: var(--border-strong); }
+
+    .header-nav { display: flex; align-items: center; gap: 1rem; }
+
+    /* ── Hero ─────────────────────────────────────────────────────── */
+    .page-hero { padding-block: 2.5rem 2rem; }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-block-end: 0.4rem;
+    }
+
+    h1 {
+      margin: 0 0 0.75rem;
+      font-family: var(--font-display);
+      font-size: var(--step-3);
+      font-weight: 600;
+      line-height: 1.05;
+      color: var(--text);
+      letter-spacing: 0.01em;
+    }
+
+    .lede {
+      max-width: 52ch;
+      margin: 0;
+      font-size: var(--step-1);
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ── Lab sections ─────────────────────────────────────────────── */
+    .lab-section {
+      padding-block: 2.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .prose h2 {
+      font-size: clamp(1.15rem, 1rem + 0.6vw, 1.4rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin: 0 0 1rem;
+      color: var(--text);
+    }
+
+    .prose p {
+      margin: 0 0 1em;
+      line-height: 1.65;
+      color: var(--text-secondary);
+    }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--text); }
+
+    .prose code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: rgba(212,168,85,0.10);
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+      color: var(--accent);
+    }
+
+    /* ── Details expander ─────────────────────────────────────────── */
+    details.expander {
+      margin-top: 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+    }
+    details.expander summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--accent);
+      list-style: none;
+      user-select: none;
+    }
+    details.expander summary::-webkit-details-marker { display: none; }
+    details.expander summary::before { content: '▸ '; }
+    details.expander[open] summary::before { content: '▾ '; }
+    .expander-body {
+      margin-top: 0.75rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+    .expander-body p { margin: 0 0 0.75em; }
+    .expander-body p:last-child { margin-bottom: 0; }
+
+    /* ── Section card ─────────────────────────────────────────────── */
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-block: 1rem;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.14);
+    }
+
+    /* ── Chart containers ─────────────────────────────────────────── */
+    .chart-bleed { max-width: min(860px, calc(100% - 2rem)); }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.25rem 1rem;
+    }
+    .chart-title { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+    .chart-meta  { font-size: 0.75rem; color: var(--muted); }
+
+    .chart-container {
+      position: relative;
+      height: 220px;
+    }
+    @media (min-width: 640px) { .chart-container { height: 300px; } }
+
+    .chart-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 0;
+      pointer-events: none;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-strong);
+      border-radius: 0.375rem;
+      padding: 0.3125rem 0.625rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text);
+      white-space: pre;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    .chart-tooltip[hidden] { display: none; }
+
+    /* ── Legend ───────────────────────────────────────────────────── */
+    .chart-legend {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .chart-hint {
+      margin: 0.5rem 0 0;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .legend-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: none;
+      border: 1.5px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 0.25rem 0.6rem;
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+      user-select: none;
+    }
+    .legend-btn.series-off { opacity: 0.55; }
+    .legend-btn.series-off:hover { opacity: 0.75; }
+
+    /* ── Physics cards ────────────────────────────────────────────── */
+    .physics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin-block: 1.25rem 0.5rem;
+    }
+    .physics-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+    }
+    .physics-card-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-block-end: 0.4rem;
+    }
+    .physics-card-value {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      color: var(--text);
+      font-weight: 400;
+    }
+    .physics-card-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-block-start: 0.3rem;
+      line-height: 1.5;
+    }
+
+    /* ── Formula block ────────────────────────────────────────────── */
+    .formula-block {
+      background: rgba(212,168,85,0.06);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1.1rem;
+      margin-block: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+
+    /* ── Prediction cards ─────────────────────────────────────────── */
+    .prediction-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+      margin-block: 1rem;
+    }
+    .prediction-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      padding: 0.9rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      transition: border-color 0.12s;
+    }
+    .prediction-card:hover { border-color: var(--border-strong); }
+    .prediction-card.chosen {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .prediction-card-label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .prediction-card-desc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .random-order-note {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-block: 0 0.5rem;
+    }
+
+    .chosen-banner {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-block-start: 1rem;
+      padding: 0.6rem 0.9rem;
+      background: rgba(212,168,85,0.08);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .chosen-banner strong { color: var(--text); }
+    .chosen-banner .check { color: var(--accent); font-size: 1rem; }
+
+    /* ── Baseline selector ────────────────────────────────────────── */
+    .baseline-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-block: 0.75rem;
+    }
+    .baseline-label {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .baseline-btn {
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      padding: 0.2rem 0.55rem;
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s;
+    }
+    .baseline-btn:hover { color: var(--accent); border-color: var(--border-strong); }
+    .baseline-btn.active { color: var(--accent); border-color: var(--accent); }
+
+    /* ── Sources ──────────────────────────────────────────────────── */
+    .sources-list {
+      margin: 0.75rem 0 0; padding: 0;
+      display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .sources-list dt { font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); }
+    .sources-list dd {
+      margin: 0.2rem 0 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .sources-list a { color: var(--accent); }
+    .sources-list a:hover { color: var(--accent-hover); text-decoration: underline; }
+    .sources-footer {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    canvas { filter: saturate(0.93); }
+
+    /* Prevent display:flex/grid rules from overriding the HTML hidden attribute */
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <nav class="header-nav" aria-label="Site navigation">
+        <a class="brand-link" href="https://klymot.com" aria-label="klymot home">
+          <span class="brand-logo" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="22" height="22">
+              <circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"/>
+              <ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/>
+              <circle cx="19.5" cy="10.5" r="2" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="brand-title">klymot</span>
+          <span class="brand-sub">· labs</span>
+        </a>
+        <a href="/" class="back-link" aria-label="Back to labs index">← Labs</a>
+      </nav>
+      <div class="header-actions">
+        <button class="reset-btn" id="resetLab" type="button" aria-label="Reset all choices">Reset lab</button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" type="button">◐</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ── Hero ──────────────────────────────────────────────────────── -->
+    <div class="container">
+      <div class="page-hero">
+        <span class="eyebrow" aria-hidden="true">Lab 02</span>
+        <h1>Network Altitude</h1>
+        <p class="lede">All else being equal, measuring temperature at a higher altitude gives a colder reading. As the global station network changes, what temperature signal would its changing altitude be expected to produce?</p>
+      </div>
+    </div>
+
+    <!-- ── Section 1: The Physics ────────────────────────────────────── -->
+    <section class="lab-section" id="physics" aria-labelledby="physics-heading">
+      <div class="container">
+        <div class="prose">
+          <h2 id="physics-heading">Why altitude changes temperature</h2>
+          <p>The atmosphere is a gas, and gases follow a simple rule: <strong>pressure, volume, and temperature are linked.</strong> At sea level the full weight of the air column above presses down — air molecules are packed closely together and the pressure is high. Higher up, less air sits above you, so pressure drops, molecules spread further apart, and the air is less dense.</p>
+          <p>When an air parcel rises it moves into lower pressure and <strong>expands</strong>. Expansion requires work to be done against the surrounding atmosphere, and in an adiabatic parcel that energy comes from its internal energy, lowering its temperature. The long-term average decrease in temperature with altitude is called the <strong>environmental lapse rate</strong>.</p>
+          <p>This lab investigates how changes in the average altitude of the observing network would be expected to influence measured temperatures, considering only the effect of changing station altitude.</p>
+        </div>
+
+        <div class="physics-grid">
+          <div class="physics-card">
+            <div class="physics-card-label">Environmental Lapse Rate</div>
+            <div class="physics-card-value">~6.5 °C / km</div>
+            <div class="physics-card-desc">The observed average through the real atmosphere, accounting for moisture and clouds — used in this lab.</div>
+          </div>
+          <div class="physics-card">
+            <div class="physics-card-label">Dry Adiabatic Lapse Rate</div>
+            <div class="physics-card-value">9.8 °C / km</div>
+            <div class="physics-card-desc">Theoretical upper bound for perfectly dry air rising without heat exchange — steeper than the real atmosphere.</div>
+          </div>
+          <div class="physics-card">
+            <div class="physics-card-label">Ideal Gas Law</div>
+            <div class="physics-card-value">PV = nRT</div>
+            <div class="physics-card-desc">Pressure × Volume = moles × gas constant × Temperature. Lower P at altitude → expansion → lower T.</div>
+          </div>
+        </div>
+
+        <div class="prose">
+          <p>This means a thermometer on a hilltop will read colder than one in the valley below — even if both are at the same latitude and longitude, and even if the large-scale climate is identical.</p>
+          <p>A real example: <strong>Innsbruck, Austria</strong> sits at 574 m in a valley. The Zugspitze summit, about 30 km away, sits at 2,962 m. Their long-term mean temperature difference is close to 15 °C — almost exactly what the environmental lapse rate predicts for 2,388 m of altitude difference (2.388 × 6.5 ≈ 15.5 °C).</p>
+        </div>
+
+        <details class="expander">
+          <summary>The physics in a little more depth</summary>
+          <div class="expander-body">
+            <p>The ideal gas law (PV = nRT) relates pressure P, volume V, moles of gas n, the ideal gas constant R ≈ 8.314 J/(mol·K), and absolute temperature T. For a parcel of dry air rising adiabatically (no heat exchange), the First Law of Thermodynamics gives dT/dz = −g/c_p ≈ −9.8 °C/km — the dry adiabatic lapse rate. But in the real atmosphere air is never perfectly dry: condensation releases latent heat as water vapour forms cloud droplets, partially offsetting the cooling.</p>
+            <p>The result is the <strong>environmental lapse rate</strong> of ~6.5 °C/km — the observed average through the troposphere used by the International Standard Atmosphere. This is what we use in the model, because it reflects the conditions that surface thermometers actually measure rather than a theoretical dry-air limit.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── Section 2: Network altitude over time ─────────────────────── -->
+    <section class="lab-section" id="network" aria-labelledby="network-heading">
+      <div class="container">
+        <div class="prose">
+          <h2 id="network-heading">How the network's altitude profile has changed</h2>
+          <p>The global temperature measurement network has not been constant. Since the late 1800s, stations have opened and closed, networks have expanded into remote regions, and the mix of coastal, lowland, highland, and mountain stations has shifted year by year.</p>
+        </div>
+
+        <div class="chart-bleed" style="margin-top:1rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-header">
+              <span class="chart-title">Annual network altitude from geo-gridded GHCNm stations</span>
+              <span class="chart-meta" id="altitudeChartMeta"></span>
+            </div>
+            <div class="chart-container" id="altitudeChartContainer" role="img" aria-label="Line chart of annual network altitude derived from geo-gridded GHCNm stations over time">
+              <div class="chart-tooltip" id="altitudeTooltip" hidden></div>
+              <p class="chart-loading" id="altitudeChartLoading">Loading…</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="prose" style="margin-top:1.5rem">
+          <p>Each month's value follows the same general geo-gridding approach used in many global temperature analyses: stations are first filtered to monthly observations with a value and no QC flag, then assigned to roughly 500×500 km grid cells so dense regions do not dominate. Within each occupied cell we average station elevation, then average the occupied-cell means equally to get the monthly network altitude. Yearly values are the average of those monthly network altitudes, and the incomplete final year is excluded.</p>
+          <p>Only stations with known elevation contribute to either series, so both are computed from the same underlying station set.</p>
+
+          <details class="expander">
+            <summary>What counts as "active" in a given year?</summary>
+            <div class="expander-body">
+              <p>For this lab, a station contributes in any month where its temperature value is present and the QC flag is blank. That monthly filter matches the way global anomaly products are usually assembled: observations are gridded first, then cells are averaged equally so dense station clusters do not dominate the result.</p>
+            </div>
+          </details>
+
+          <p>As the network's average altitude increases, the model predicts cooler temperatures; as it decreases, the model predicts warmer temperatures.</p>
+
+          <details class="expander">
+            <summary>Why isn't this already corrected?</summary>
+            <div class="expander-body">
+              <p>Different temperature analyses use different spatial and anomaly-aggregation methods. This lab isolates one sampling effect in the underlying station network so it can be examined independently.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section 3: Prediction (blocking) ──────────────────────────── -->
+    <section class="lab-section" id="prediction" aria-labelledby="prediction-heading">
+      <div class="container">
+        <div class="prose">
+          <h2 id="prediction-heading">What do you predict?</h2>
+          <p>You have seen how the average elevation of the global temperature network has shifted over time. Now, before seeing any model output, make a prediction.</p>
+          <p>Now that you've seen how the network changed, predict what temperature signal you would expect from those altitude changes alone.</p>
+        </div>
+
+        <p style="font-size:0.9rem;color:var(--text-secondary);margin-block:0.75rem 0.25rem">
+          <strong style="color:var(--text)">Question:</strong> Based purely on altitude changes in the network, what pattern would you expect to see in the raw global temperature series?
+        </p>
+
+        <p class="random-order-note">Options are shown in a random order to avoid nudging your choice.</p>
+        <div class="prediction-grid" id="predictionGrid" role="group" aria-label="Choose your prediction"></div>
+
+        <div id="chosenBanner" class="chosen-banner" hidden>
+          <span class="check" aria-hidden="true">✓</span>
+          <span>You chose: <strong id="chosenLabel"></strong></span>
+        </div>
+
+        <div id="predictionLocked" aria-live="polite" style="margin-top:1.25rem">
+          <p style="font-size:0.85rem;color:var(--muted)">Make a prediction above to reveal the model.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section 4: The model (unlocked after prediction) ──────────── -->
+    <section class="lab-section" id="model" aria-labelledby="model-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="model-heading">The altitude signal model</h2>
+          <p>Using the environmental lapse rate we can estimate the temperature signal that would result from changes in the station network's average altitude.</p>
+        </div>
+
+        <div class="formula-block" id="formulaBlock">
+          ΔT<sub>altitude</sub>(year) = −0.0065 °C/m × ( h̄(year) − h̄<sub>baseline</sub> )
+        </div>
+
+        <div class="prose">
+          <p>For each year we take the mean elevation of active stations, subtract the mean elevation during the baseline period, and multiply by the environmental lapse rate (0.0065 °C/m).</p>
+        </div>
+
+        <details class="expander">
+          <summary>Model assumptions</summary>
+          <div class="expander-body">
+            <ul>
+              <li>The environmental lapse rate is fixed at 6.5 °C/km.</li>
+              <li>Annual mean station elevation represents the network's altitude.</li>
+              <li>Only changing station altitude is considered.</li>
+              <li>No other sampling effects are included here.</li>
+            </ul>
+          </div>
+        </details>
+
+        <div id="comparisonPrompt" style="margin-top:1.5rem">
+          <p style="font-size:0.85rem;color:var(--muted)">Loading observed anomaly from the same station network…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section 5: Comparison ──────────────────────────────────────── -->
+    <section class="lab-section" id="comparison" aria-labelledby="comparison-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="comparison-heading">Compare the series</h2>
+          <p>The chart below compares the predicted altitude signal with the global temperature anomaly computed from the same filtered station network. Use the legend to overlay the raw or adjusted observations on the model.</p>
+        </div>
+
+        <div class="baseline-row">
+          <span class="baseline-label">Baseline period:</span>
+          <button class="baseline-btn" data-baseline="1700-1729" type="button">1700–1729</button>
+          <button class="baseline-btn" data-baseline="1730-1759" type="button">1730–1759</button>
+          <button class="baseline-btn" data-baseline="1760-1789" type="button">1760–1789</button>
+          <button class="baseline-btn" data-baseline="1790-1819" type="button">1790–1819</button>
+          <button class="baseline-btn" data-baseline="1820-1849" type="button">1820–1849</button>
+          <button class="baseline-btn" data-baseline="1850-1879" type="button">1850–1879</button>
+          <button class="baseline-btn" data-baseline="1880-1909" type="button">1880–1909</button>
+          <button class="baseline-btn" data-baseline="1910-1939" type="button">1910–1939</button>
+          <button class="baseline-btn" data-baseline="1940-1969" type="button">1940–1969</button>
+          <button class="baseline-btn" data-baseline="1970-1999" type="button">1970–1999</button>
+          <button class="baseline-btn active" data-baseline="2000-2029" type="button">2000–2029</button>
+        </div>
+
+        <details class="expander">
+          <summary>What does the baseline change?</summary>
+          <div class="expander-body">
+            <p>The baseline sets the reference period used to center both series. Changing it does not alter the underlying data; it shifts the zero point so you can compare how the same temperature signal looks against different reference windows.</p>
+          </div>
+        </details>
+
+        <div class="chart-bleed">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-header">
+              <span class="chart-title">Predicted temperature signal vs. observed global anomaly</span>
+              <span class="chart-meta" id="compChartMeta"></span>
+            </div>
+            <div class="chart-container" id="compChartContainer" role="img" aria-label="Line chart comparing predicted temperature signal with raw and adjusted observed global temperature anomaly">
+              <div class="chart-tooltip" id="compTooltip" hidden></div>
+              <p class="chart-loading" id="compChartLoading">Loading…</p>
+            </div>
+            <div class="chart-legend">
+              <button class="legend-btn" id="legendObsRaw" type="button">
+                Observed (Raw)
+              </button>
+              <button class="legend-btn" id="legendObsAdj" type="button">
+                Observed (Adjusted)
+              </button>
+              <button class="legend-btn" id="legendModel" type="button">
+                Altitude signal
+              </button>
+            </div>
+            <p class="chart-hint">Observed series start hidden. Click the legend to show or hide them.</p>
+          </div>
+        </div>
+
+        <div class="prose" style="margin-top:1.25rem">
+          <p>Showing both series relative to the same baseline makes their changes over time directly comparable.</p>
+          <p>Some features that may be worth examining:</p>
+          <ul>
+            <li>the similarity or difference in long-term trends</li>
+            <li>periods where the two series move together</li>
+            <li>periods where they diverge</li>
+            <li>differences in year-to-year variability</li>
+            <li>whether similarities occur consistently or only during particular periods</li>
+            <li>how the relationship changes between the sparse early network and the modern network</li>
+          </ul>
+          <p>The degree to which the two series agree or differ is left for the reader to assess.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Data sources expander (always at foot, matching Lab 1 style) ── -->
+    <section class="lab-section" id="sources">
+      <div class="container">
+        <details class="expander sources-expander">
+          <summary>Data sources &amp; methodology</summary>
+          <div class="expander-body">
+            <dl class="sources-list">
+              <dt>Station network altitude — NOAA GHCNm v4 (QCU)</dt>
+              <dd>Station inventory (elevation, lat/lon) and monthly temperature data from the NOAA Global Historical Climatology Network Monthly v4 quality-controlled unadjusted dataset. For each month, stations are first filtered to values that are present and have no QC flag, then assigned to ~500×500 km geo-grid cells. Occupied-cell mean elevations are equally averaged to produce the monthly network altitude, following the general geo-gridding approach used in many global temperature analyses. Annual values are the average of monthly network altitudes, and the incomplete final year is excluded. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018</a>.</dd>
+              <dt>Observed global temperature anomaly — NOAA GHCNm v4 (QCU / QCF)</dt>
+              <dd>Global mean temperature anomaly computed from the same GHCNm v4 station set, available as unadjusted (QCU / Raw) or adjusted (QCF / Adjusted). Geo-gridded global mean; annual averages; auto-decade anomaly baseline. Only stations with known elevation are included, so the anomaly and the altitude chart reflect the same network.</dd>
+              <dt>Environmental Lapse Rate</dt>
+              <dd>~6.5 °C/km — the observed average temperature decrease with altitude through the troposphere, adopted by the International Standard Atmosphere (ISA). <a href="https://glossary.ametsoc.org/wiki/Environmental_lapse_rate" target="_blank" rel="noopener">AMS Glossary of Meteorology</a>.</dd>
+              <dt>Ideal Gas Law</dt>
+              <dd>PV = nRT underpins the atmospheric pressure–temperature relationship used here. See e.g. Wallace &amp; Hobbs, <em>Atmospheric Science</em> (2nd ed., 2006).</dd>
+            </dl>
+            <p class="sources-footer">This is a neutral exploration tool. Correlation does not imply causation.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© Klymot</p>
+    </div>
+  </footer>
+
+  <!-- ── JavaScript ──────────────────────────────────────────────────────── -->
+  <script is:inline>
+  (function () {
+    'use strict';
+
+    /* ── Constants ─────────────────────────────────────────────────── */
+    const ELR = 0.0065;  // °C per metre (environmental lapse rate, ISA standard)
+    const AGGREGATE_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? '/api/v1/aggregate'
+      : 'https://api.klymot.com/api/v1/aggregate';
+    const DATA_BASE = 'data';  // relative to the page
+
+    const BASELINE_RANGES = {
+      '1700-1729': [1700, 1729],
+      '1730-1759': [1730, 1759],
+      '1760-1789': [1760, 1789],
+      '1790-1819': [1790, 1819],
+      '1820-1849': [1820, 1849],
+      '1850-1879': [1850, 1879],
+      '1880-1909': [1880, 1909],
+      '1910-1939': [1910, 1939],
+      '1940-1969': [1940, 1969],
+      '1970-1999': [1970, 1999],
+      '2000-2029': [2000, 2029],
+    };
+
+    const PREDICTION_OPTIONS = [
+      {
+        key: 'warming',
+        label: 'A warming signal',
+        desc: 'The average elevation fell; cooler high-altitude stations dropped out, making the network appear warmer.',
+      },
+      {
+        key: 'cooling',
+        label: 'A cooling signal',
+        desc: 'The average elevation rose; more cold, high-altitude stations joined, making the network appear cooler.',
+      },
+      {
+        key: 'negligible',
+        label: 'Negligible effect',
+        desc: 'The altitude changes are too small to produce a meaningful temperature signal.',
+      },
+      {
+        key: 'mixed',
+        label: 'It changed direction',
+        desc: 'The network climbed in some periods and fell in others, creating a mixed signal over time.',
+      },
+    ];
+
+    /* ── State ─────────────────────────────────────────────────────── */
+    let altitudeData   = null;   // {annual: [{year, mean_elev_m, median_elev_m, n}]}
+    let observedDataBySeries = { qcu: null, qcf: null };
+    let stationIds     = null;   // cached so series switch doesn't reload the file
+    let predictionKey  = null;
+    let baseline       = '2000-2029';
+    let observedRawVisible      = false;
+    let observedAdjustedVisible = false;
+    let seriesModel             = true;
+    let visitBeaconSent = false;
+    let predBeaconSent  = false;
+    let modelBeaconSent = false;
+    let compBeaconSent  = false;
+
+    /* ── Utility ───────────────────────────────────────────────────── */
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function mean(arr) {
+      if (!arr.length) return NaN;
+      return arr.reduce((s, v) => s + v, 0) / arr.length;
+    }
+
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    /* ── URL state ─────────────────────────────────────────────────── */
+    function readStateFromUrl() {
+      const hash = location.hash.slice(1);
+      const params = new URLSearchParams(hash);
+      return {
+        prediction: params.get('prediction') || null,
+        baseline:   params.get('baseline')   || null,
+        series:     params.get('series')     || null,
+        obs:        params.get('obs')        || null,
+      };
+    }
+
+    function pushStateToUrl() {
+      const params = new URLSearchParams();
+      params.set('v', '1');
+      if (predictionKey) params.set('prediction', predictionKey);
+      params.set('baseline', baseline);
+      const obs = [
+        observedRawVisible ? 'qcu' : null,
+        observedAdjustedVisible ? 'qcf' : null,
+      ].filter(Boolean);
+      params.set('obs', obs.length ? obs.join(',') : 'none');
+      params.set('series', seriesModel ? 'model' : 'none');
+      const hash = '#' + params.toString();
+      if (location.hash !== hash) history.replaceState(null, '', hash);
+    }
+
+    /* ── Altitude chart ────────────────────────────────────────────── */
+    function drawAltitudeChart(annual) {
+      const container = document.getElementById('altitudeChartContainer');
+      if (!container) return;
+
+      // Remove old canvas if redrawing
+      const old = container.querySelector('canvas');
+      if (old) old.remove();
+
+      const canvas = document.createElement('canvas');
+      canvas.style.cssText = 'display:block;width:100%;height:100%;cursor:crosshair';
+      canvas.setAttribute('role', 'img');
+      container.prepend(canvas);
+
+      const tooltip = document.getElementById('altitudeTooltip');
+      const meta    = document.getElementById('altitudeChartMeta');
+
+      function draw() {
+        const W = container.clientWidth || 600;
+        const H = container.clientHeight || 220;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width  = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+        canvas.style.width  = W + 'px';
+        canvas.style.height = H + 'px';
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+
+        const gold       = cssVar('--accent') || '#d4a855';
+        const textColor  = cssVar('--text-secondary') || '#a8a090';
+        const gridColor  = 'rgba(212,168,85,0.12)';
+        const pad = { top: 16, right: 24, bottom: 36, left: 56 };
+        const cW = W - pad.left - pad.right;
+        const cH = H - pad.top - pad.bottom;
+
+        const years  = annual.map(d => d.year);
+        const elevs  = annual.map(d => d.mean_elev_m);
+        const minYr  = Math.min(...years);
+        const maxYr  = Math.max(...years);
+        const minEl  = Math.min(...elevs);
+        const maxEl  = Math.max(...elevs);
+        const pad_el = (maxEl - minEl) * 0.08 || 10;
+        const loEl   = minEl - pad_el;
+        const hiEl   = maxEl + pad_el;
+
+        function xp(yr) { return pad.left + (yr - minYr) / Math.max(1, maxYr - minYr) * cW; }
+        function yp(el) { return pad.top + (1 - (el - loEl) / (hiEl - loEl)) * cH; }
+
+        ctx.clearRect(0, 0, W, H);
+
+        // Grid
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+          const y = pad.top + (cH / 4) * i;
+          ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
+        }
+
+        // Y axis labels
+        ctx.fillStyle = textColor;
+        ctx.font = '11px system-ui, sans-serif';
+        ctx.textAlign = 'right';
+        for (let i = 0; i <= 4; i++) {
+          const el = hiEl - (hiEl - loEl) * (i / 4);
+          ctx.fillText(Math.round(el) + ' m', pad.left - 6, pad.top + (cH / 4) * i + 4);
+        }
+
+        // X axis labels
+        ctx.textAlign = 'center';
+        const xStep = Math.ceil((maxYr - minYr) / 6 / 20) * 20 || 20;
+        for (let yr = Math.ceil(minYr / xStep) * xStep; yr <= maxYr; yr += xStep) {
+          ctx.fillText(yr, xp(yr), H - 8);
+        }
+
+        // Area fill
+        ctx.fillStyle = 'rgba(212,168,85,0.07)';
+        ctx.beginPath();
+        ctx.moveTo(xp(years[0]), pad.top + cH);
+        annual.forEach(d => ctx.lineTo(xp(d.year), yp(d.mean_elev_m)));
+        ctx.lineTo(xp(years[years.length - 1]), pad.top + cH);
+        ctx.closePath();
+        ctx.fill();
+
+        // Main line
+        ctx.strokeStyle = gold;
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        annual.forEach((d, i) => {
+          if (i === 0) ctx.moveTo(xp(d.year), yp(d.mean_elev_m));
+          else ctx.lineTo(xp(d.year), yp(d.mean_elev_m));
+        });
+        ctx.stroke();
+
+        if (meta) meta.textContent = `${minYr}–${maxYr}`;
+        return xp;
+      }
+
+      let getXp = draw();
+      new ResizeObserver(() => { getXp = draw(); }).observe(container);
+
+      // Tooltip
+      canvas.addEventListener('mousemove', e => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        // Find nearest year
+        const xpFn = getXp;
+        let best = null, bestDist = Infinity;
+        annual.forEach(d => {
+          const dx = Math.abs(x - xpFn(d.year));
+          if (dx < bestDist) { bestDist = dx; best = d; }
+        });
+        if (best && bestDist < 30 && tooltip) {
+          tooltip.textContent = `${best.year}  ${best.mean_elev_m.toFixed(1)} m  (months=${best.n})`;
+          tooltip.removeAttribute('hidden');
+          const ttW = tooltip.offsetWidth || 180;
+          let left = x + 14;
+          if (left + ttW > rect.width - 8) left = x - ttW - 14;
+          tooltip.style.left = Math.max(4, left) + 'px';
+          tooltip.style.top = '12px';
+        }
+      });
+      canvas.addEventListener('mouseleave', () => {
+        if (tooltip) tooltip.setAttribute('hidden', '');
+      });
+    }
+
+    /* ── Model computation ─────────────────────────────────────────── */
+    function computeModel(annual, baselineKey) {
+      const [bStart, bEnd] = BASELINE_RANGES[baselineKey] || [2000, 2029];
+      const baselineElevs = annual
+        .filter(d => d.year >= bStart && d.year <= bEnd)
+        .map(d => d.mean_elev_m);
+      if (!baselineElevs.length) return [];
+      const baselineMean = mean(baselineElevs);
+      return annual.map(d => ({
+        year:   d.year,
+        delta:  -ELR * (d.mean_elev_m - baselineMean),
+      }));
+    }
+
+    /* ── Comparison chart ──────────────────────────────────────────── */
+    let _compObserver = null;
+    function drawCompChart(modelPts, obsPtsBySeries) {
+      if (!modelPts || !obsPtsBySeries) return;
+      const container = document.getElementById('compChartContainer');
+      if (!container) return;
+      if (_compObserver) { _compObserver.disconnect(); _compObserver = null; }
+      const old = container.querySelector('canvas');
+      if (old) old.remove();
+      const canvas = document.createElement('canvas');
+      canvas.style.cssText = 'display:block;width:100%;height:100%;cursor:crosshair';
+      container.prepend(canvas);
+      const tooltip = document.getElementById('compTooltip');
+      const meta    = document.getElementById('compChartMeta');
+
+      function draw() {
+        const W = container.clientWidth || 600;
+        const H = container.clientHeight || 220;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width  = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+        canvas.style.width  = W + 'px';
+        canvas.style.height = H + 'px';
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+
+        const colorModel = cssVar('--series-model') || '#d4a855';
+        const colorObsRaw = cssVar('--series-obs') || '#5090f8';
+        const colorObsAdj = cssVar('--series-obs-adjusted') || '#d45a4f';
+        const textColor  = cssVar('--text-secondary') || '#a8a090';
+        const gridColor  = 'rgba(212,168,85,0.12)';
+        const pad = { top: 16, right: 24, bottom: 36, left: 64 };
+        const cW = W - pad.left - pad.right;
+        const cH = H - pad.top - pad.bottom;
+
+        // Build common year range
+        const obsRawMap = new Map((obsPtsBySeries.qcu || []).map(d => [d.year, d.anomaly_c]));
+        const obsAdjMap = new Map((obsPtsBySeries.qcf || []).map(d => [d.year, d.anomaly_c]));
+        const modMap = new Map(modelPts.map(d => [d.year, d.delta]));
+        const allYrs = [...new Set([
+          ...obsRawMap.keys(),
+          ...obsAdjMap.keys(),
+          ...modMap.keys(),
+        ])].sort((a, b) => a - b);
+        const minYr = allYrs[0], maxYr = allYrs[allYrs.length - 1];
+
+        // Baseline-adjust observed series to the same reference period as the model
+      const [bStart, bEnd] = BASELINE_RANGES[baseline] || [2000, 2029];
+        const obsRawBaseline = mean(
+          allYrs.filter(yr => yr >= bStart && yr <= bEnd && obsRawMap.has(yr)).map(yr => obsRawMap.get(yr))
+        );
+        const obsAdjBaseline = mean(
+          allYrs.filter(yr => yr >= bStart && yr <= bEnd && obsAdjMap.has(yr)).map(yr => obsAdjMap.get(yr))
+        );
+
+        // Y range from visible data
+        const allVals = [];
+        if (observedRawVisible) {
+          allYrs.forEach(yr => {
+            if (obsRawMap.has(yr)) allVals.push(obsRawMap.get(yr) - (isNaN(obsRawBaseline) ? 0 : obsRawBaseline));
+          });
+        }
+        if (observedAdjustedVisible) {
+          allYrs.forEach(yr => {
+            if (obsAdjMap.has(yr)) allVals.push(obsAdjMap.get(yr) - (isNaN(obsAdjBaseline) ? 0 : obsAdjBaseline));
+          });
+        }
+        if (seriesModel) allYrs.forEach(yr => { if (modMap.has(yr)) allVals.push(modMap.get(yr)); });
+        if (!allVals.length) { ctx.clearRect(0, 0, W, H); return; }
+        const absMax = Math.max(Math.abs(Math.min(...allVals)), Math.abs(Math.max(...allVals)), 0.1);
+        const hiD    = absMax * 1.1;
+        const loD    = -absMax * 1.1;
+
+        function xp(yr) { return pad.left + (yr - minYr) / Math.max(1, maxYr - minYr) * cW; }
+        function yp(v)  { return pad.top  + (1 - (v - loD) / (hiD - loD)) * cH; }
+
+        ctx.clearRect(0, 0, W, H);
+
+        // Grid
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+          const y = pad.top + (cH / 4) * i;
+          ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
+        }
+
+        // Zero line
+        ctx.strokeStyle = 'rgba(212,168,85,0.35)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(pad.left, yp(0)); ctx.lineTo(pad.left + cW, yp(0)); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Y labels
+        ctx.fillStyle = textColor;
+        ctx.font = '11px system-ui, sans-serif';
+        ctx.textAlign = 'right';
+        for (let i = 0; i <= 4; i++) {
+          const v = hiD - (hiD - loD) * (i / 4);
+          ctx.fillText(v.toFixed(2) + ' °C', pad.left - 6, pad.top + (cH / 4) * i + 4);
+        }
+
+        // X labels
+        ctx.textAlign = 'center';
+        const xStep = Math.ceil((maxYr - minYr) / 6 / 20) * 20 || 20;
+        for (let yr = Math.ceil(minYr / xStep) * xStep; yr <= maxYr; yr += xStep) {
+          ctx.fillText(yr, xp(yr), H - 8);
+        }
+
+        function drawSeries(map, baselineValue, color, width, dash) {
+          if (!map.size) return;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = width;
+          ctx.lineJoin = 'round';
+          ctx.setLineDash(dash || []);
+          ctx.beginPath();
+          let started = false;
+          allYrs.forEach(yr => {
+            if (!map.has(yr)) { started = false; return; }
+            const v = map.get(yr) - (isNaN(baselineValue) ? 0 : baselineValue);
+            if (!started) { ctx.moveTo(xp(yr), yp(v)); started = true; }
+            else ctx.lineTo(xp(yr), yp(v));
+          });
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        if (observedRawVisible) {
+          drawSeries(obsRawMap, obsRawBaseline, colorObsRaw, 2, []);
+        }
+        if (observedAdjustedVisible) {
+          drawSeries(obsAdjMap, obsAdjBaseline, colorObsAdj, 2, []);
+        }
+
+        // Model series
+        if (seriesModel) {
+          drawSeries(modMap, 0, colorModel, 1.5, []);
+        }
+
+        if (meta) meta.textContent = `baseline ${bStart}–${bEnd}`;
+        return { xp, obsRawMap, obsAdjMap, modMap, obsRawBaseline, obsAdjBaseline };
+      }
+
+      let state = draw();
+      _compObserver = new ResizeObserver(() => { state = draw(); });
+      _compObserver.observe(container);
+
+      canvas.addEventListener('mousemove', e => {
+        if (!state || !tooltip) return;
+        const { xp, obsRawMap, obsAdjMap, modMap, obsRawBaseline, obsAdjBaseline } = state;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const allYrs = [...new Set([...obsRawMap.keys(), ...obsAdjMap.keys(), ...modMap.keys()])].sort((a, b) => a - b);
+        let best = null, bestDist = Infinity;
+        allYrs.forEach(yr => {
+          const dx = Math.abs(x - xp(yr));
+          if (dx < bestDist) { bestDist = dx; best = yr; }
+        });
+        if (best !== null && bestDist < 30) {
+          const lines = [`${best}`];
+          if (observedRawVisible && obsRawMap.has(best)) {
+            const v = obsRawMap.get(best) - (isNaN(obsRawBaseline) ? 0 : obsRawBaseline);
+            lines.push(`Observed (Raw)  ${v >= 0 ? '+' : ''}${v.toFixed(3)} °C`);
+          }
+          if (observedAdjustedVisible && obsAdjMap.has(best)) {
+            const v = obsAdjMap.get(best) - (isNaN(obsAdjBaseline) ? 0 : obsAdjBaseline);
+            lines.push(`Observed (Adjusted)  ${v >= 0 ? '+' : ''}${v.toFixed(3)} °C`);
+          }
+          if (modMap.has(best)) {
+            const v = modMap.get(best);
+            lines.push(`Altitude signal  ${v >= 0 ? '+' : ''}${v.toFixed(4)} °C`);
+          }
+          tooltip.textContent = lines.join('\n');
+          tooltip.removeAttribute('hidden');
+          const ttW = tooltip.offsetWidth || 180;
+          let left = x + 14;
+          if (left + ttW > rect.width - 8) left = x - ttW - 14;
+          tooltip.style.left = Math.max(4, left) + 'px';
+          tooltip.style.top = '12px';
+        }
+      });
+      canvas.addEventListener('mouseleave', () => {
+        if (tooltip) tooltip.setAttribute('hidden', '');
+      });
+    }
+
+    /* ── Observed anomaly fetch ─────────────────────────────────────── */
+    async function fetchObservedAnomaly(ids, series) {
+      const resp = await fetch(AGGREGATE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          station_ids:     ids,
+          series:          series,
+          geo_gridded:     true,
+          full_years_only: true,
+          anomaly_mode:    'auto_decade',
+        }),
+      });
+      if (!resp.ok) throw new Error(`Aggregate API ${resp.status}`);
+      const data = await resp.json();
+
+      // Parse {start: "YYYY-MM", averages: [...monthly]}
+      const [startYr, startMo] = data.start.split('-').map(Number);
+      const monthly = data.averages || [];
+      const byYear = new Map();
+      monthly.forEach((v, i) => {
+        const yr = startYr + Math.floor((startMo - 1 + i) / 12);
+        if (!byYear.has(yr)) byYear.set(yr, []);
+        if (typeof v === 'number' && isFinite(v)) byYear.get(yr).push(v);
+      });
+      const annual = [];
+      byYear.forEach((vals, yr) => {
+        if (vals.length >= 6) {   // require at least 6 months for an annual value
+          annual.push({ year: yr, anomaly_c: mean(vals) });
+        }
+      });
+      return annual.sort((a, b) => a.year - b.year);
+    }
+
+    async function preloadObservedAnomalies(ids) {
+      const [qcu, qcf] = await Promise.all([
+        fetchObservedAnomaly(ids, 'qcu'),
+        fetchObservedAnomaly(ids, 'qcf'),
+      ]);
+      observedDataBySeries = { qcu, qcf };
+      return observedDataBySeries;
+    }
+
+    /* ── Prediction UI ─────────────────────────────────────────────── */
+    function renderPredictions() {
+      const grid = document.getElementById('predictionGrid');
+      if (!grid) return;
+
+      // Shuffle per session (Math.random is session-scoped)
+      const shuffled = [...PREDICTION_OPTIONS].sort(() => Math.random() - 0.5);
+
+      shuffled.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'prediction-card' + (predictionKey === opt.key ? ' chosen' : '');
+        btn.type = 'button';
+        btn.dataset.key = opt.key;
+        btn.innerHTML = `
+          <span class="prediction-card-label">${opt.label}</span>
+          <span class="prediction-card-desc">${opt.desc}</span>
+        `;
+        btn.addEventListener('click', () => onPredict(opt));
+        grid.appendChild(btn);
+      });
+    }
+
+    function onPredict(opt) {
+      predictionKey = opt.key;
+      pushStateToUrl();
+
+      // Update card styles
+      document.querySelectorAll('.prediction-card').forEach(c => {
+        c.classList.toggle('chosen', c.dataset.key === opt.key);
+      });
+
+      // Show chosen banner
+      const banner = document.getElementById('chosenBanner');
+      const label  = document.getElementById('chosenLabel');
+      if (banner && label) {
+        label.textContent = opt.label;
+        banner.removeAttribute('hidden');
+      }
+
+      // Hide "make a prediction" prompt
+      const locked = document.getElementById('predictionLocked');
+      if (locked) locked.hidden = true;
+
+      // Reveal model section
+      const modelSection = document.getElementById('model');
+      if (modelSection && modelSection.hidden) {
+        modelSection.removeAttribute('hidden');
+        requestAnimationFrame(() => {
+          modelSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        if (observedDataBySeries.qcu || observedDataBySeries.qcf) redrawCompChart();
+
+        if (!modelBeaconSent && window.sendFeatureBeacon) {
+          window.sendFeatureBeacon('labs/network-altitude/03-model-revealed');
+          modelBeaconSent = true;
+        }
+      }
+
+      if (!predBeaconSent && window.sendFeatureBeacon) {
+        window.sendFeatureBeacon('labs/network-altitude/02-prediction-made');
+        predBeaconSent = true;
+      }
+    }
+
+    /* ── Baseline handling ─────────────────────────────────────────── */
+    function setBaseline(key) {
+      baseline = key;
+      document.querySelectorAll('.baseline-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.baseline === key);
+      });
+      if (observedDataBySeries.qcu || observedDataBySeries.qcf) redrawCompChart();
+      pushStateToUrl();
+    }
+
+    function redrawCompChart() {
+      if (!altitudeData || (!observedDataBySeries.qcu && !observedDataBySeries.qcf)) return;
+      const compSection  = document.getElementById('comparison');
+      const compLoading  = document.getElementById('compChartLoading');
+      const compPrompt   = document.getElementById('comparisonPrompt');
+      if (compPrompt) compPrompt.hidden = true;
+      if (compSection && compSection.hidden) {
+        compSection.removeAttribute('hidden');
+        if (!compBeaconSent && window.sendFeatureBeacon) {
+          window.sendFeatureBeacon('labs/network-altitude/04-comparison-revealed');
+          compBeaconSent = true;
+        }
+      }
+      if (compLoading) compLoading.hidden = true;
+      const modelPts = computeModel(altitudeData.annual, baseline);
+      drawCompChart(modelPts, observedDataBySeries);
+    }
+
+    /* ── Legend toggles ────────────────────────────────────────────── */
+    function wireLegend() {
+      const btnObsRaw = document.getElementById('legendObsRaw');
+      const btnObsAdj = document.getElementById('legendObsAdj');
+      const btnModel  = document.getElementById('legendModel');
+      const modelColor = cssVar('--series-model') || '#d4a855';
+      const obsRawColor = cssVar('--series-obs') || '#5090f8';
+      const obsAdjColor = cssVar('--series-obs-adjusted') || '#d45a4f';
+      const offBorder = cssVar('--border') || 'rgba(255,255,255,0.28)';
+
+      function updateLegendStyles() {
+        if (btnObsRaw) {
+          btnObsRaw.style.borderColor = observedRawVisible ? obsRawColor : offBorder;
+          btnObsRaw.classList.toggle('series-off', !observedRawVisible);
+        }
+        if (btnObsAdj) {
+          btnObsAdj.style.borderColor = observedAdjustedVisible ? obsAdjColor : offBorder;
+          btnObsAdj.classList.toggle('series-off', !observedAdjustedVisible);
+        }
+        if (btnModel) {
+          btnModel.style.borderColor = seriesModel ? modelColor : offBorder;
+          btnModel.classList.toggle('series-off', !seriesModel);
+        }
+      }
+
+      if (btnObsRaw) {
+        btnObsRaw.addEventListener('click', () => {
+          observedRawVisible = !observedRawVisible;
+          updateLegendStyles();
+          pushStateToUrl();
+          if (altitudeData && (observedDataBySeries.qcu || observedDataBySeries.qcf)) redrawCompChart();
+        });
+      }
+      if (btnObsAdj) {
+        btnObsAdj.addEventListener('click', () => {
+          observedAdjustedVisible = !observedAdjustedVisible;
+          updateLegendStyles();
+          pushStateToUrl();
+          if (altitudeData && (observedDataBySeries.qcu || observedDataBySeries.qcf)) redrawCompChart();
+        });
+      }
+      if (btnModel) {
+        btnModel.addEventListener('click', () => {
+          seriesModel = !seriesModel;
+          updateLegendStyles();
+          pushStateToUrl();
+          if (altitudeData && (observedDataBySeries.qcu || observedDataBySeries.qcf)) redrawCompChart();
+        });
+      }
+      updateLegendStyles();
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────────── */
+    function wireReset() {
+      const btn = document.getElementById('resetLab');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        predictionKey = null;
+        baseline      = '2000-2029';
+        observedRawVisible      = false;
+        observedAdjustedVisible = false;
+        seriesModel             = true;
+
+        document.querySelectorAll('.prediction-card').forEach(c => c.classList.remove('chosen'));
+        const banner = document.getElementById('chosenBanner');
+        if (banner) banner.setAttribute('hidden', '');
+        const locked = document.getElementById('predictionLocked');
+        if (locked) locked.hidden = false;
+
+        const modelSection = document.getElementById('model');
+        if (modelSection) modelSection.setAttribute('hidden', '');
+        const compSection  = document.getElementById('comparison');
+        if (compSection)  compSection.setAttribute('hidden', '');
+
+        document.querySelectorAll('.baseline-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.baseline === '2000-2029');
+        });
+        wireLegend();
+
+        pushStateToUrl();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    /* ── Theme toggle ──────────────────────────────────────────────── */
+    function wireTheme() {
+      const btn = document.getElementById('themeToggle');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'light' ? 'dark' : 'light';
+        if (next === 'dark') document.documentElement.removeAttribute('data-theme');
+        else document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('klymot-theme', next);
+        // Redraw charts to pick up new CSS variable values
+        if (altitudeData) drawAltitudeChart(altitudeData.annual);
+        if (observedDataBySeries.qcu || observedDataBySeries.qcf) redrawCompChart();
+      });
+    }
+
+    /* ── Initialisation ────────────────────────────────────────────── */
+    async function initialize() {
+      // Restore URL state
+      const urlState = readStateFromUrl();
+      if (urlState.baseline && BASELINE_RANGES[urlState.baseline]) baseline = urlState.baseline;
+      if (urlState.obs) {
+        const parts = new Set(urlState.obs.split(',').map(s => s.trim()).filter(Boolean));
+        observedRawVisible = parts.has('qcu') || parts.has('raw');
+        observedAdjustedVisible = parts.has('qcf') || parts.has('adjusted');
+        if (urlState.obs === 'none') {
+          observedRawVisible = false;
+          observedAdjustedVisible = false;
+        }
+      }
+      const initialPredKey = urlState.prediction;
+      if (urlState.series) {
+        const parts = urlState.series.split(',').map(s => s.trim()).filter(Boolean);
+        seriesModel = parts.includes('model');
+        if (urlState.series === 'none') seriesModel = false;
+      }
+
+      wireTheme();
+      wireReset();
+      wireLegend();
+
+      // Baseline buttons
+      document.querySelectorAll('.baseline-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.baseline === baseline);
+        btn.addEventListener('click', () => setBaseline(btn.dataset.baseline));
+      });
+
+      // Render prediction cards
+      renderPredictions();
+
+      // Restore prediction from URL
+      if (initialPredKey) {
+        const opt = PREDICTION_OPTIONS.find(o => o.key === initialPredKey);
+        if (opt) {
+          // Don't scroll on load
+          predictionKey = opt.key;
+          document.querySelectorAll('.prediction-card').forEach(c => {
+            c.classList.toggle('chosen', c.dataset.key === opt.key);
+          });
+          const banner = document.getElementById('chosenBanner');
+          const label  = document.getElementById('chosenLabel');
+          if (banner && label) { label.textContent = opt.label; banner.removeAttribute('hidden'); }
+          const locked = document.getElementById('predictionLocked');
+          if (locked) locked.hidden = true;
+          const modelSection = document.getElementById('model');
+          if (modelSection) modelSection.removeAttribute('hidden');
+        }
+      }
+
+      const altitudePromise = (async () => {
+        const resp = await fetch(DATA_BASE + '/network-altitude.json');
+        if (!resp.ok) throw new Error(resp.status);
+        return resp.json();
+      })();
+
+      const stationIdsPromise = (async () => {
+        const resp = await fetch(DATA_BASE + '/station-ids.json');
+        if (!resp.ok) throw new Error(resp.status);
+        const idsData = await resp.json();
+        return idsData.station_ids;
+      })();
+
+      const observedPromise = stationIdsPromise.then(ids => {
+        stationIds = ids;
+        const compPrompt = document.getElementById('comparisonPrompt');
+        if (compPrompt) compPrompt.querySelector('p').textContent = 'Fetching observed data…';
+        return preloadObservedAnomalies(ids);
+      });
+
+      try {
+        altitudeData = await altitudePromise;
+        const loading = document.getElementById('altitudeChartLoading');
+        if (loading) loading.hidden = true;
+        drawAltitudeChart(altitudeData.annual);
+      } catch (err) {
+        const loading = document.getElementById('altitudeChartLoading');
+        if (loading) loading.textContent = 'Could not load altitude data.';
+        console.error('Altitude data load error:', err);
+      }
+
+      try {
+        await observedPromise;
+        const compPrompt = document.getElementById('comparisonPrompt');
+        if (altitudeData && initialPredKey) {
+          redrawCompChart();
+        } else if (compPrompt) {
+          compPrompt.querySelector('p').textContent = 'Make your prediction above to see the comparison.';
+        }
+      } catch (err) {
+        const compPrompt = document.getElementById('comparisonPrompt');
+        if (compPrompt) compPrompt.querySelector('p').textContent = 'Could not load observed data.';
+        console.error('Observed anomaly load error:', err);
+      }
+
+      pushStateToUrl();
+
+      // Analytics
+      if (!visitBeaconSent && window.sendFeatureBeacon) {
+        window.sendFeatureBeacon('labs/network-altitude/01-visited');
+        visitBeaconSent = true;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initialize);
+
+  }());
+  </script>
+
+</body>
+</html>

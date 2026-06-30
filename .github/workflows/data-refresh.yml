@@ -30,6 +30,9 @@ jobs:
       - name: Fetch sunshine data
         run: python scripts/fetch_sunshine.py
 
+      - name: Fetch altitude data
+        run: python scripts/fetch_altitude.py
+
       - name: Rebuild docs
         run: npm run build
 
@@ -37,10 +40,10 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add public/sunshine-temperature/data/ docs/
+          git add public/sunshine-temperature/data/ public/network-altitude/data/ docs/
           if git diff --cached --quiet; then
             echo "Data unchanged — nothing to commit"
           else
-            git commit -m 'chore: refresh sunshine data'
+            git commit -m 'chore: refresh data'
             git push
           fi
