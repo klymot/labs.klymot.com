@@ -28,19 +28,10 @@ import '../../styles/theme.css';
     }());
   </script>
 
-  <!-- Analytics beacon — first-party only, skips localhost -->
-  <script is:inline>
-    (function () {
-      var h = window.location.hostname;
-      if (h === 'localhost' || h === '127.0.0.1') return;
-      var payload = JSON.stringify({ path: 'labs.klymot.com' + window.location.pathname, referrer: document.referrer || '' });
-      var blob = new Blob([payload], { type: 'text/plain' });
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon('https://api.klymot.com/api/v1/usage', blob);
-      } else {
-        fetch('https://api.klymot.com/api/v1/usage', { method: 'POST', body: blob, keepalive: true }).catch(function () {});
-      }
-    }());
+  <script>
+    import { sendPageBeacon, sendFeatureBeacon } from '../../lib/analytics.js';
+    sendPageBeacon();
+    window.sendFeatureBeacon = sendFeatureBeacon;
   </script>
 
   <!-- Chart library -->
@@ -1289,18 +1280,6 @@ import '../../styles/theme.css';
     let showTemp  = true;
     let showSolar = true;
 
-    // ── Feature beacons ────────────────────────────────────────────
-    function sendFeatureBeacon(feature) {
-      var h = window.location.hostname;
-      if (h === 'localhost' || h === '127.0.0.1') return;
-      var payload = JSON.stringify({ path: '/__feature__/' + feature, referrer: '' });
-      var blob = new Blob([payload], { type: 'text/plain' });
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon('https://api.klymot.com/api/v1/usage', blob);
-      } else {
-        fetch('https://api.klymot.com/api/v1/usage', { method: 'POST', body: blob, keepalive: true }).catch(function () {});
-      }
-    }
     let _stationBeaconSent  = false;
     let _unlockedBeaconSent = false;
     function maybeFireUnlockBeacon() {

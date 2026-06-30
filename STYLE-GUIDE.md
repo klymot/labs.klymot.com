@@ -392,11 +392,11 @@ Labs reuses the main site's privacy‑first model, not a new one. The main site
 
 ### 10.1 What labs pages emit
 
-Every lab page fires a **page‑view beacon** from an inline `<head>` script:
+Every lab page fires a **page‑view beacon** on load:
 
 ```js
 POST https://api.klymot.com/api/v1/usage
-{ path: 'labs.klymot.com' + window.location.pathname, referrer: document.referrer }
+{ path: 'labs.klymot.com' + location.pathname, referrer: document.referrer }
 ```
 
 Sent as a `text/plain` Blob via `navigator.sendBeacon` (fetch keepalive fallback).
@@ -405,8 +405,21 @@ Skips `localhost` / `127.0.0.1`. No cookies; no consent needed.
 The `labs.klymot.com`‑prefixed path separates subdomain traffic in the shared
 dashboard. Keep that prefix on every labs page.
 
-> **Still a copy‑paste per page.** As Labs grows, extract into one shared
-> `src/lib/analytics.js` so the beacon logic lives in exactly one place.
+The shared implementation lives in **`src/lib/analytics.js`** and exports
+`sendPageBeacon()` and `sendFeatureBeacon(feature)`. Import them in a non-inline
+`<script>` at the top of each page's `<head>`:
+
+```html
+<script>
+  import { sendPageBeacon, sendFeatureBeacon } from '../lib/analytics.js';
+  sendPageBeacon();
+  // optional: expose for the page's inline app script
+  window.sendFeatureBeacon = sendFeatureBeacon;
+</script>
+```
+
+Astro bundles this as a deferred module; it runs after parsing, before
+`window.onload` — safely before any funnel beacon calls.
 
 ### 10.2 Funnel beacons — the key scheme
 
@@ -447,24 +460,9 @@ funnel card in the dashboard without any dashboard code changes.
 5. Call `sendFeatureBeacon('labs/{slug}/{NN}-{step-name}')` at the right moment.
    Guard one-shot steps with a boolean flag initialised to `false`.
 
-#### `sendFeatureBeacon` helper
-
-Add this once in the lab's main script block:
-
-```js
-function sendFeatureBeacon(feature) {
-  var h = window.location.hostname;
-  if (h === 'localhost' || h === '127.0.0.1') return;
-  var payload = JSON.stringify({ path: '/__feature__/' + feature, referrer: '' });
-  var blob = new Blob([payload], { type: 'text/plain' });
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon('https://api.klymot.com/api/v1/usage', blob);
-  } else {
-    fetch('https://api.klymot.com/api/v1/usage', { method: 'POST', body: blob, keepalive: true })
-      .catch(function () {});
-  }
-}
-```
+`sendFeatureBeacon` is available globally via `window.sendFeatureBeacon` once the
+`<head>` module script runs (see §10.1). Lab inline scripts call it directly —
+no local definition needed.
 
 **Bias rule for analytics:** beacon the *fact* of a step completion, never the
 chosen value. The dashboard shows how far readers get, not what they decided.
@@ -537,23 +535,6 @@ Things worth considering, in rough priority order:
 
 ## 13. Open items to confirm
 
-- **Analytics scope:** decided — tier‑1 only (anonymous beacon, no GA, no cookie
-  banner). §10 documents the current implementation.
-- **Extract the inline beacon** into a shared `src/lib/analytics.js` so the page‑view
-  beacon and `sendFeatureBeacon` helper live in one place rather than being
-  copy‑pasted into each lab page.
-- **Brand consistency:** the current first‑attempt lab uses a navy `#0a1628` /
-  gold `#d4a855` palette with a Playfair Display serif and a hardcoded dark theme
-  — this diverges from the main site's teal/sans identity that §1 assumes. Decide
-  which is canonical for Labs and align §1 (and the favicon) to it.
-- **Chart approach in the first‑attempt sunshine page:** it currently loads
-  `cdn.tailwindcss.com` + `chart.js@4.4.1`, which contradicts §7 (reuse the
-  custom `TempChart`/`AdjChart` canvas renderers, no Chart.js on the public side).
-  Reconcile before it sets a precedent. (`TempChart` in `docs/js/temp-chart.js`,
-  `AdjChart` in `docs/js/adj-chart.js`). To decide: extract a shared canvas core
-  vs. vendor the files into Labs, and which renderer backs each Labs chart type.
-- The series‑colour palette baked into `TempChart`/`AdjChart` (so Labs charts
-  match exactly — pull from the code rather than re‑inventing).
 - Exact background/surface/border tokens from the main site's chrome (the brand
   teals in §1.1 are confirmed; the neutrals are proposed defaults).
 - The main site's `--font-sans` / `--font-mono` stacks (reuse verbatim).
