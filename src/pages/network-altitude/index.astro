@@ -557,7 +557,6 @@ import '../../styles/theme.css';
       <div class="container">
         <div class="prose">
           <h2 id="prediction-heading">What do you predict?</h2>
-          <p>You have seen how the average elevation of the global temperature network has shifted over time. Now, before seeing any model output, make a prediction.</p>
           <p>Now that you've seen how the network changed, predict what temperature signal you would expect from those altitude changes alone.</p>
         </div>
 
@@ -623,17 +622,17 @@ import '../../styles/theme.css';
 
         <div class="baseline-row">
           <span class="baseline-label">Baseline period:</span>
-          <button class="baseline-btn" data-baseline="1700-1729" type="button">1700–1729</button>
-          <button class="baseline-btn" data-baseline="1730-1759" type="button">1730–1759</button>
-          <button class="baseline-btn" data-baseline="1760-1789" type="button">1760–1789</button>
-          <button class="baseline-btn" data-baseline="1790-1819" type="button">1790–1819</button>
-          <button class="baseline-btn" data-baseline="1820-1849" type="button">1820–1849</button>
-          <button class="baseline-btn" data-baseline="1850-1879" type="button">1850–1879</button>
-          <button class="baseline-btn" data-baseline="1880-1909" type="button">1880–1909</button>
-          <button class="baseline-btn" data-baseline="1910-1939" type="button">1910–1939</button>
-          <button class="baseline-btn" data-baseline="1940-1969" type="button">1940–1969</button>
-          <button class="baseline-btn" data-baseline="1970-1999" type="button">1970–1999</button>
-          <button class="baseline-btn active" data-baseline="2000-2029" type="button">2000–2029</button>
+          <button class="baseline-btn" data-baseline="1720-1749" type="button">1720–1749</button>
+          <button class="baseline-btn" data-baseline="1750-1779" type="button">1750–1779</button>
+          <button class="baseline-btn" data-baseline="1780-1809" type="button">1780–1809</button>
+          <button class="baseline-btn" data-baseline="1810-1839" type="button">1810–1839</button>
+          <button class="baseline-btn" data-baseline="1840-1869" type="button">1840–1869</button>
+          <button class="baseline-btn" data-baseline="1870-1899" type="button">1870–1899</button>
+          <button class="baseline-btn" data-baseline="1900-1929" type="button">1900–1929</button>
+          <button class="baseline-btn" data-baseline="1930-1959" type="button">1930–1959</button>
+          <button class="baseline-btn active" data-baseline="1960-1989" type="button">1960–1989</button>
+          <button class="baseline-btn" data-baseline="1990-2019" type="button">1990–2019</button>
+          <button class="baseline-btn" data-baseline="2020-2049" type="button">2020–2049</button>
         </div>
 
         <details class="expander">
@@ -726,17 +725,41 @@ import '../../styles/theme.css';
     const DATA_BASE = 'data';  // relative to the page
 
     const BASELINE_RANGES = {
-      '1700-1729': [1700, 1729],
-      '1730-1759': [1730, 1759],
-      '1760-1789': [1760, 1789],
-      '1790-1819': [1790, 1819],
-      '1820-1849': [1820, 1849],
-      '1850-1879': [1850, 1879],
-      '1880-1909': [1880, 1909],
-      '1910-1939': [1910, 1939],
-      '1940-1969': [1940, 1969],
-      '1970-1999': [1970, 1999],
-      '2000-2029': [2000, 2029],
+      '1720-1749': [1720, 1749],
+      '1750-1779': [1750, 1779],
+      '1780-1809': [1780, 1809],
+      '1810-1839': [1810, 1839],
+      '1840-1869': [1840, 1869],
+      '1870-1899': [1870, 1899],
+      '1900-1929': [1900, 1929],
+      '1930-1959': [1930, 1959],
+      '1960-1989': [1960, 1989],
+      '1990-2019': [1990, 2019],
+      '2020-2049': [2020, 2049],
+    };
+
+    const LEGACY_BASELINE_MAP = {
+      '1702-1751': '1720-1749',
+      '1752-1801': '1750-1779',
+      '1802-1851': '1810-1839',
+      '1852-1901': '1870-1899',
+      '1902-1951': '1900-1929',
+      '1952-2001': '1960-1989',
+      '2002-2025': '1990-2019',
+      '1700-1729': '1720-1749',
+      '1730-1759': '1720-1749',
+      '1760-1789': '1750-1779',
+      '1790-1819': '1780-1809',
+      '1820-1849': '1810-1839',
+      '1850-1879': '1840-1869',
+      '1880-1909': '1870-1899',
+      '1910-1939': '1900-1929',
+      '1940-1969': '1930-1959',
+      '1970-1999': '1960-1989',
+      '2000-2029': '1990-2019',
+      '1961-1990': '1960-1989',
+      '1981-2010': '1990-2019',
+      '1880-1920': '1900-1929',
     };
 
     const PREDICTION_OPTIONS = [
@@ -767,7 +790,7 @@ import '../../styles/theme.css';
     let observedDataBySeries = { qcu: null, qcf: null };
     let stationIds     = null;   // cached so series switch doesn't reload the file
     let predictionKey  = null;
-    let baseline       = '2000-2029';
+    let baseline       = '1960-1989';
     let observedRawVisible      = false;
     let observedAdjustedVisible = false;
     let seriesModel             = true;
@@ -787,6 +810,12 @@ import '../../styles/theme.css';
     }
 
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    function normalizeBaselineKey(key) {
+      if (!key) return null;
+      if (BASELINE_RANGES[key]) return key;
+      return LEGACY_BASELINE_MAP[key] || null;
+    }
 
     /* ── URL state ─────────────────────────────────────────────────── */
     function readStateFromUrl() {
@@ -945,7 +974,7 @@ import '../../styles/theme.css';
 
     /* ── Model computation ─────────────────────────────────────────── */
     function computeModel(annual, baselineKey) {
-      const [bStart, bEnd] = BASELINE_RANGES[baselineKey] || [2000, 2029];
+      const [bStart, bEnd] = BASELINE_RANGES[baselineKey] || [1960, 1989];
       const baselineElevs = annual
         .filter(d => d.year >= bStart && d.year <= bEnd)
         .map(d => d.mean_elev_m);
@@ -1004,7 +1033,7 @@ import '../../styles/theme.css';
         const minYr = allYrs[0], maxYr = allYrs[allYrs.length - 1];
 
         // Baseline-adjust observed series to the same reference period as the model
-      const [bStart, bEnd] = BASELINE_RANGES[baseline] || [2000, 2029];
+      const [bStart, bEnd] = BASELINE_RANGES[baseline] || [1960, 1989];
         const obsRawBaseline = mean(
           allYrs.filter(yr => yr >= bStart && yr <= bEnd && obsRawMap.has(yr)).map(yr => obsRawMap.get(yr))
         );
@@ -1382,7 +1411,8 @@ import '../../styles/theme.css';
     async function initialize() {
       // Restore URL state
       const urlState = readStateFromUrl();
-      if (urlState.baseline && BASELINE_RANGES[urlState.baseline]) baseline = urlState.baseline;
+      const restoredBaseline = normalizeBaselineKey(urlState.baseline);
+      if (restoredBaseline) baseline = restoredBaseline;
       if (urlState.obs) {
         const parts = new Set(urlState.obs.split(',').map(s => s.trim()).filter(Boolean));
         observedRawVisible = parts.has('qcu') || parts.has('raw');
@@ -1402,6 +1432,10 @@ import '../../styles/theme.css';
       wireTheme();
       wireReset();
       wireLegend();
+
+      if (restoredBaseline && restoredBaseline !== urlState.baseline) {
+        pushStateToUrl();
+      }
 
       // Baseline buttons
       document.querySelectorAll('.baseline-btn').forEach(btn => {
