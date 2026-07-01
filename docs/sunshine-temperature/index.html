@@ -111,7 +111,7 @@
     function maybeFireUnlockBeacon() {
       if (!_unlockedBeaconSent && _stationBeaconSent && currentResolution && currentDataType && currentComparison) {
         _unlockedBeaconSent = true;
-        sendFeatureBeacon('labs/sunshine-temperature/03-unlocked');
+        window.sendFeatureBeacon?.('labs/sunshine-temperature/03-unlocked');
       }
     }
 
@@ -124,7 +124,7 @@
       const passed = window.scrollY + window.innerHeight >= triggerY;
       if (passed || sources.open) {
         _sourcesBeaconSent = true;
-        sendFeatureBeacon('labs/sunshine-temperature/04-sources-revealed');
+        window.sendFeatureBeacon?.('labs/sunshine-temperature/04-sources-revealed');
       }
     }
 
@@ -367,7 +367,7 @@
     async function selectStation(key) {
       if (key === currentStation) { deselectStation(); return; }
       currentStation = key;
-      if (!_stationBeaconSent) { _stationBeaconSent = true; sendFeatureBeacon('labs/sunshine-temperature/02-station-selected'); }
+      if (!_stationBeaconSent) { _stationBeaconSent = true; window.sendFeatureBeacon?.('labs/sunshine-temperature/02-station-selected'); }
       resetTimeWindow();
       renderStationCards();
       updateStationInfo();
@@ -1298,7 +1298,7 @@
       requestAnimationFrame(syncSectionState);
       requestAnimationFrame(maybeFireSourcesBeacon);
 
-      sendFeatureBeacon('labs/sunshine-temperature/01-visited');
+      window.sendFeatureBeacon?.('labs/sunshine-temperature/01-visited');
       console.log('%c[Sunshine-Temp Lab] initialized.', 'color:#a8a090');
     }
 
