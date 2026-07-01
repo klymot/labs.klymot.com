@@ -1,134 +1,109 @@
 ---
-import '../styles/theme.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>klymot labs</title>
-  <meta name="description" content="Hands-on, interactive explorations of climate data." />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Ccircle cx='16' cy='16' r='13' fill='%230a1628'/%3E%3Ccircle cx='16' cy='16' r='13' stroke='%23d4a855' stroke-width='1.25'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.2' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='9.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='22.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='3' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='9' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Ccircle cx='19.5' cy='10.5' r='4' stroke='%23d4a855' stroke-width='1' fill='none' opacity='0.45'/%3E%3Ccircle cx='19.5' cy='10.5' r='2' fill='%23d4a855'/%3E%3C/svg%3E" />
+<BaseLayout title="klymot labs" description="Hands-on, interactive explorations of climate data.">
+  <Fragment slot="head">
+    <script>
+      import { sendPageBeacon, sendFeatureBeacon } from '../lib/analytics.js';
+      sendPageBeacon();
+      sendFeatureBeacon('labs/index/01-visited');
+    </script>
 
-  <!-- Fonts — matches klymot.com -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Source+Sans+3:wght@300;400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
-
-  <!-- Inline FOUC-prevention: dark is default; light is opt-in (matching klymot.com). -->
-  <script is:inline>
-    (function () {
-      var stored = localStorage.getItem('klymot-theme');
-      if (stored) {
-        document.documentElement.setAttribute('data-theme', stored);
-      } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-        document.documentElement.setAttribute('data-theme', 'light');
+    <style is:global>
+      /* ── Hero ───────────────────────────────────────────────────────── */
+      .hero {
+        margin-block-end: 3rem;
       }
-    }());
-  </script>
 
-  <script>
-    import { sendPageBeacon, sendFeatureBeacon } from '../lib/analytics.js';
-    sendPageBeacon();
-    sendFeatureBeacon('labs/index/01-visited');
-  </script>
+      .eyebrow {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-block-end: 0.5rem;
+      }
 
-  <style is:global>
-    /* ── Hero ───────────────────────────────────────────────────────── */
-    .hero {
-      margin-block-end: 3rem;
-    }
+      h1 {
+        margin: 0 0 0.75rem;
+        font-family: var(--font-display);
+        font-size: var(--step-3);
+        font-weight: 600;
+        line-height: 1.05;
+        color: var(--text);
+        letter-spacing: 0.01em;
+      }
 
-    .eyebrow {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-block-end: 0.5rem;
-    }
+      .lede {
+        max-width: 52ch;
+        margin: 0;
+        font-size: var(--step-1);
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
 
-    h1 {
-      margin: 0 0 0.75rem;
-      font-family: var(--font-display);
-      font-size: var(--step-3);
-      font-weight: 600;
-      line-height: 1.05;
-      color: var(--text);
-      letter-spacing: 0.01em;
-    }
+      /* ── Labs grid ──────────────────────────────────────────────────── */
+      .labs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+      }
 
-    .lede {
-      max-width: 52ch;
-      margin: 0;
-      font-size: var(--step-1);
-      color: var(--text-secondary);
-      line-height: 1.5;
-    }
+      .lab-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1.25rem;
+        background-color: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.375rem;
+        color: var(--text);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+        transition: border-color 0.15s;
+      }
 
-    /* ── Labs grid ──────────────────────────────────────────────────── */
-    .labs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1rem;
-    }
+      .lab-card:hover {
+        border-color: var(--border-strong);
+        text-decoration: none;
+      }
 
-    .lab-card {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      padding: 1.25rem;
-      background-color: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 0.375rem;
-      color: var(--text);
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
-      transition: border-color 0.15s;
-    }
+      .lab-number {
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
 
-    .lab-card:hover {
-      border-color: var(--border-strong);
-      text-decoration: none;
-    }
+      .lab-title {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: var(--step-2);
+        font-weight: 600;
+        line-height: 1.2;
+        color: var(--text);
+      }
 
-    .lab-number {
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
+      .lab-desc {
+        margin: 0;
+        font-size: var(--step-0);
+        color: var(--text-secondary);
+        line-height: 1.5;
+        flex: 1;
+      }
 
-    .lab-title {
-      margin: 0;
-      font-family: var(--font-display);
-      font-size: var(--step-2);
-      font-weight: 600;
-      line-height: 1.2;
-      color: var(--text);
-    }
-
-    .lab-desc {
-      margin: 0;
-      font-size: var(--step-0);
-      color: var(--text-secondary);
-      line-height: 1.5;
-      flex: 1;
-    }
-
-    .lab-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      font-size: var(--step-0);
-      font-weight: 600;
-      color: var(--accent);
-      margin-block-start: 0.25rem;
-    }
-  </style>
-</head>
-<body>
+      .lab-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: var(--step-0);
+        font-weight: 600;
+        color: var(--accent);
+        margin-block-start: 0.25rem;
+      }
+    </style>
+  </Fragment>
 
   <header class="site-header">
     <div class="container header-inner">
@@ -186,23 +161,4 @@ import '../styles/theme.css';
       <p>© Klymot</p>
     </div>
   </footer>
-
-  <script is:inline>
-    (function () {
-      var btn = document.getElementById('themeToggle');
-      if (!btn) return;
-      btn.addEventListener('click', function () {
-        var current = document.documentElement.getAttribute('data-theme');
-        var next = current === 'light' ? 'dark' : 'light';
-        if (next === 'dark') {
-          document.documentElement.removeAttribute('data-theme');
-        } else {
-          document.documentElement.setAttribute('data-theme', 'light');
-        }
-        localStorage.setItem('klymot-theme', next);
-      });
-    }());
-  </script>
-
-</body>
-</html>
+</BaseLayout>
