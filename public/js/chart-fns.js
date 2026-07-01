@@ -1,12 +1,14 @@
 /**
- * Pure algorithmic functions extracted from klymot-chart.js for testability.
+ * Pure, DOM-free math/data-processing routines for the klymot chart renderer.
  *
- * These are the DOM-free math/data-processing routines. klymot-chart.js keeps
- * its own inline copies (browser IIFE, no imports); this module exists so that
- * vitest can import and exercise the logic without a browser environment.
- *
- * Keep these implementations in sync with the corresponding private functions
- * (_parseCsv, _trendLine, etc.) in public/js/klymot-chart.js.
+ * This is the single implementation — there is no second copy to keep in
+ * sync. It's consumed two ways:
+ *   - klymot-chart.js (./klymot-chart.js, a sibling file in public/js/)
+ *     imports these functions directly via a native browser ES-module
+ *     `import` — both files are static assets served as-is, so this needs
+ *     no bundler.
+ *   - vitest imports this file directly (see chart-fns.test.js) to exercise
+ *     the logic without a browser/canvas environment.
  */
 
 export const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];

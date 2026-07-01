@@ -10,7 +10,7 @@ import {
   matInverse,
   calibrateAndEstimate,
   niceStep,
-} from './chart-fns.js';
+} from '../../public/js/chart-fns.js';
 
 // ── parseCsv ──────────────────────────────────────────────────────────────────
 

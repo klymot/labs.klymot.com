@@ -1,7 +1,21 @@
-/* klymot-chart.js — vendored TempChart + AdjChart from www.klymot.com, plus
- * DualAxisChart and ScatterChart for use in labs pages.
+/* klymot-chart.js — TempChart + AdjChart from klymot.com, plus DualAxisChart
+ * and ScatterChart for use in Labs pages.
  * Exposes: window.KlymotChart = { TempChart, AdjChart, DualAxisChart, ScatterChart }
+ *
+ * Loaded via <script type="module">, so it can `import` the pure math/data
+ * routines (parseCsv, trendLine, loess, etc.) from ./chart-fns.js as a plain
+ * browser-native relative import — both files are static assets served
+ * as-is from public/js/, so this needs no bundler. chart-fns.js is the single
+ * implementation; it's also imported directly by the vitest suite
+ * (src/lib/chart-fns.test.js), so there is nothing here to keep "in sync" —
+ * there is only one copy.
  */
+import {
+  parseCsv, monthlyPoints, byMonthPoints, yearlyPoints, annualSummaries,
+  anomalyReferenceYears, anomalyPoints, lag1Autocorr, trendLine, loess,
+  matInverse, calibrateAndEstimate, niceStep,
+} from './chart-fns.js';
+
 (function (root) {
   'use strict';
 /**
@@ -61,448 +75,9 @@ const MONTH_DASH = [
 // Default selected months for bymonth mode: January (0) and July (6).
 const BYMONTH_DEFAULT_MASK = (1 << 0) | (1 << 6); // 0x041
 
-// ── Data parsing ───────────────────────────────────────────────────────────────
-
-/**
- * Parse GHCNm CSV text (no header row).
- * Format: year, jan, feb, …, dec  — values in 0.01 °C integers, empty = missing.
- */
-function _parseCsv(text) {
-  if (!text || !text.trim()) return [];
-  const records = [];
-  for (const line of text.trim().split('\n')) {
-    const cols = line.trim().split(',');
-    if (cols.length < 2) continue;
-    const year = parseInt(cols[0], 10);
-    if (!isFinite(year)) continue;
-    const months = [];
-    for (let m = 0; m < 12; m++) {
-      const raw = (cols[m + 1] ?? '').trim();
-      months.push(raw !== '' ? parseInt(raw, 10) : null);
-    }
-    records.push({ year, months });
-  }
-  return records.sort((a, b) => a.year - b.year);
-}
-
-/**
- * Build point array for monthly display.
- * Nulls appear for missing months and gaps between non-adjacent years (line break).
- */
-function _monthlyPoints(records) {
-  const pts = [];
-  let prevYear = null;
-  for (const rec of records) {
-    if (prevYear !== null && rec.year > prevYear + 1) pts.push(null);
-    prevYear = rec.year;
-    for (let m = 0; m < 12; m++) {
-      pts.push(rec.months[m] != null
-        ? { x: rec.year + m / 12, y: rec.months[m] / 100, label: `${MONTHS[m]} ${rec.year}` }
-        : null);
-    }
-  }
-  return pts;
-}
-
-/**
- * Build per-month point arrays for bymonth display.
- * Returns an array of 12 point arrays; each contains {x: year, y: °C}|null entries.
- * Nulls appear for missing month values and for year gaps.
- */
-function _byMonthPoints(records) {
-  const result = Array.from({ length: 12 }, () => []);
-  for (let i = 0; i < records.length; i++) {
-    const rec = records[i];
-    const hasGap = i > 0 && rec.year > records[i - 1].year + 1;
-    for (let m = 0; m < 12; m++) {
-      if (hasGap) result[m].push(null);
-      result[m].push(rec.months[m] != null
-        ? { x: rec.year, y: rec.months[m] / 100 }
-        : null);
-    }
-  }
-  return result;
-}
-
-/**
- * Build point array for annual-average display.
- * Only complete years (all 12 months present) are included.
- * Year gaps between consecutive complete years produce null (line break).
- * Partial years are handled separately via _calibrateAndEstimate().
- */
-function _yearlyPoints(records) {
-  const pts = [];
-  let prevYear = null;
-  for (const rec of records) {
-    if (!rec.months.every(v => v != null)) continue; // skip partial years
-    if (prevYear !== null && rec.year > prevYear + 1) pts.push(null);
-    const avg = rec.months.reduce((s, v) => s + v, 0) / 12 / 100;
-    pts.push({ x: rec.year, y: avg, label: String(rec.year) });
-    prevYear = rec.year;
-  }
-  return pts;
-}
-
-/**
- * Build annual mean summaries from all years with at least one valid month.
- * @param {Array<{year: number, months: (number|null)[]}>} records
- * @returns {Array<{year: number, mean: number, nMonths: number, isFull: boolean}>}
- */
-function _annualSummaries(records) {
-  return records
-    .map(rec => {
-      const months = rec.months.filter(v => v != null);
-      if (months.length === 0) return null;
-      return {
-        year:    rec.year,
-        mean:    months.reduce((sum, v) => sum + v, 0) / months.length / 100,
-        nMonths: months.length,
-        isFull:  months.length === 12,
-      };
-    })
-    .filter(Boolean);
-}
-
-/**
- * Pick the full years used as the annual anomaly reference.
- * @param {Array<{year: number, mean: number, nMonths: number, isFull: boolean}>} summaries
- * @param {boolean} useCenteredReference
- * @returns {Array<{year: number, mean: number, nMonths: number, isFull: boolean}>}
- */
-function _anomalyReferenceYears(summaries, useCenteredReference) {
-  const fullYears = summaries.filter(s => s.isFull);
-  if (fullYears.length === 0) return [];
-
-  if (useCenteredReference && fullYears.length > 30) {
-    const center = (fullYears[0].year + fullYears[fullYears.length - 1].year) / 2;
-    return [...fullYears]
-      .sort((a, b) => {
-        const da = Math.abs(a.year - center);
-        const db = Math.abs(b.year - center);
-        return da - db || a.year - b.year;
-      })
-      .slice(0, 30)
-      .sort((a, b) => a.year - b.year);
-  }
-  return fullYears;
-}
-
-/**
- * Build annual anomaly points from annual summaries.
- * Reference mean is always computed from full years only.
- * @param {Array<{year: number, mean: number, nMonths: number, isFull: boolean}>} summaries
- * @param {{ excludeSparse: boolean, useCenteredReference: boolean }} options
- * @returns {Array<{x: number, y: number, label: string, nMonths: number, isFull: boolean}>}
- */
-function _anomalyPoints(summaries, options = {}) {
-  const excludeSparse = options.excludeSparse !== false;
-  const useCenteredReference = !!options.useCenteredReference;
-  const referenceYears = _anomalyReferenceYears(summaries, useCenteredReference);
-  if (referenceYears.length === 0) return [];
-
-  const referenceMean = referenceYears.reduce((sum, s) => sum + s.mean, 0) / referenceYears.length;
-  const included = summaries.filter(s => excludeSparse ? s.nMonths >= 9 : s.nMonths >= 1);
-
-  const pts = [];
-  let prevYear = null;
-  for (const summary of included) {
-    if (prevYear !== null && summary.year > prevYear + 1) pts.push(null);
-    pts.push({
-      x:       summary.year,
-      y:       summary.mean - referenceMean,
-      label:   String(summary.year),
-      nMonths: summary.nMonths,
-      isFull:  summary.isFull,
-    });
-    prevYear = summary.year;
-  }
-  return pts;
-}
-
-/**
- * Lag-1 autocorrelation of a residual series (Yule-Walker estimate).
- * Returns a value in (−1, 1); clipped to ±0.99 to keep n_eff ≥ 1.
- * @param {number[]} res
- * @returns {number}
- */
-function _lag1Autocorr(res) {
-  const n = res.length;
-  if (n < 3) return 0;
-  let sum = 0;
-  for (const r of res) sum += r;
-  const mean = sum / n;
-  let ss = 0, cross = 0;
-  for (let i = 0; i < n; i++) {
-    const c = res[i] - mean;
-    ss += c * c;
-    if (i < n - 1) cross += c * (res[i + 1] - mean);
-  }
-  if (ss < 1e-30) return 0;
-  return Math.max(-0.99, Math.min(0.99, cross / ss));
-}
-
-/**
- * Compute a least-squares trend line for point data with an AR(1)-corrected
- * standard error of the slope (effective sample size method).
- * @param {Array<{x: number, y: number}|null>} pts
- * @returns {{ slopePerYear: number, slopePer100Years: number, intercept: number, se: number }|null}
- *   se — AR(1)-corrected SE of slopePerYear (°C/yr); multiply by 100 for °C/100yr
- */
-function _trendLine(pts) {
-  const values = (pts ?? []).filter(Boolean);
-  if (values.length < 2) return null;
-
-  let sumX = 0, sumY = 0, sumXX = 0, sumXY = 0;
-  for (const p of values) {
-    sumX += p.x;
-    sumY += p.y;
-    sumXX += p.x * p.x;
-    sumXY += p.x * p.y;
-  }
-
-  const n = values.length;
-  const denom = n * sumXX - sumX * sumX;
-  if (Math.abs(denom) < 1e-12) return null;
-
-  const slopePerYear = (n * sumXY - sumX * sumY) / denom;
-  const intercept = (sumY - slopePerYear * sumX) / n;
-
-  // AR(1)-corrected SE: SE_raw = sqrt(MSE·n/denom), then inflate by sqrt(n/n_eff).
-  const residuals = values.map(p => p.y - (intercept + slopePerYear * p.x));
-  const sse = residuals.reduce((s, r) => s + r * r, 0);
-  const seRaw = n >= 3 ? Math.sqrt(sse * n / ((n - 2) * denom)) : 0;
-  const rho = _lag1Autocorr(residuals);
-  const nEff = Math.max(2, n * (1 - rho) / (1 + rho));
-  const se = seRaw * Math.sqrt(n / nEff);
-
-  return { slopePerYear, slopePer100Years: slopePerYear * 100, intercept, se };
-}
-
-/**
- * Locally-weighted scatterplot smoothing (LOESS / LOWESS).
- * Uses local linear regression with tricube kernel weights.
- * @param {Array<{x:number,y:number}|null>} pts  — nulls are ignored
- * @param {number} span  — fraction of points to use as neighbours (0.1–0.9)
- * @returns {Array<{x:number,y:number}>|null}
- */
-function _loess(pts, span) {
-  const valid = (pts ?? []).filter(Boolean);
-  if (valid.length < 3) return null;
-  const n = valid.length;
-  const k = Math.min(n, Math.max(3, Math.round(span * n)));
-  const result = [];
-  for (let i = 0; i < n; i++) {
-    const xi = valid[i].x;
-    // Expand window outward from i to find k nearest (data is x-sorted).
-    let lo = i, hi = i + 1, count = 1;
-    while (count < k) {
-      const dLo = lo > 0     ? xi - valid[lo - 1].x : Infinity;
-      const dHi = hi < n     ? valid[hi].x - xi     : Infinity;
-      if (dLo <= dHi) { lo--; } else { hi++; }
-      count++;
-    }
-    const h = Math.max(xi - valid[lo].x, valid[hi - 1].x - xi);
-    if (h < 1e-12) { result.push({ x: xi, y: valid[i].y }); continue; }
-    let W = 0, WX = 0, WY = 0, WXX = 0, WXY = 0;
-    for (let j = lo; j < hi; j++) {
-      const u = Math.abs(valid[j].x - xi) / h;
-      if (u >= 1) continue;
-      const w = Math.pow(1 - u * u * u, 3);
-      const { x, y } = valid[j];
-      W += w; WX += w * x; WY += w * y; WXX += w * x * x; WXY += w * x * y;
-    }
-    const det = W * WXX - WX * WX;
-    let yFit;
-    if (Math.abs(det) < 1e-12) {
-      yFit = WY / W;
-    } else {
-      const slope = (W * WXY - WX * WY) / det;
-      const intercept = (WY - slope * WX) / W;
-      yFit = intercept + slope * xi;
-    }
-    result.push({ x: xi, y: yFit });
-  }
-  return result;
-}
-
-// ── Matrix inversion (Gauss-Jordan) ───────────────────────────────────────────
-
-/**
- * Invert an n×n matrix using Gauss-Jordan elimination.
- * Returns null if the matrix is singular (pivot < 1e-12).
- * @param {number[][]} A
- * @returns {number[][]|null}
- */
-function _matInverse(A) {
-  const n = A.length;
-  // Build augmented matrix [A | I]
-  const M = A.map((row, i) => {
-    const aug = row.map(v => v);
-    for (let j = 0; j < n; j++) aug.push(j === i ? 1 : 0);
-    return aug;
-  });
-
-  for (let col = 0; col < n; col++) {
-    // Partial pivot
-    let maxRow = col;
-    for (let row = col + 1; row < n; row++) {
-      if (Math.abs(M[row][col]) > Math.abs(M[maxRow][col])) maxRow = row;
-    }
-    [M[col], M[maxRow]] = [M[maxRow], M[col]];
-
-    const pivot = M[col][col];
-    if (Math.abs(pivot) < 1e-12) return null; // singular
-
-    const invPivot = 1 / pivot;
-    for (let j = 0; j < 2 * n; j++) M[col][j] *= invPivot;
-
-    for (let row = 0; row < n; row++) {
-      if (row === col) continue;
-      const f = M[row][col];
-      if (f === 0) continue;
-      for (let j = 0; j < 2 * n; j++) M[row][j] -= f * M[col][j];
-    }
-  }
-
-  return M.map(row => row.slice(n));
-}
-
-// ── GLS partial-year estimator ────────────────────────────────────────────────
-
-/**
- * Calibrate a month-to-annual estimator from complete years, then apply GLS
- * to estimate annual means for partial years (with 95% CI).
- *
- * All arithmetic is performed in Kelvin (raw units: 0.01 K, i.e. add 27315 to
- * each 0.01 °C value) so that monthly means are always ~27000–31000 and the
- * ratio estimator E[y,i] = A·t[y,i]/T[i] is never subject to division by a
- * value near zero.
- *
- * Algorithm:
- *   T[i]    = climatological monthly mean (0.01 K) across complete years
- *   A       = mean(T[0..11])  — grand climatological mean in Kelvin
- *   E[y,i]  = A · t_K[y,i] / T[i]  — month-implied annual estimate (0.01 K)
- *   A_y     = mean of 12 Kelvin values for complete year y
- *   r[y,i]  = E[y,i] − A_y  — residual
- *   Sigma   = 12×12 sample covariance of residuals (across complete years)
- *
- *   For each partial year: GLS combining the k observed E[y,i] values with the
- *   k×k covariance submatrix; falls back to inverse-variance if submatrix is singular.
- *
- * @param {Array<{year: number, months: (number|null)[]}>} records  — values in 0.01 °C
- * @returns {Array<{year, estimate, se, ciLow, ciHigh, nMonths}>}   — all values in °C
- */
-function _calibrateAndEstimate(records) {
-  const complete = records.filter(r => r.months.every(v => v != null));
-  const partial  = records.filter(r =>
-    !r.months.every(v => v != null) && r.months.some(v => v != null));
-
-  if (complete.length < 3 || partial.length === 0) return [];
-
-  // Work in 0.01 K throughout: offset each raw 0.01 °C value by +27315.
-  const K = 27315;
-
-  // T[i] = climatological monthly mean in 0.01 K
-  const T = new Array(12).fill(0);
-  for (const yr of complete) {
-    for (let i = 0; i < 12; i++) T[i] += yr.months[i] + K;
-  }
-  for (let i = 0; i < 12; i++) T[i] /= complete.length;
-
-  // A = grand annual mean in 0.01 K
-  const A = T.reduce((s, v) => s + v, 0) / 12;
-
-  // Build E[y,i] and A_y for complete years, then compute residuals.
-  const residuals = complete.map(yr => {
-    const Ay = yr.months.reduce((s, v) => s + v + K, 0) / 12;
-    return yr.months.map((v, i) => (A * (v + K) / T[i]) - Ay);
-  });
-
-  // 12×12 sample covariance matrix of residuals
-  const n = complete.length;
-  const Sigma = Array.from({ length: 12 }, () => new Array(12).fill(0));
-  for (let i = 0; i < 12; i++) {
-    for (let j = i; j < 12; j++) {
-      let cov = 0;
-      for (const r of residuals) cov += r[i] * r[j];
-      Sigma[i][j] = Sigma[j][i] = cov / (n - 1);
-    }
-  }
-
-  // Estimate each partial year via GLS
-  const results = [];
-  for (const rec of partial) {
-    const obsIdx = rec.months.reduce((acc, v, i) => { if (v != null) acc.push(i); return acc; }, []);
-    if (obsIdx.length === 0) continue;
-
-    // Month-implied annual estimates in 0.01 K
-    const ES = obsIdx.map(i => A * (rec.months[i] + K) / T[i]);
-
-    const k = obsIdx.length;
-    let hatA, se;
-
-    const SigmaS = Array.from({ length: k }, (_, ri) =>
-      Array.from({ length: k }, (_, ci) => Sigma[obsIdx[ri]][obsIdx[ci]])
-    );
-    const SigmaSInv = _matInverse(SigmaS);
-
-    if (SigmaSInv) {
-      // GLS: hat_A = (1^T Sigma_S^{-1} 1)^{-1} * 1^T Sigma_S^{-1} * E_S
-      let denom = 0, numer = 0;
-      for (let ri = 0; ri < k; ri++) {
-        let rowSumInv = 0, rowSumInvE = 0;
-        for (let ci = 0; ci < k; ci++) {
-          rowSumInv  += SigmaSInv[ri][ci];
-          rowSumInvE += SigmaSInv[ri][ci] * ES[ci];
-        }
-        denom += rowSumInv;
-        numer += rowSumInvE;
-      }
-      if (denom <= 0) continue;
-      hatA = numer / denom;
-      se   = Math.sqrt(1 / denom);
-    } else {
-      // Fallback: inverse-variance weighting (diagonal only)
-      let sumW = 0, sumWE = 0;
-      for (let ki = 0; ki < k; ki++) {
-        const v = Sigma[obsIdx[ki]][obsIdx[ki]];
-        if (v <= 0) continue;
-        const w = 1 / v;
-        sumW  += w;
-        sumWE += w * ES[ki];
-      }
-      if (sumW <= 0) continue;
-      hatA = sumWE / sumW;
-      se   = Math.sqrt(1 / sumW);
-    }
-
-    // Convert from 0.01 K back to °C: subtract Kelvin offset then scale.
-    const estimate = (hatA - K) / 100;
-    const seDeg    = se / 100;   // SE is a difference, no offset needed
-    results.push({
-      year:    rec.year,
-      estimate,
-      se:      seDeg,
-      ciLow:   estimate - 1.96 * seDeg,
-      ciHigh:  estimate + 1.96 * seDeg,
-      nMonths: k,
-    });
-  }
-
-  return results;
-}
-
-// ── Axis / colour helpers ──────────────────────────────────────────────────────
-
-/** Pick a tick step giving ~targetCount ticks across range. */
-function _niceStep(range, targetCount) {
-  if (range <= 0 || !isFinite(range)) return 1;
-  const rough = range / targetCount;
-  const mag   = Math.pow(10, Math.floor(Math.log10(rough)));
-  const n     = rough / mag;
-  const step  = n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10;
-  return step * mag;
-}
+// ── Colour / DOM helpers ────────────────────────────────────────────────────────
+// (parseCsv, monthlyPoints, …, niceStep now live in chart-fns.js, imported above —
+// these two remain here since they touch the DOM / canvas, not pure math.)
 
 function _cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -640,7 +215,7 @@ class TempChart {
   // ── Public API ───────────────────────────────────────────────────────────────
 
   load(csvText) {
-    const records = _parseCsv(csvText || '');
+    const records = parseCsv(csvText || '');
     this._records = records;
 
     if (records.length === 0) {
@@ -664,30 +239,30 @@ class TempChart {
       return;
     }
 
-    this._monthly          = _monthlyPoints(records);
-    this._yearly           = _yearlyPoints(records);
-    this._byMonth          = _byMonthPoints(records);
-    this._annualSummaries  = _annualSummaries(records);
-    this._anomaly          = _anomalyPoints(this._annualSummaries, {
+    this._monthly          = monthlyPoints(records);
+    this._yearly           = yearlyPoints(records);
+    this._byMonth          = byMonthPoints(records);
+    this._annualSummaries  = annualSummaries(records);
+    this._anomaly          = anomalyPoints(this._annualSummaries, {
       excludeSparse: this._excludeSparseAnomalyYears,
       useCenteredReference: this._useCenteredAnomalyReference,
     });
-    const referenceYears = _anomalyReferenceYears(
+    const referenceYears = anomalyReferenceYears(
       this._annualSummaries,
       this._useCenteredAnomalyReference,
     );
-    this._anomalyTrend     = _trendLine(this._anomaly);
-    this._monthlyTrend     = _trendLine(this._monthly);
-    this._yearlyTrend      = _trendLine(this._yearly);
-    this._byMonthTrends    = this._byMonth.map(pts => _trendLine(pts));
-    this._loessMonthly  = _loess(this._monthly,  this._loessSpan);
-    this._loessYearly   = _loess(this._yearly,   this._loessSpan);
-    this._loessByMonth  = this._byMonth.map(pts => _loess(pts, this._loessSpan));
-    this._loessAnomaly  = _loess(this._anomaly,  this._loessSpan);
+    this._anomalyTrend     = trendLine(this._anomaly);
+    this._monthlyTrend     = trendLine(this._monthly);
+    this._yearlyTrend      = trendLine(this._yearly);
+    this._byMonthTrends    = this._byMonth.map(pts => trendLine(pts));
+    this._loessMonthly  = loess(this._monthly,  this._loessSpan);
+    this._loessYearly   = loess(this._yearly,   this._loessSpan);
+    this._loessByMonth  = this._byMonth.map(pts => loess(pts, this._loessSpan));
+    this._loessAnomaly  = loess(this._anomaly,  this._loessSpan);
     this._anomalyReferenceWindow = referenceYears.length
       ? { start: referenceYears[0].year, end: referenceYears[referenceYears.length - 1].year }
       : null;
-    this._partialEstimates = _calibrateAndEstimate(records);
+    this._partialEstimates = calibrateAndEstimate(records);
     this._recordMap        = new Map(records.map(r => [r.year, r.months]));
 
     const allX = this._monthly.filter(Boolean).map(p => p.x);
@@ -871,10 +446,10 @@ class TempChart {
   setLoessSpan(span) {
     this._loessSpan   = Math.max(0.001, span);
     if (this._monthly) {
-      this._loessMonthly = _loess(this._monthly, this._loessSpan);
-      this._loessYearly  = _loess(this._yearly,  this._loessSpan);
-      this._loessByMonth = this._byMonth.map(pts => _loess(pts, this._loessSpan));
-      this._loessAnomaly = _loess(this._anomaly, this._loessSpan);
+      this._loessMonthly = loess(this._monthly, this._loessSpan);
+      this._loessYearly  = loess(this._yearly,  this._loessSpan);
+      this._loessByMonth = this._byMonth.map(pts => loess(pts, this._loessSpan));
+      this._loessAnomaly = loess(this._anomaly, this._loessSpan);
     }
     this._scheduleRender();
   }
@@ -991,15 +566,15 @@ class TempChart {
   }
 
   _rebuildAnomaly() {
-    this._anomaly = _anomalyPoints(this._annualSummaries ?? [], {
+    this._anomaly = anomalyPoints(this._annualSummaries ?? [], {
       excludeSparse: this._excludeSparseAnomalyYears,
       useCenteredReference: this._useCenteredAnomalyReference,
     });
-    const referenceYears = _anomalyReferenceYears(
+    const referenceYears = anomalyReferenceYears(
       this._annualSummaries ?? [],
       this._useCenteredAnomalyReference,
     );
-    this._anomalyTrend = _trendLine(this._anomaly);
+    this._anomalyTrend = trendLine(this._anomaly);
     this._anomalyReferenceWindow = referenceYears.length
       ? { start: referenceYears[0].year, end: referenceYears[referenceYears.length - 1].year }
       : null;
@@ -1181,7 +756,7 @@ class TempChart {
     const toY = y => mt + (yMax - y) / (yMax - yMin) * ch;
 
     // Y grid + labels
-    const yStep  = _niceStep(yMax - yMin, 5);
+    const yStep  = niceStep(yMax - yMin, 5);
     const yStart = Math.ceil(yMin / yStep) * yStep;
     ctx.font = `${10 * dpr}px 'JetBrains Mono', monospace`;
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
@@ -1196,7 +771,7 @@ class TempChart {
     }
 
     // X grid + labels
-    const xStep  = _niceStep(xMax - xMin, 6);
+    const xStep  = niceStep(xMax - xMin, 6);
     const xStart = Math.ceil(xMin / xStep) * xStep;
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     for (let x = xStart; x <= xMax + xStep * 0.01; x += xStep) {
@@ -1564,7 +1139,7 @@ class TempChart {
     const toY = y => mt + (yMax - y) / (yMax - yMin) * ch;
 
     // Y grid + labels
-    const yStep  = _niceStep(yMax - yMin, 5);
+    const yStep  = niceStep(yMax - yMin, 5);
     const yStart = Math.ceil(yMin / yStep) * yStep;
     ctx.font = `${10 * dpr}px 'JetBrains Mono', monospace`;
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
@@ -1579,7 +1154,7 @@ class TempChart {
     }
 
     // X grid + labels
-    const xStep  = _niceStep(xMax - xMin, 6);
+    const xStep  = niceStep(xMax - xMin, 6);
     const xStart = Math.ceil(xMin / xStep) * xStep;
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     for (let x = xStart; x <= xMax + xStep * 0.01; x += xStep) {
@@ -1837,7 +1412,7 @@ class TempChart {
     }
 
     // X-axis: year labels
-    const xStep  = _niceStep(numYears, 6);
+    const xStep  = niceStep(numYears, 6);
     const xStart = Math.ceil(startYear / xStep) * xStep;
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     for (let yr = xStart; yr <= endYear; yr += xStep) {
@@ -2155,38 +1730,7 @@ function _cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
-function _niceStep(range, targetCount) {
-  if (range <= 0) return 1;
-  const rough = range / targetCount;
-  const exp   = Math.pow(10, Math.floor(Math.log10(rough)));
-  const frac  = rough / exp;
-  return (frac < 1.5 ? 1 : frac < 3.5 ? 2 : frac < 7.5 ? 5 : 10) * exp;
-}
-
 // ── Data parsing & computation ────────────────────────────────────────────────
-
-/**
- * Parse GHCNm CSV text (no header row).
- * Format: year, jan..dec — values in 0.01°C integers, empty = missing.
- * Returns [{year, months: [12 values or null]}] sorted by year.
- */
-function _parseCsv(text) {
-  if (!text || !text.trim()) return [];
-  const records = [];
-  for (const line of text.trim().split('\n')) {
-    const cols = line.trim().split(',');
-    if (cols.length < 2) continue;
-    const year = parseInt(cols[0], 10);
-    if (!isFinite(year)) continue;
-    const months = [];
-    for (let m = 0; m < 12; m++) {
-      const raw = (cols[m + 1] ?? '').trim();
-      months.push(raw !== '' ? parseInt(raw, 10) : null);
-    }
-    records.push({ year, months });
-  }
-  return records.sort((a, b) => a.year - b.year);
-}
 
 /**
  * Build a map year → months[] for each dataset, then for every year in the
@@ -2570,8 +2114,8 @@ class AdjChart {
    * @param {string|null} [tobCsvText]  — TOB file text; null/'' → implicit 24HR (all zeros)
    */
   load(qcuCsvText, qcfCsvText, tobCsvText = null) {
-    const qcuRecs = _parseCsv(qcuCsvText || '');
-    const qcfRecs = _parseCsv(qcfCsvText || '');
+    const qcuRecs = parseCsv(qcuCsvText || '');
+    const qcfRecs = parseCsv(qcfCsvText || '');
 
     if (qcuRecs.length === 0 && qcfRecs.length === 0) {
       this._diffRecs        = null;
@@ -2903,7 +2447,7 @@ class AdjChart {
     const toY = y => mt + (yMax - y) / (yMax - yMin) * ch;
 
     // Y grid + labels
-    const yStep  = _niceStep(yMax - yMin, 5);
+    const yStep  = niceStep(yMax - yMin, 5);
     const yStart = Math.ceil(yMin / yStep) * yStep;
     ctx.font = `${10 * dpr}px 'JetBrains Mono', monospace`;
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
@@ -2919,7 +2463,7 @@ class AdjChart {
     }
 
     // X grid + labels
-    const xStep  = _niceStep(xMax - xMin, 6);
+    const xStep  = niceStep(xMax - xMin, 6);
     const xStart = Math.ceil(xMin / xStep) * xStep;
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     for (let x = xStart; x <= xMax + xStep * 0.01; x += xStep) {
@@ -3359,7 +2903,7 @@ class AdjChart {
       const toYR = v => mt + (rR.max - v) / (rR.max - rR.min) * ch;
 
       // Y grid from left axis
-      const yStepL  = _niceStep(lR.max - lR.min, 5);
+      const yStepL  = niceStep(lR.max - lR.min, 5);
       const yStartL = Math.ceil(lR.min / yStepL) * yStepL;
       ctx.font = `${10 * dpr}px 'JetBrains Mono', monospace`;
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
@@ -3374,7 +2918,7 @@ class AdjChart {
       }
 
       // Right Y labels
-      const yStepR  = _niceStep(rR.max - rR.min, 5);
+      const yStepR  = niceStep(rR.max - rR.min, 5);
       const yStartR = Math.ceil(rR.min / yStepR) * yStepR;
       ctx.textAlign = 'left';
       for (let y = yStartR; y <= rR.max + yStepR * 0.01; y += yStepR) {
@@ -3633,7 +3177,7 @@ class AdjChart {
       const toY = y => mt + (yMax - y) / (yMax - yMin) * ch;
 
       // Y grid
-      const yStep = _niceStep(yMax - yMin, 5);
+      const yStep = niceStep(yMax - yMin, 5);
       const yStart = Math.ceil(yMin / yStep) * yStep;
       ctx.font = `${10 * dpr}px 'JetBrains Mono', monospace`;
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
@@ -3647,7 +3191,7 @@ class AdjChart {
       }
 
       // X grid
-      const xStep = _niceStep(xMax - xMin, 6);
+      const xStep = niceStep(xMax - xMin, 6);
       const xStart = Math.ceil(xMin / xStep) * xStep;
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
       for (let x = xStart; x <= xMax + xStep * 0.01; x += xStep) {
@@ -3748,8 +3292,8 @@ class AdjChart {
 
       const prev = this._hoverPt;
       this._hoverPt = best;
-      const xDec = Math.max(0, -Math.floor(Math.log10(_niceStep(this._xMax2 - this._xMin2, 6))));
-      const yDec = Math.max(0, -Math.floor(Math.log10(_niceStep(this._yMax2 - this._yMin2, 5))));
+      const xDec = Math.max(0, -Math.floor(Math.log10(niceStep(this._xMax2 - this._xMin2, 6))));
+      const yDec = Math.max(0, -Math.floor(Math.log10(niceStep(this._yMax2 - this._yMin2, 5))));
       const label = best.label ? best.label + '\n' : '';
       this._tooltip.textContent =
         `${label}${this._xLabel || 'X'}: ${best.x.toFixed(xDec)}\n${this._yLabel || 'Y'}: ${best.y.toFixed(yDec)}°C`;
