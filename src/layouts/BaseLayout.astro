@@ -54,6 +54,7 @@ const { title, description } = Astro.props;
             document.documentElement.setAttribute('data-theme', 'light');
           }
           localStorage.setItem('klymot-theme', next);
+          window.dispatchEvent(new CustomEvent('klymot:theme-toggled', { detail: { theme: next } }));
         });
       }());
     </script>
