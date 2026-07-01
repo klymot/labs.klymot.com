@@ -161,7 +161,8 @@ def parse_monthly_network_altitudes(
       VALUE2 28-32  (Feb)
       …      (8 chars per month × 12 = 96 chars)
 
-    Active = at least 9 out of 12 months that are not -9999 and have no QC flag.
+    Active = per-month: a station-month is counted if its value is not -9999
+    and has no QC flag (qcflag blank).
 
     Each month occupies 8 characters:
       value   [+0:+5]  hundredths °C (-9999 = missing)
