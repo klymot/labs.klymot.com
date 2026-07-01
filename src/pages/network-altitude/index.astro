@@ -1,40 +1,15 @@
 ---
-import '../../styles/theme.css';
+import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Network Altitude — klymot labs</title>
-  <meta name="description" content="How has the changing altitude profile of the global temperature station network shifted over time?" />
+<BaseLayout title="Network Altitude — klymot labs" description="How has the changing altitude profile of the global temperature station network shifted over time?">
+  <Fragment slot="head">
+    <script>
+      import { sendPageBeacon, sendFeatureBeacon } from '../../lib/analytics.js';
+      sendPageBeacon();
+      window.sendFeatureBeacon = sendFeatureBeacon;
+    </script>
 
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Ccircle cx='16' cy='16' r='13' fill='%230a1628'/%3E%3Ccircle cx='16' cy='16' r='13' stroke='%23d4a855' stroke-width='1.25'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.2' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='9.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='22.5' rx='10' ry='2.8' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='3' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Cellipse cx='16' cy='16' rx='9' ry='13' stroke='%23d4a855' stroke-width='0.8' opacity='0.5'/%3E%3Ccircle cx='19.5' cy='10.5' r='4' stroke='%23d4a855' stroke-width='1' fill='none' opacity='0.45'/%3E%3Ccircle cx='19.5' cy='10.5' r='2' fill='%23d4a855'/%3E%3C/svg%3E" />
-
-  <!-- Fonts — matches klymot.com -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Source+Sans+3:wght@300;400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
-
-  <!-- FOUC prevention: dark default; light opt-in -->
-  <script is:inline>
-    (function () {
-      var stored = localStorage.getItem('klymot-theme');
-      if (stored) {
-        document.documentElement.setAttribute('data-theme', stored);
-      } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-        document.documentElement.setAttribute('data-theme', 'light');
-      }
-    }());
-  </script>
-
-  <script>
-    import { sendPageBeacon, sendFeatureBeacon } from '../../lib/analytics.js';
-    sendPageBeacon();
-    window.sendFeatureBeacon = sendFeatureBeacon;
-  </script>
-
-  <style is:global>
+    <style is:global>
     /* ── Token bridge ─────────────────────────────────────────────── */
     :root {
       --bg-primary:     var(--bg);
@@ -489,9 +464,8 @@ import '../../styles/theme.css';
 
     /* Prevent display:flex/grid rules from overriding the HTML hidden attribute */
     [hidden] { display: none !important; }
-  </style>
-</head>
-<body>
+    </style>
+  </Fragment>
 
   <header class="site-header">
     <div class="container header-inner">
@@ -1904,16 +1878,11 @@ import '../../styles/theme.css';
     }
 
     /* ── Theme toggle ──────────────────────────────────────────────── */
+    /* Actual toggle+persist is owned by BaseLayout's #themeToggle click
+       handler; we just react to its klymot:theme-toggled event to redraw
+       charts with the new theme's CSS variable values. */
     function wireTheme() {
-      const btn = document.getElementById('themeToggle');
-      if (!btn) return;
-      btn.addEventListener('click', () => {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'light' ? 'dark' : 'light';
-        if (next === 'dark') document.documentElement.removeAttribute('data-theme');
-        else document.documentElement.setAttribute('data-theme', 'light');
-        localStorage.setItem('klymot-theme', next);
-        // Redraw charts to pick up new CSS variable values
+      window.addEventListener('klymot:theme-toggled', () => {
         if (altitudeData) drawAltitudeChart(altitudeData.annual);
         if (stationCountData) drawStationCountChart(stationCountData);
         if (observedDataBySeries.qcu || observedDataBySeries.qcf) redrawCompChart();
@@ -2098,5 +2067,4 @@ import '../../styles/theme.css';
   }());
   </script>
 
-</body>
-</html>
+</BaseLayout>
