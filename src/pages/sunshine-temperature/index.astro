@@ -272,10 +272,24 @@ import '../../styles/theme.css';
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 0.5rem;
       color: var(--muted);
       font-size: 0.85rem;
       margin: 0;
       pointer-events: none;
+    }
+
+    .chart-loading .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border-strong);
+      border-top-color: var(--muted);
+      border-radius: 50%;
+      animation: chart-spin 0.7s linear infinite;
+    }
+
+    @keyframes chart-spin {
+      to { transform: rotate(360deg); }
     }
 
     /* Tooltip for milestone lines */
@@ -964,7 +978,7 @@ import '../../styles/theme.css';
             <div class="network-chart-container" id="networkChartContainer">
               <canvas id="networkChartCanvas" aria-label="Line chart of active pyranometer station count over time"></canvas>
               <div id="networkChartTooltip" class="nc-tooltip" hidden></div>
-              <p class="chart-loading" id="networkChartLoading">Loading…</p>
+              <p class="chart-loading" id="networkChartLoading"><span class="spinner" aria-hidden="true"></span>Loading…</p>
             </div>
           </div>
         </div>
@@ -1071,7 +1085,9 @@ import '../../styles/theme.css';
               </div>
             </div>
             <div id="timeWindowReadout" class="control-note" style="margin-bottom:0.4rem;font-size:0.68rem"></div>
-            <div id="timeSeriesChart" class="chart-container"></div>
+            <div id="timeSeriesChart" class="chart-container">
+              <p class="chart-loading" id="timeSeriesChartLoading"><span class="spinner" aria-hidden="true"></span>Loading…</p>
+            </div>
             <div class="chart-legend">
               <button class="legend-btn" id="legendTemp" onclick="toggleSeries('temp')" type="button">Temperature</button>
               <button class="legend-btn" id="legendSolar" onclick="toggleSeries('solar')" type="button">Solar radiation</button>
@@ -1129,7 +1145,9 @@ import '../../styles/theme.css';
               <span class="chart-title">Scatter: radiation vs temperature</span>
               <span class="chart-meta" id="resolutionBadge">Monthly pairs</span>
             </div>
-            <div id="scatterChart" class="chart-container"></div>
+            <div id="scatterChart" class="chart-container">
+              <p class="chart-loading" id="scatterChartLoading"><span class="spinner" aria-hidden="true"></span>Loading…</p>
+            </div>
             <div id="scatterNote" class="chart-footnote"></div>
           </div>
 
@@ -2076,6 +2094,8 @@ import '../../styles/theme.css';
     function updateTimeSeriesChart() {
       const container = document.getElementById('timeSeriesChart');
       if (!container) return;
+      const loading = document.getElementById('timeSeriesChartLoading');
+      if (loading) loading.hidden = true;
       const data = getCurrentData();
       const rows = visibleTimeRows(data.rows);
 
@@ -2106,6 +2126,8 @@ import '../../styles/theme.css';
     function updateScatterChart() {
       const container = document.getElementById('scatterChart');
       if (!container) return;
+      const loading = document.getElementById('scatterChartLoading');
+      if (loading) loading.hidden = true;
       const data = getCurrentData();
 
       if (scatterChart) { scatterChart.destroy(); scatterChart = null; }
@@ -2457,17 +2479,22 @@ import '../../styles/theme.css';
       renderStationCards();
       updateStationInfo();
 
+      // Reveal (behind the charts' own loading overlays) and restore scroll as
+      // soon as the choices carried in the URL are known to be valid against
+      // the manifest — not after the (slower) per-station temperature fetch —
+      // so the page's layout is already settled and this only ever runs once.
+      revealToCurrentState();
+      restoreSectionFromUrl(urlState.sec);
+
       if (currentStation) {
         await ensureCurrentTemperatureLoaded();
       }
-      revealToCurrentState();
       if (currentStation && currentResolution && currentDataType && currentComparison) {
         updateAllVisuals();
       } else {
         setStatus('');
       }
       pushStateToUrl();
-      restoreSectionFromUrl(urlState.sec);
       window.addEventListener('scroll', syncSectionState, { passive: true });
       window.addEventListener('scroll', maybeFireSourcesBeacon, { passive: true });
       requestAnimationFrame(syncSectionState);
