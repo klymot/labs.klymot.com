@@ -211,10 +211,24 @@ import '../../styles/theme.css';
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 0.5rem;
       color: var(--muted);
       font-size: 0.85rem;
       margin: 0;
       pointer-events: none;
+    }
+
+    .chart-loading .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border-strong);
+      border-top-color: var(--muted);
+      border-radius: 50%;
+      animation: chart-spin 0.7s linear infinite;
+    }
+
+    @keyframes chart-spin {
+      to { transform: rotate(360deg); }
     }
 
     .chart-tooltip {
@@ -561,7 +575,7 @@ import '../../styles/theme.css';
     </section>
 
     <!-- ── Section 2: Station count ─────────────────────────────────── -->
-    <section class="lab-section" id="station-count" aria-labelledby="station-count-heading" hidden>
+    <section class="lab-section" id="station-count" aria-labelledby="station-count-heading">
       <div class="container">
         <div class="prose">
           <h2 id="station-count-heading">How has the number of active stations changed?</h2>
@@ -583,7 +597,7 @@ import '../../styles/theme.css';
             <div class="control-note" data-time-window-readout style="margin-bottom:0.4rem"></div>
             <div class="chart-container" id="stationCountChartContainer" role="img" aria-label="Line chart showing the number of active stations in the network over time">
               <div class="chart-tooltip" id="stationCountTooltip" hidden></div>
-              <p class="chart-loading" id="stationCountChartLoading">Loading…</p>
+              <p class="chart-loading" id="stationCountChartLoading"><span class="spinner" aria-hidden="true"></span>Loading…</p>
             </div>
           </div>
         </div>
@@ -613,7 +627,7 @@ import '../../styles/theme.css';
             <div class="control-note" data-time-window-readout style="margin-bottom:0.4rem"></div>
             <div class="chart-container" id="altitudeChartContainer" role="img" aria-label="Line chart of annual network altitude derived from geo-gridded GHCNm stations over time">
               <div class="chart-tooltip" id="altitudeTooltip" hidden></div>
-              <p class="chart-loading" id="altitudeChartLoading">Loading…</p>
+              <p class="chart-loading" id="altitudeChartLoading"><span class="spinner" aria-hidden="true"></span>Loading…</p>
             </div>
           </div>
         </div>
@@ -683,7 +697,7 @@ import '../../styles/theme.css';
           <p>For each year we take the mean elevation of active stations, subtract the mean elevation during the baseline period, and multiply by the environmental lapse rate (0.0065 °C/m).</p>
         </div>
 
-        <details class="expander">
+        <details class="expander" id="dataSourcesExpander">
           <summary>Model assumptions</summary>
           <div class="expander-body">
             <ul>
@@ -746,7 +760,7 @@ import '../../styles/theme.css';
             <div class="control-note" data-time-window-readout style="margin-bottom:0.4rem"></div>
             <div class="chart-container" id="compChartContainer" role="img" aria-label="Line chart comparing predicted temperature signal with raw and adjusted observed global temperature anomaly">
               <div class="chart-tooltip" id="compTooltip" hidden></div>
-              <p class="chart-loading" id="compChartLoading">Loading…</p>
+              <p class="chart-loading" id="compChartLoading"><span class="spinner" aria-hidden="true"></span>Loading…</p>
             </div>
             <div class="chart-legend">
               <button class="legend-btn" id="legendObsRaw" type="button">
@@ -897,6 +911,19 @@ import '../../styles/theme.css';
     let predBeaconSent  = false;
     let modelBeaconSent = false;
     let compBeaconSent  = false;
+    let sourcesBeaconSent = false;
+    let modelScrollObserver = null;
+    let sourcesScrollObserver = null;
+    let currentSectionId = null;
+    const SECTION_IDS = [
+      { id: 'physics', headingId: 'physics-heading' },
+      { id: 'station-count', headingId: 'station-count-heading' },
+      { id: 'network', headingId: 'network-heading' },
+      { id: 'prediction', headingId: 'prediction-heading' },
+      { id: 'model', headingId: 'model-heading' },
+      { id: 'comparison', headingId: 'comparison-heading' },
+      { id: 'sources', headingId: null },
+    ];
 
     /* ── Utility ───────────────────────────────────────────────────── */
     function cssVar(name) {
@@ -981,6 +1008,15 @@ import '../../styles/theme.css';
       if (altitudeData && (observedDataBySeries.qcu || observedDataBySeries.qcf) && predictionKey) redrawCompChart();
     }
 
+    function fireFeatureBeaconOnce(flagName, beaconName) {
+      if (flagName === 'model' && modelBeaconSent) return;
+      if (flagName === 'sources' && sourcesBeaconSent) return;
+      if (!window.sendFeatureBeacon) return;
+      window.sendFeatureBeacon(beaconName);
+      if (flagName === 'model') modelBeaconSent = true;
+      if (flagName === 'sources') sourcesBeaconSent = true;
+    }
+
     function setTimeControlsEnabled(enabled) {
       document.querySelectorAll('[data-time-action]').forEach(btn => {
         btn.disabled = !enabled;
@@ -988,10 +1024,101 @@ import '../../styles/theme.css';
       });
     }
 
+    function getVisibleSectionId() {
+      const header = document.querySelector('.site-header');
+      const triggerY = (header ? header.getBoundingClientRect().height : 0) + 64;
+      let chosen = null;
+      SECTION_IDS.forEach(section => {
+        const el = document.getElementById(section.id);
+        if (!el || el.hidden) return;
+        const anchor = section.headingId ? document.getElementById(section.headingId) : el;
+        if (!anchor) return;
+        const top = anchor.getBoundingClientRect().top;
+        if (top <= triggerY) chosen = section.id;
+      });
+      return chosen;
+    }
+
+    function syncSectionState() {
+      const next = getVisibleSectionId();
+      if (next === currentSectionId) return;
+      currentSectionId = next;
+      pushStateToUrl();
+    }
+
+    // Every section is visible (behind its own loading overlay) as soon as the
+    // URL state that gates it — a restored prediction — has been applied, so
+    // this only ever needs to run once, on initial load, before any data has
+    // arrived. That also means it runs before the reader could plausibly have
+    // started scrolling on their own, so there's no later re-sync to guard.
+    function restoreSectionFromUrl(sec) {
+      if (!sec) return;
+      const el = document.getElementById(sec);
+      if (!el || el.hidden) return;
+      requestAnimationFrame(() => {
+        const header = document.querySelector('.site-header');
+        const headerOffset = header ? header.getBoundingClientRect().height : 0;
+        const top = window.scrollY + el.getBoundingClientRect().top - headerOffset - 12;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+      });
+    }
+
     function normalizeBaselineKey(key) {
       if (!key) return null;
       if (BASELINE_RANGES[key]) return key;
       return LEGACY_BASELINE_MAP[key] || null;
+    }
+
+    function observeOnce(target, callback, options) {
+      if (!target || !('IntersectionObserver' in window)) return null;
+      const observer = new IntersectionObserver(entries => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          callback(entry);
+          observer.disconnect();
+          break;
+        }
+      }, options);
+      observer.observe(target);
+      return observer;
+    }
+
+    function hasPassedScrollTrigger(target, fraction = 0.35) {
+      if (!target || target.hidden) return false;
+      const rect = target.getBoundingClientRect();
+      const triggerY = rect.top + window.scrollY + rect.height * fraction;
+      return window.scrollY + window.innerHeight >= triggerY;
+    }
+
+    function checkFunnelProgress() {
+      const modelSection = document.getElementById('model');
+      if (modelSection && hasPassedScrollTrigger(modelSection, 0.35)) {
+        fireFeatureBeaconOnce('model', 'labs/network-altitude/03-model-revealed');
+      }
+      const sourcesSection = document.getElementById('sources');
+      const dataSourcesExpander = document.getElementById('dataSourcesExpander');
+      if ((sourcesSection && hasPassedScrollTrigger(sourcesSection, 0.35)) || (dataSourcesExpander && dataSourcesExpander.open)) {
+        fireFeatureBeaconOnce('sources', 'labs/network-altitude/05-sources-revealed');
+      }
+    }
+
+    function wireFunnelObservers() {
+      if (modelScrollObserver) { modelScrollObserver.disconnect(); modelScrollObserver = null; }
+      if (sourcesScrollObserver) { sourcesScrollObserver.disconnect(); sourcesScrollObserver = null; }
+      modelScrollObserver = observeOnce(document.getElementById('model'), () => {
+        fireFeatureBeaconOnce('model', 'labs/network-altitude/03-model-revealed');
+      }, { threshold: 0.35 });
+      sourcesScrollObserver = observeOnce(document.getElementById('sources'), () => {
+        fireFeatureBeaconOnce('sources', 'labs/network-altitude/05-sources-revealed');
+      }, { threshold: 0.35 });
+      const dataSourcesExpander = document.getElementById('dataSourcesExpander');
+      if (dataSourcesExpander) {
+        dataSourcesExpander.addEventListener('toggle', () => {
+          if (dataSourcesExpander.open) {
+            fireFeatureBeaconOnce('sources', 'labs/network-altitude/05-sources-revealed');
+          }
+        });
+      }
     }
 
     /* ── URL state ─────────────────────────────────────────────────── */
@@ -1005,6 +1132,7 @@ import '../../styles/theme.css';
         baseline:   params.get('baseline')   || null,
         series:     params.get('series')     || null,
         obs:        params.get('obs')        || null,
+        sec:        params.get('sec')        || null,
         ws: Number.isFinite(ws) ? ws : null,
         wz: Number.isFinite(wz) ? wz : null,
       };
@@ -1021,6 +1149,7 @@ import '../../styles/theme.css';
       ].filter(Boolean);
       params.set('obs', obs.length ? obs.join(',') : 'none');
       params.set('series', seriesModel ? 'model' : 'none');
+      if (currentSectionId) params.set('sec', currentSectionId);
       const visible = getVisibleYearRange();
       const full = getFullYearRange();
       if (visible && full && (visible.start !== full.start || visible.end !== full.end)) {
@@ -1599,16 +1728,9 @@ import '../../styles/theme.css';
       const modelSection = document.getElementById('model');
       if (modelSection && modelSection.hidden) {
         modelSection.removeAttribute('hidden');
-        requestAnimationFrame(() => {
-          modelSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
         if (observedDataBySeries.qcu || observedDataBySeries.qcf) redrawCompChart();
-
-        if (!modelBeaconSent && window.sendFeatureBeacon) {
-          window.sendFeatureBeacon('labs/network-altitude/03-model-revealed');
-          modelBeaconSent = true;
-        }
       }
+      requestAnimationFrame(checkFunnelProgress);
 
       if (!predBeaconSent && window.sendFeatureBeacon) {
         window.sendFeatureBeacon('labs/network-altitude/02-prediction-made');
@@ -1803,7 +1925,7 @@ import '../../styles/theme.css';
       const stationLoading = document.getElementById('stationCountChartLoading');
       if (loading) {
         loading.hidden = false;
-        loading.innerHTML = 'Loading…';
+        loading.innerHTML = '<span class="spinner" aria-hidden="true"></span>Loading…';
       }
       if (stationLoading) stationLoading.hidden = false;
       setTimeControlsEnabled(false);
@@ -1814,8 +1936,6 @@ import '../../styles/theme.css';
       stationCountData = buildStationCountSeries(altitudeData.monthly, altitudeData.annual.map(d => d.year));
       normalizeTimeWindow();
 
-      const stationSection = document.getElementById('station-count');
-      if (stationSection && stationSection.hidden) stationSection.removeAttribute('hidden');
       if (loading) loading.hidden = true;
       if (stationLoading) stationLoading.hidden = true;
       setTimeControlsEnabled(true);
@@ -1852,6 +1972,7 @@ import '../../styles/theme.css';
       const restoredZoom = Number.isFinite(urlState.ws) && Number.isFinite(urlState.wz);
       if (restoredBaseline) baseline = restoredBaseline;
       syncTimeWindowFromUrl(restoredZoom ? urlState.ws : null, restoredZoom ? urlState.wz : null);
+      currentSectionId = urlState.sec || null;
       if (urlState.obs) {
         const parts = new Set(urlState.obs.split(',').map(s => s.trim()).filter(Boolean));
         observedRawVisible = parts.has('qcu') || parts.has('raw');
@@ -1872,6 +1993,9 @@ import '../../styles/theme.css';
       wireReset();
       wireLegend();
       wireTimeControls();
+      wireFunnelObservers();
+      window.addEventListener('scroll', checkFunnelProgress, { passive: true });
+      window.addEventListener('scroll', syncSectionState, { passive: true });
       setTimeControlsEnabled(false);
 
       if (restoredBaseline && restoredBaseline !== urlState.baseline) {
@@ -1903,8 +2027,22 @@ import '../../styles/theme.css';
           if (locked) locked.hidden = true;
           const modelSection = document.getElementById('model');
           if (modelSection) modelSection.removeAttribute('hidden');
+          // Reveal comparison up front too (behind its own chart-loading overlay)
+          // instead of waiting for observed data to arrive: a prediction restored
+          // from the URL means both sections are already "unlocked", so revealing
+          // them together avoids the page growing/jumping under the reader once
+          // the observed-data fetch resolves later.
+          const compSection = document.getElementById('comparison');
+          if (compSection) compSection.removeAttribute('hidden');
+          const compPrompt = document.getElementById('comparisonPrompt');
+          if (compPrompt) compPrompt.hidden = true;
         }
       }
+
+      // Every section this can target is already visible at this point (behind
+      // its own loading overlay), so restore the scroll position now, before any
+      // data fetch — no later re-sync needed, and nothing to jank against.
+      restoreSectionFromUrl(urlState.sec);
 
       const stationIdsPromise = (async () => {
         const resp = await fetch(DATA_BASE + '/station-ids.json');
@@ -1926,6 +2064,7 @@ import '../../styles/theme.css';
         if (restoredZoom && visible && (visible.start !== urlState.ws || visible.size !== urlState.wz)) {
           pushStateToUrl();
         }
+        requestAnimationFrame(checkFunnelProgress);
       } catch (err) {
         showAltitudeLoadError(err.message || 'unknown error');
       }
@@ -1945,6 +2084,7 @@ import '../../styles/theme.css';
       }
 
       pushStateToUrl();
+      requestAnimationFrame(checkFunnelProgress);
 
       // Analytics
       if (!visitBeaconSent && window.sendFeatureBeacon) {

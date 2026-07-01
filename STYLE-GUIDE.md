@@ -222,6 +222,19 @@ them. This is the core anti‑bias mechanic — see §5.
 - On unlock, **smooth‑scroll the newly revealed section into view** and respect
   `prefers-reduced-motion` (jump instantly if set). Announce the reveal to
   assistive tech (`aria-live="polite"`).
+- When restoring state from a URL, scroll to the saved section using the sticky
+  header offset so the heading is not hidden underneath the top bar.
+- If a URL already encodes a completed blocking choice (a returning or shared
+  link), **reveal every section that choice unlocks synchronously on load**,
+  before any dependent data fetch starts — not progressively as each section's
+  own async data trickles in. Progressive reveal here replays an unlock
+  animation for content that was never actually locked for this reader, and it
+  grows the page under a restored scroll position after the fact. This also
+  means `sec` restoration should be a single scroll performed once, immediately
+  on load (every section it can target is already visible or reserved), not
+  something re-applied after data finishes loading — by then the reader may
+  already have started scrolling on their own, and re-scrolling out from under
+  them is worse than a link that's a screen off.
 
 ### 4.2 What is and isn't a blocking choice
 
@@ -286,15 +299,21 @@ https://labs.klymot.com/tob-recovery#v=1&model=ols&base=1961-1990&series=qcf,qcu
   small migrator so old links don't silently break.
 - **Encode semantic values, not UI state** (the chosen model, not which option
   was 2nd in the shuffled list; the visible date range, not scroll position).
+  One exception is the current visible section, which labs may persist as
+  `sec=...` so a reload returns the reader to the same place in the page. If
+  the hero/preamble is still the active view, `sec` should be absent.
 - Keep it **human‑legible** while small (`model=ols`), and only reach for
   compression (e.g. base64 of a packed object) once a real link gets unwieldy.
   Legible links are easier to trust and debug.
 - **Round‑trip discipline:** every blocking choice and every chart view‑state
   (zoom/pan, toggled series, trend/LOESS on/off) reads from the URL on load and
   writes back on change (debounced). Reloading a link must reproduce the exact
-  view.
-- Provide an explicit **"Copy link to this view"** button (don't make people fish
-  the URL out of the bar on mobile). Confirm with a toast: "Link copied."
+  view, and section restoration should account for the sticky header so the
+  heading remains visible. Section tracking should only set `sec` once the next
+  section heading reaches the sticky-header line or has been scrolled past it.
+- Do not provide an explicit **"Copy link to this view"** type button. People can
+  use their browser or mobile share buttons if they want. A share button sounds
+  preachy.
 
 ### 6.3 The bias caveat on shared links
 
@@ -363,6 +382,14 @@ and behave like the monthly graphs in the main site's station details.
   series, 1895–2024").
 - Charts resize to container; debounce reflow. Maintain a min‑height so a loading
   chart doesn't collapse the layout (avoid layout shift).
+- **Data not being loaded yet is not the same as a section being locked** (§4.1).
+  A section gated on a blocking choice should stay hidden until the choice is
+  made; a section whose only blocker is its own fetch still in flight should be
+  visible from the start, with a spinner + label overlay (absolutely positioned
+  inside the chart's fixed-height container) standing in for the chart until
+  data arrives. Don't toggle the section's own `hidden` attribute on fetch
+  completion — that reproduces the same layout-shift and scroll-restore
+  problems a locked section would, for no methodological reason.
 - Respect `prefers-reduced-motion` for any animated draw‑in.
 
 ---
