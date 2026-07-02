@@ -4,8 +4,9 @@ import '../styles/theme.css';
 export interface Props {
   title: string;
   description?: string;
+  bodyClass?: string;
 }
-const { title, description } = Astro.props;
+const { title, description, bodyClass } = Astro.props;
 ---
 
 <!doctype html>
@@ -37,7 +38,7 @@ const { title, description } = Astro.props;
 
     <slot name="head" />
   </head>
-  <body>
+  <body class={bodyClass}>
     <slot />
 
     <!-- Theme toggle wiring — requires a #themeToggle button in the page. -->
