@@ -5,8 +5,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   <Fragment slot="head">
     <script>
       import { sendPageBeacon, sendFeatureBeacon } from '../../lib/analytics.js';
+      import { cssVar, clamp } from '../../lib/lab-utils.js';
+      import { createSectionTracker } from '../../lib/lab-sections.js';
       sendPageBeacon();
       window.sendFeatureBeacon = sendFeatureBeacon;
+      window.cssVar = cssVar;
+      window.clamp = clamp;
+      window.createSectionTracker = createSectionTracker;
     </script>
 
     <!-- Chart library -->
@@ -1197,11 +1202,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   </script>
 
   <script is:inline>
-    // ── CSS var helper ─────────────────────────────────────────────
-    function cssVar(name) {
-      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-    }
-
     // ── URL state ──────────────────────────────────────────────────
     function readStateFromUrl() {
       const params = new URLSearchParams(window.location.search);
@@ -1230,7 +1230,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (lagDays !== 0)         params.set('lag', String(lagDays));
       if (timeWindowStart !== 0) params.set('ws',  String(timeWindowStart));
       if (timeWindowSize !== null) params.set('wz', String(timeWindowSize));
-      if (currentSectionId) params.set('sec', currentSectionId);
+      if (sectionTracker.getCurrentSectionId()) params.set('sec', sectionTracker.getCurrentSectionId());
       window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
     }
 
@@ -1263,7 +1263,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     let _stationBeaconSent  = false;
     let _unlockedBeaconSent = false;
     let _sourcesBeaconSent = false;
-    let currentSectionId = null;
+    let sectionTracker = null;
     const SECTION_IDS = [
       { id: 'pyranometer', headingId: 'pyranometer-heading' },
       { id: 'network', headingId: 'network-heading' },
@@ -1290,40 +1290,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
     }
 
-    function getVisibleSectionId() {
-      const header = document.querySelector('.site-header');
-      const triggerY = (header ? header.getBoundingClientRect().height : 0) + 64;
-      let chosen = null;
-      SECTION_IDS.forEach(section => {
-        const el = document.getElementById(section.id);
-        if (!el || el.hidden) return;
-        const anchor = section.headingId ? document.getElementById(section.headingId) : el;
-        if (!anchor) return;
-        const top = anchor.getBoundingClientRect().top;
-        if (top <= triggerY) chosen = section.id;
-      });
-      return chosen;
-    }
-
-    function syncSectionState() {
-      const next = getVisibleSectionId();
-      if (next === currentSectionId) return;
-      currentSectionId = next;
-      pushStateToUrl();
-    }
-
-    function restoreSectionFromUrl(sec) {
-      if (!sec) return;
-      const el = document.getElementById(sec);
-      if (!el || el.hidden) return;
-      requestAnimationFrame(() => {
-        const header = document.querySelector('.site-header');
-        const headerOffset = header ? header.getBoundingClientRect().height : 0;
-        const top = window.scrollY + el.getBoundingClientRect().top - headerOffset - 12;
-        window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
-      });
-    }
-
     // ── Utilities ──────────────────────────────────────────────────
     function setStatus(msg) {
       const el = document.getElementById('loadStatus');
@@ -1337,10 +1303,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     function mean(values) {
       const valid = values.filter(Number.isFinite);
       return valid.length ? valid.reduce((s, v) => s + v, 0) / valid.length : null;
-    }
-
-    function clamp(value, lo, hi) {
-      return Math.max(lo, Math.min(hi, value));
     }
 
     function addMonths(year, month, offset) {
@@ -2395,7 +2357,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     async function initialize() {
       // Restore URL state
       const urlState = readStateFromUrl();
-      currentSectionId = urlState.sec || null;
+      sectionTracker = window.createSectionTracker(SECTION_IDS, { onChange: pushStateToUrl });
+      sectionTracker.setCurrentSectionId(urlState.sec || null);
       if (urlState.station) currentStation = urlState.station;
       if (urlState.dataType === 'qcu' || urlState.dataType === 'qcf') currentDataType = urlState.dataType;
       if (urlState.resolution === 'monthly' || urlState.resolution === 'yearly' || urlState.resolution === 'daily') currentResolution = urlState.resolution;
@@ -2444,7 +2407,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       // the manifest — not after the (slower) per-station temperature fetch —
       // so the page's layout is already settled and this only ever runs once.
       revealToCurrentState();
-      restoreSectionFromUrl(urlState.sec);
+      sectionTracker.restoreSectionFromUrl(urlState.sec);
 
       if (currentStation) {
         await ensureCurrentTemperatureLoaded();
@@ -2455,9 +2418,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         setStatus('');
       }
       pushStateToUrl();
-      window.addEventListener('scroll', syncSectionState, { passive: true });
+      window.addEventListener('scroll', sectionTracker.syncSectionState, { passive: true });
       window.addEventListener('scroll', maybeFireSourcesBeacon, { passive: true });
-      requestAnimationFrame(syncSectionState);
+      requestAnimationFrame(sectionTracker.syncSectionState);
       requestAnimationFrame(maybeFireSourcesBeacon);
 
       window.sendFeatureBeacon?.('labs/sunshine-temperature/01-visited');

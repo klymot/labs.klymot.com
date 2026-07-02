@@ -5,8 +5,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   <Fragment slot="head">
     <script>
       import { sendPageBeacon, sendFeatureBeacon } from '../../lib/analytics.js';
+      import { cssVar, clamp } from '../../lib/lab-utils.js';
+      import { createSectionTracker } from '../../lib/lab-sections.js';
       sendPageBeacon();
       window.sendFeatureBeacon = sendFeatureBeacon;
+      window.cssVar = cssVar;
+      window.clamp = clamp;
+      window.createSectionTracker = createSectionTracker;
     </script>
 
     <style is:global>
@@ -888,7 +893,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     let sourcesBeaconSent = false;
     let modelScrollObserver = null;
     let sourcesScrollObserver = null;
-    let currentSectionId = null;
+    let sectionTracker = null;
     const SECTION_IDS = [
       { id: 'physics', headingId: 'physics-heading' },
       { id: 'station-count', headingId: 'station-count-heading' },
@@ -900,16 +905,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     ];
 
     /* ── Utility ───────────────────────────────────────────────────── */
-    function cssVar(name) {
-      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-    }
-
     function mean(arr) {
       if (!arr.length) return NaN;
       return arr.reduce((s, v) => s + v, 0) / arr.length;
     }
-
-    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
     function getFullYearRange() {
       const years = altitudeData?.annual?.map(d => d.year) || [];
@@ -995,45 +994,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       document.querySelectorAll('[data-time-action]').forEach(btn => {
         btn.disabled = !enabled;
         btn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
-      });
-    }
-
-    function getVisibleSectionId() {
-      const header = document.querySelector('.site-header');
-      const triggerY = (header ? header.getBoundingClientRect().height : 0) + 64;
-      let chosen = null;
-      SECTION_IDS.forEach(section => {
-        const el = document.getElementById(section.id);
-        if (!el || el.hidden) return;
-        const anchor = section.headingId ? document.getElementById(section.headingId) : el;
-        if (!anchor) return;
-        const top = anchor.getBoundingClientRect().top;
-        if (top <= triggerY) chosen = section.id;
-      });
-      return chosen;
-    }
-
-    function syncSectionState() {
-      const next = getVisibleSectionId();
-      if (next === currentSectionId) return;
-      currentSectionId = next;
-      pushStateToUrl();
-    }
-
-    // Every section is visible (behind its own loading overlay) as soon as the
-    // URL state that gates it — a restored prediction — has been applied, so
-    // this only ever needs to run once, on initial load, before any data has
-    // arrived. That also means it runs before the reader could plausibly have
-    // started scrolling on their own, so there's no later re-sync to guard.
-    function restoreSectionFromUrl(sec) {
-      if (!sec) return;
-      const el = document.getElementById(sec);
-      if (!el || el.hidden) return;
-      requestAnimationFrame(() => {
-        const header = document.querySelector('.site-header');
-        const headerOffset = header ? header.getBoundingClientRect().height : 0;
-        const top = window.scrollY + el.getBoundingClientRect().top - headerOffset - 12;
-        window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
       });
     }
 
@@ -1123,7 +1083,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       ].filter(Boolean);
       params.set('obs', obs.length ? obs.join(',') : 'none');
       params.set('series', seriesModel ? 'model' : 'none');
-      if (currentSectionId) params.set('sec', currentSectionId);
+      if (sectionTracker.getCurrentSectionId()) params.set('sec', sectionTracker.getCurrentSectionId());
       const visible = getVisibleYearRange();
       const full = getFullYearRange();
       if (visible && full && (visible.start !== full.start || visible.end !== full.end)) {
@@ -1941,7 +1901,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const restoredZoom = Number.isFinite(urlState.ws) && Number.isFinite(urlState.wz);
       if (restoredBaseline) baseline = restoredBaseline;
       syncTimeWindowFromUrl(restoredZoom ? urlState.ws : null, restoredZoom ? urlState.wz : null);
-      currentSectionId = urlState.sec || null;
+      sectionTracker = window.createSectionTracker(SECTION_IDS, { onChange: pushStateToUrl });
+      sectionTracker.setCurrentSectionId(urlState.sec || null);
       if (urlState.obs) {
         const parts = new Set(urlState.obs.split(',').map(s => s.trim()).filter(Boolean));
         observedRawVisible = parts.has('qcu') || parts.has('raw');
@@ -1964,7 +1925,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       wireTimeControls();
       wireFunnelObservers();
       window.addEventListener('scroll', checkFunnelProgress, { passive: true });
-      window.addEventListener('scroll', syncSectionState, { passive: true });
+      window.addEventListener('scroll', sectionTracker.syncSectionState, { passive: true });
       setTimeControlsEnabled(false);
 
       if (restoredBaseline && restoredBaseline !== urlState.baseline) {
@@ -2011,7 +1972,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       // Every section this can target is already visible at this point (behind
       // its own loading overlay), so restore the scroll position now, before any
       // data fetch — no later re-sync needed, and nothing to jank against.
-      restoreSectionFromUrl(urlState.sec);
+      sectionTracker.restoreSectionFromUrl(urlState.sec);
 
       const stationIdsPromise = (async () => {
         const resp = await fetch(DATA_BASE + '/station-ids.json');
