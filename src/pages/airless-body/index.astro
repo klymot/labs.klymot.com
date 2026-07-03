@@ -1,13 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="Airless Body Thermal Model — internal" description="Internal testing page — not linked from the labs index." bodyClass="lab-page lab-airless-body">
+<BaseLayout title="Airless Body Thermal Model — beta" description="Lab under beta testing, shared by invitation — not linked from the labs index." bodyClass="lab-page lab-airless-body">
   <Fragment slot="head">
     <script>
-      import { sendPageBeacon, sendFeatureBeacon } from '../../lib/analytics.js';
+      import { sendFeatureBeacon } from '../../lib/analytics.js';
       import { cssVar, clamp } from '../../lib/lab-utils.js';
       import { createSectionTracker } from '../../lib/lab-sections.js';
-      sendPageBeacon();
       window.sendFeatureBeacon = sendFeatureBeacon;
       window.cssVar = cssVar;
       window.clamp = clamp;
@@ -25,6 +24,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   </div>
   <script>
     import bcrypt from 'bcryptjs';
+    import { sendPageBeacon } from '../../lib/analytics.js';
 
     // Not a real security boundary — client-side hash check, easily
     // bypassed by anyone who opens devtools. The only goal is keeping a
@@ -39,13 +39,23 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const input = document.getElementById('betaGateInput');
     const error = document.getElementById('betaGateError');
 
+    // Page-view beacon lives here, not in the head script, so it only
+    // fires for visitors who actually get past the gate — a bounce off
+    // the password prompt shouldn't count as a real page view. A returning
+    // visitor with the unlock flag already in localStorage counts
+    // immediately (they're not hitting an unfamiliar gate); a first-time
+    // visitor only counts once they enter the correct code. No feature
+    // beacon for the unlock itself — the beta gate is temporary, and the
+    // rest of the page's funnel event names/numbers should stay exactly as
+    // they are so nothing needs renumbering once the gate goes away.
     function unlock() {
       try { localStorage.setItem(STORAGE_KEY, '1'); } catch (_) {}
       gate.style.display = 'none';
+      sendPageBeacon();
     }
 
     try {
-      if (localStorage.getItem(STORAGE_KEY) === '1') gate.style.display = 'none';
+      if (localStorage.getItem(STORAGE_KEY) === '1') unlock();
     } catch (_) {}
 
     form.addEventListener('submit', (e) => {
@@ -99,7 +109,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
     <div class="container">
       <div class="page-hero">
-        <span class="eyebrow" aria-hidden="true">Internal — not linked from the labs index</span>
+        <span class="eyebrow" aria-hidden="true">Lab under beta testing — shared by invitation</span>
         <h1>Airless Body Thermal Model</h1>
         <p class="hook">How much of the Moon's temperature can be explained by nothing more than sunlight, conduction, and radiation — no atmosphere, no greenhouse effect required?</p>
         <p class="lede">A bare, rotating body heated only by direct sunlight. Set the parameters, run it, and see what time-averaged surface temperature comes out.</p>
