@@ -1,0 +1,1425 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Airless Body Thermal Model — internal" description="Internal testing page — not linked from the labs index." bodyClass="lab-page lab-airless-body">
+  <Fragment slot="head">
+    <script>
+      import { sendPageBeacon, sendFeatureBeacon } from '../../lib/analytics.js';
+      import { cssVar, clamp } from '../../lib/lab-utils.js';
+      import { createSectionTracker } from '../../lib/lab-sections.js';
+      sendPageBeacon();
+      window.sendFeatureBeacon = sendFeatureBeacon;
+      window.cssVar = cssVar;
+      window.clamp = clamp;
+      window.createSectionTracker = createSectionTracker;
+    </script>
+  </Fragment>
+
+  <div id="betaGate" class="beta-gate">
+    <form id="betaGateForm" class="beta-gate-card">
+      <label for="betaGateInput">Lab beta tester access code</label>
+      <input type="password" id="betaGateInput" autocomplete="off" autocapitalize="off" spellcheck="false" />
+      <button type="submit">Submit</button>
+      <p id="betaGateError" class="beta-gate-error" hidden>Incorrect code.</p>
+    </form>
+  </div>
+  <script>
+    import bcrypt from 'bcryptjs';
+
+    // Not a real security boundary — client-side hash check, easily
+    // bypassed by anyone who opens devtools. The only goal is keeping a
+    // casual visitor who stumbles on this unlisted link from seeing
+    // anything beyond this prompt; a determined person getting past it is
+    // out of scope.
+    const PASSWORD_HASH = '$2b$10$0vahA5WGqY4CAXBCoebSY.lKVIQYci69Sgq.eJKBqLGccRT2CXJfC';
+    const STORAGE_KEY = 'airless-body-beta-unlocked';
+
+    const gate = document.getElementById('betaGate');
+    const form = document.getElementById('betaGateForm');
+    const input = document.getElementById('betaGateInput');
+    const error = document.getElementById('betaGateError');
+
+    function unlock() {
+      try { localStorage.setItem(STORAGE_KEY, '1'); } catch (_) {}
+      gate.style.display = 'none';
+    }
+
+    try {
+      if (localStorage.getItem(STORAGE_KEY) === '1') gate.style.display = 'none';
+    } catch (_) {}
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (bcrypt.compareSync(input.value, PASSWORD_HASH)) {
+        unlock();
+      } else {
+        error.hidden = false;
+        input.value = '';
+        input.focus();
+      }
+    });
+  </script>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <nav class="header-nav" aria-label="Site navigation">
+        <a class="brand-link" href="https://klymot.com" aria-label="klymot home">
+          <span class="brand-logo" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="22" height="22">
+              <circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"/>
+              <ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/>
+              <circle cx="19.5" cy="10.5" r="2" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="brand-title">klymot</span>
+          <span class="brand-sub">· labs</span>
+        </a>
+        <a href="/" class="back-link" aria-label="Back to labs index">← Labs</a>
+      </nav>
+      <div class="header-actions">
+        <button class="reset-btn" id="resetLab" type="button" aria-label="Reset all choices">Reset lab</button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" type="button">◐</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="sim-progress-sticky" id="simProgress" hidden>
+      <div class="container sim-progress-inner">
+        <div class="sim-progress-track">
+          <div class="sim-progress-fill" id="simProgressFill" style="width:0%"></div>
+        </div>
+        <span class="sim-progress-label" id="simProgressLabel"></span>
+      </div>
+    </div>
+    <div class="container">
+      <div class="page-hero">
+        <span class="eyebrow" aria-hidden="true">Internal — not linked from the labs index</span>
+        <h1>Airless Body Thermal Model</h1>
+        <p class="hook">How much of the Moon's temperature can be explained by nothing more than sunlight, conduction, and radiation — no atmosphere, no greenhouse effect required?</p>
+        <p class="lede">A bare, rotating body heated only by direct sunlight. Set the parameters, run it, and see what time-averaged surface temperature comes out.</p>
+        <ul class="learn-list">
+          <li>Why the Moon gets so hot by day and so cold by night.</li>
+          <li>How rotation speed and thermal conductivity each control that swing.</li>
+          <li>Whether this simple physics reproduces NASA's actual measurements.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── Section: The model ──────────────────────────────────────── -->
+    <section class="lab-section" id="model" aria-labelledby="model-heading">
+      <div class="container">
+        <div class="prose">
+          <h2 id="model-heading">What this is actually computing</h2>
+          <p>Heat flows vertically into the ground and north-south between latitudes. East-west flow is ignored: lunar regolith conducts too poorly for neighboring longitudes to exchange much heat in a single day. One simulated column per latitude, stepped through time, reconstructs every longitude by rotational symmetry.</p>
+          <p>This is intentionally a "surface physics only" model — no internal heat from the Moon itself, so the result depends only on sunlight, conduction, and radiation.</p>
+        </div>
+        <details class="expander">
+          <summary>What is lunar regolith?</summary>
+          <div class="expander-body">
+            <p>Regolith is the loose layer of dust, broken rock, and rubble that blankets the Moon's solid bedrock — built up over billions of years as meteorite impacts, large and small, kept pulverizing the surface. It isn't "soil" in the Earth sense: no water, no organic matter, just fragmented mineral grains.</p>
+            <p>Those grains barely touch each other, especially with no air pressure to pack them together, so heat has very few solid paths to conduct through — a big part of why regolith conducts heat so poorly (see "More on conductive heat transfer" below).</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>More on radiative heat transfer</summary>
+          <div class="expander-body">
+            <p><code>εσT⁴</code> is really shorthand for the general law: net radiative exchange between two surfaces goes as the <em>difference</em> of their temperatures raised to the fourth power, <code>εσ(T_surface⁴ − T_surroundings⁴)</code>. For the Moon's surface radiating out into space, "surroundings" is the cosmic microwave background at about 2.7 K — not a literal 0 K.</p>
+            <p>That background term turns out to be negligible here: 2.7⁴ ≈ 53, versus around 65,000,000 for a 90 K night-side surface (90⁴) — roughly seven orders of magnitude smaller. Dropping it, as this model does, isn't a simplification that changes anything measurable; it's far below the precision of everything else in the calculation.</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>More on conductive heat transfer</summary>
+          <div class="expander-body">
+            <p>Conduction follows Fourier's law: heat flux is proportional to the local temperature gradient, <code>−k·dT/dz</code>, where <code>k</code> is thermal conductivity. By day, the hot surface conducts heat downward into the cooler regolith beneath it; by night, that stored heat conducts back up as the surface radiates and cools.</p>
+            <p>How much lag this creates depends entirely on <code>k</code>. The Moon's loose surface regolith conducts extremely poorly — its default value here, 0.0007 W/(m·K), is close to 3,000 times smaller than the "deep conductivity" value used for the more compacted material beneath it. That's why so little of the day's heat reaches even a few centimeters down before nightfall, and why the surface temperature swing between lunar day and night is so large.</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>More on the numerical scheme</summary>
+          <div class="expander-body">
+            <p>Depth cells are geometrically graded (thin near the surface, where the diurnal thermal wave actually lives, coarser with depth) and switch to mass-conserving spacing near the center, ending in a single innermost cell that represents a small ball rather than a vanishing wedge — avoiding the coordinate singularity at r=0 without needing to resolve it exactly.</p>
+            <p>Reaching a periodic steady state by pure explicit time-marching can take many simulated rotation periods, especially for the real deep interior. This uses Aitken-extrapolation acceleration: run a few real periods, extrapolate each cell's asymptotic value from the trend, jump most of the way there, then run more real periods to "heal" whatever the jump got wrong — same equations and domain throughout, just a faster way of finding that same model's steady state.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── Section: Parameters ─────────────────────────────────────── -->
+    <section class="lab-section" id="parameters" aria-labelledby="parameters-heading">
+      <div class="container">
+        <div class="prose">
+          <h2 id="parameters-heading">Parameters</h2>
+          <p>Everything below defaults to the Moon's real values as best currently sourced. Change anything and the comparison later will tell you exactly what you changed.</p>
+        </div>
+
+        <div class="model-choice" id="conductivityModelChoice">
+          <p class="model-choice-prompt">Choose one of the two conductivity models below. Their order is random so neither is presented as the default.</p>
+          <div class="model-choice-options" id="modelChoiceOptions">
+            <button type="button" class="model-choice-btn" id="modelChoiceSimple" data-conductivity-model="simple">
+              <span class="model-choice-title">Layered, fixed conductivity</span>
+              <span class="model-choice-desc">A flat conductivity value for the surface regolith, and a separate flat value for the more compacted material beneath a chosen thickness. You set both values and the thickness directly, below.</span>
+            </button>
+            <button type="button" class="model-choice-btn" id="modelChoiceMetzger" data-conductivity-model="metzger">
+              <span class="model-choice-title">Depth- and temperature-dependent conductivity</span>
+              <span class="model-choice-desc">Conductivity is computed continuously from depth (via a bulk-density profile fit to Apollo core samples) and local temperature, using a published regolith conductivity relationship (Metzger et al.). No separate thickness or conductivity values to set.</span>
+            </button>
+          </div>
+          <p class="model-choice-chosen" id="modelChoiceChosen" hidden></p>
+        </div>
+
+        <div class="param-grid" id="paramGrid" hidden>
+          <div class="param-row">
+            <label for="rotationHours">Rotation period (hours, relative to the Sun)</label>
+            <div class="param-slider-col">
+              <div class="param-presets">
+                <button type="button" class="mini-tool" data-preset-rotation="708">Moon-like (29.5d)</button>
+                <button type="button" class="mini-tool" data-preset-rotation="24">Earth-like (24h)</button>
+              </div>
+              <input type="range" id="rotationHours" min="1" max="720" step="1" value="708" />
+            </div>
+            <span class="param-value-group">
+              <input type="number" class="param-value-input" id="rotationHoursValue" min="1" max="720" step="0.1" value="708" />
+              <span class="param-value-suffix" id="rotationHoursDays">(29.5 days)</span>
+            </span>
+          </div>
+
+          <div class="param-row">
+            <label for="albedo">Bond albedo</label>
+            <input type="range" id="albedo" min="0.05" max="0.4" step="0.005" value="0.11" />
+            <input type="number" class="param-value-input" id="albedoValue" min="0.05" max="0.4" step="0.001" value="0.11" />
+          </div>
+
+          <div class="param-row" id="regolithKRow">
+            <label for="regolithK">Surface thermal conductivity (W/(m·K))</label>
+            <input type="range" id="regolithK" min="0.0001" max="0.01" step="0.0001" value="0.0007" />
+            <input type="number" class="param-value-input" id="regolithKValue" min="0.0001" max="0.01" step="0.0001" value="0.0007" />
+          </div>
+
+          <div class="param-row" id="bulkKRow">
+            <label for="bulkK">Deep conductivity (W/(m·K))</label>
+            <input type="range" id="bulkK" min="0.5" max="5" step="0.05" value="2" />
+            <input type="number" class="param-value-input" id="bulkKValue" min="0.5" max="5" step="0.01" value="2.0" />
+          </div>
+
+          <div class="param-row" id="regolithThicknessRow">
+            <label for="regolithThickness">Regolith thickness (m)</label>
+            <input type="range" id="regolithThickness" min="0.1" max="10" step="0.1" value="2" />
+            <input type="number" class="param-value-input" id="regolithThicknessValue" min="0.1" max="10" step="0.01" value="2.0" />
+          </div>
+        </div>
+
+        <div class="primary-cta-row" id="simulateRow" hidden>
+          <button type="button" class="primary-cta" id="runSim">Simulate</button>
+          <p class="primary-cta-hint" id="runSimHint">Click to run the simulation and continue.</p>
+          <span id="runStatus" class="control-note"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section: Watch it converge (globe) ──────────────────────── -->
+    <section class="lab-section" id="globe" aria-labelledby="globe-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="globe-heading">Simulation convergence</h2>
+          <p>The globe is reconstructed from the single simulated column — every longitude is that column's own history, time-shifted by rotation. The Sun's size is illustrative, not to scale.</p>
+        </div>
+        <div class="section-card" style="padding:1rem">
+          <div class="chart-header">
+            <span class="chart-title">View</span>
+            <div class="chart-toolbar" aria-label="Globe view angle">
+              <button type="button" class="mini-tool" data-view-mode="above">From above</button>
+              <button type="button" class="mini-tool" data-view-mode="below">From below</button>
+              <button type="button" class="mini-tool" data-view-mode="dawn">Sunrise side</button>
+              <button type="button" class="mini-tool" data-view-mode="dusk">Sunset side</button>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:center;">
+            <canvas id="globeCanvas" width="640" height="360" style="max-width:100%; height:auto;"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section: Long timescale ──────────────────────────────────── -->
+    <section class="lab-section" id="longTimescale" aria-labelledby="long-timescale-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="long-timescale-heading">Settling in: many rotations</h2>
+          <p>The coldest point reached during each rotation, for three representative latitudes. This is what actually moves as the deep interior settles — the daytime peak equilibrates almost immediately regardless.</p>
+        </div>
+        <div class="chart-bleed" style="margin-top:1rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-container" id="longChartContainer" role="img" aria-label="Chart of temperature settling over many rotation periods">
+              <canvas id="longChart" style="display:block; width:100%; height:280px;"></canvas>
+            </div>
+            <div id="longChartLegend"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section: Short timescale ─────────────────────────────────── -->
+    <section class="lab-section" id="shortTimescale" aria-labelledby="short-timescale-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="short-timescale-heading">The diurnal cycle itself</h2>
+          <p>The same three latitudes, scrolling forward one rotation period at a time as the simulation runs.</p>
+        </div>
+        <div class="chart-bleed" style="margin-top:1rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-container" id="shortChartContainer" role="img" aria-label="Chart of one settled rotation's diurnal temperature cycle">
+              <canvas id="shortChart" style="display:block; width:100%; height:280px;"></canvas>
+            </div>
+            <div id="shortChartLegend"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section: Compare to NASA (the payoff — shown after the reader has watched it converge) ── -->
+    <section class="lab-section" id="comparePrompt" aria-labelledby="compare-prompt-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="compare-prompt-heading">How close did it get?</h2>
+          <p>See how it stacks up against NASA's actual measured lunar temperatures.</p>
+        </div>
+        <div class="primary-cta-row">
+          <button type="button" class="primary-cta" id="revealCompare" disabled>Compare with NASA</button>
+          <p class="primary-cta-hint" id="revealCompareHint">Enables once the simulation finishes.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lab-section" id="compare" aria-labelledby="compare-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="compare-heading">Compare to NASA's measured lunar temperatures</h2>
+          <div id="compareForewarning" class="comparison-note"></div>
+        </div>
+
+        <div class="summary-panel" id="summaryPanel">
+          <div class="summary-stat">
+            <span class="summary-label">Predicted mean surface temperature</span>
+            <span class="summary-value" id="summaryMean">—</span>
+          </div>
+          <div class="summary-stat">
+            <span class="summary-label">NASA estimate (equator)</span>
+            <span class="summary-value" id="summaryNasaMean">—</span>
+          </div>
+          <div class="summary-stat">
+            <span class="summary-label">Difference</span>
+            <span class="summary-value" id="summaryDiff">—</span>
+          </div>
+          <div class="summary-stat">
+            <span class="summary-label">Hottest surface</span>
+            <span class="summary-value" id="summaryPeak">—</span>
+          </div>
+          <div class="summary-stat">
+            <span class="summary-label">Coldest surface</span>
+            <span class="summary-value" id="summaryTrough">—</span>
+          </div>
+        </div>
+
+        <div class="chart-bleed" style="margin-top:1rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-container" id="compareChartContainer" role="img" aria-label="Chart comparing the model's equatorial temperature curve to Diviner-derived reference data">
+              <canvas id="compareChart" style="display:block; width:100%; height:280px;"></canvas>
+            </div>
+            <div id="compareChartLegend"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Data sources (always reachable, matching the site's expander pattern) ── -->
+    <section class="lab-section" id="sources">
+      <div class="container">
+        <details class="expander sources-expander">
+          <summary>Data sources &amp; methodology</summary>
+          <div class="expander-body">
+            <dl class="sources-list">
+              <dt>Lunar equatorial surface temperatures — Vasavada et al. (2012)</dt>
+              <dd>"Lunar equatorial surface temperatures and regolith properties from the Diviner Lunar Radiometer Experiment," <em>J. Geophys. Res.</em>, 117, E00H18. <a href="https://doi.org/10.1029/2011JE003987" target="_blank" rel="noopener">doi:10.1029/2011JE003987</a> — primary Diviner dataset.</dd>
+              <dt>Analytic reference curve — Hurley et al. (2014)</dt>
+              <dd>"An analytic function of lunar surface temperature for exospheric modeling," <em>Icarus</em>. <a href="https://doi.org/10.1016/j.icarus.2014.08.043" target="_blank" rel="noopener">doi:10.1016/j.icarus.2014.08.043</a> — closed-form fit to the Diviner equatorial data, used as the reference curve above.</dd>
+              <dt>Regolith/bulk thermal properties</dt>
+              <dd>Hayne, P.O., et al. (2017) Diviner-derived regolith thermophysical model; Hemingway, B.S., et al. (1973) Apollo 11 specific heat measurements; NASA Moon Fact Sheet (Bond albedo).</dd>
+              <dt>Depth- and temperature-dependent conductivity model — Metzger, Zacny &amp; Morrison</dt>
+              <dd>"Thermal Extraction of Volatiles from Lunar and Asteroid Regolith in Axisymmetric Crank-Nicolson Modeling," <em>J. Aerospace Eng.</em>, 33(6). <a href="https://doi.org/10.1061/%28ASCE%29AS.1943-5525.0001165" target="_blank" rel="noopener">doi:10.1061/(ASCE)AS.1943-5525.0001165</a>, with erratum <a href="https://doi.org/10.1061/(ASCE)AS.1943-5525.0001312" target="_blank" rel="noopener">doi:10.1061/(ASCE)AS.1943-5525.0001312</a> — dry-regolith conductivity fit (their Eq. 26) used for the depth- and temperature-dependent model above.</dd>
+              <dt>Bulk density vs. depth — Apollo 15-17 core/drill samples</dt>
+              <dd>Carrier, W.D., Mitchell, J.K. &amp; Mahmood, A., as reproduced in the <em>Lunar Sourcebook</em> (Heiken, Vaniman &amp; French, eds., 1991), Fig. 9.15 — the hyperbolic density-depth fit used to derive porosity for the model above.</dd>
+            </dl>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    import {
+      createModel,
+      createConvergenceDriver,
+      createSurfaceHistoryRecorder,
+    } from '../../lib/airless-body-thermal-model.js';
+    import { clamp, cssVar } from '../../lib/lab-utils.js';
+    import { sendFeatureBeacon } from '../../lib/analytics.js';
+
+    sendFeatureBeacon('labs/airless-body/01-visited');
+
+    const MOON_DEFAULTS = {
+      radius: 1737400,
+      albedo: 0.11,
+      solarConstant: 1361,
+      obliquityDeg: 1.54,
+      rotationPeriodHours: 708,
+      regolithThickness: 2,
+      regolithK: 0.0007,
+      regolithRho: 1200,
+      regolithC: 650,
+      bulkK: 2,
+      bulkRho: 3300,
+      bulkC: 800,
+      nLatBands: 16,
+      coreCellCount: 6,
+    };
+
+    const els = {
+      rotationHours: document.getElementById('rotationHours'),
+      rotationHoursValue: document.getElementById('rotationHoursValue'),
+      rotationHoursDays: document.getElementById('rotationHoursDays'),
+      albedo: document.getElementById('albedo'),
+      albedoValue: document.getElementById('albedoValue'),
+      regolithK: document.getElementById('regolithK'),
+      regolithKValue: document.getElementById('regolithKValue'),
+      bulkK: document.getElementById('bulkK'),
+      bulkKValue: document.getElementById('bulkKValue'),
+      regolithThickness: document.getElementById('regolithThickness'),
+      regolithThicknessValue: document.getElementById('regolithThicknessValue'),
+      runSim: document.getElementById('runSim'),
+      runSimHint: document.getElementById('runSimHint'),
+      runStatus: document.getElementById('runStatus'),
+      simProgress: document.getElementById('simProgress'),
+      simProgressFill: document.getElementById('simProgressFill'),
+      simProgressLabel: document.getElementById('simProgressLabel'),
+      globeCanvas: document.getElementById('globeCanvas'),
+      longChart: document.getElementById('longChart'),
+      shortChart: document.getElementById('shortChart'),
+      compareChart: document.getElementById('compareChart'),
+      compareForewarning: document.getElementById('compareForewarning'),
+      globeSection: document.getElementById('globe'),
+      longSection: document.getElementById('longTimescale'),
+      shortSection: document.getElementById('shortTimescale'),
+      comparePromptSection: document.getElementById('comparePrompt'),
+      compareSection: document.getElementById('compare'),
+      revealCompare: document.getElementById('revealCompare'),
+      revealCompareHint: document.getElementById('revealCompareHint'),
+      summaryMean: document.getElementById('summaryMean'),
+      summaryNasaMean: document.getElementById('summaryNasaMean'),
+      summaryDiff: document.getElementById('summaryDiff'),
+      summaryPeak: document.getElementById('summaryPeak'),
+      summaryTrough: document.getElementById('summaryTrough'),
+      conductivityModelChoice: document.getElementById('conductivityModelChoice'),
+      modelChoiceOptions: document.getElementById('modelChoiceOptions'),
+      modelChoiceSimple: document.getElementById('modelChoiceSimple'),
+      modelChoiceMetzger: document.getElementById('modelChoiceMetzger'),
+      modelChoiceChosen: document.getElementById('modelChoiceChosen'),
+      paramGrid: document.getElementById('paramGrid'),
+      regolithKRow: document.getElementById('regolithKRow'),
+      bulkKRow: document.getElementById('bulkKRow'),
+      regolithThicknessRow: document.getElementById('regolithThicknessRow'),
+      simulateRow: document.getElementById('simulateRow'),
+    };
+
+    // Chart redraw callbacks register themselves here as each run creates
+    // them (closures over that run's series data), so a single resize
+    // listener can re-invoke whichever ones currently apply — needed
+    // because drawLineChart now sizes its canvas from clientWidth/Height,
+    // which only changes on resize, not on its own.
+    let currentChartRedraws = [];
+    window.addEventListener('resize', () => currentChartRedraws.forEach((fn) => fn()));
+
+    // No default — this is a blocking choice (STYLE-GUIDE: "model" is a
+    // listed example of a choice that could bias the reader, so it must be
+    // picked explicitly, with the options shown in random order).
+    let conductivityModel = null;
+
+    function readParams() {
+      return {
+        rotationHours: Number(els.rotationHours.value),
+        albedo: Number(els.albedo.value),
+        regolithK: Number(els.regolithK.value),
+        bulkK: Number(els.bulkK.value),
+        regolithThickness: Number(els.regolithThickness.value),
+        conductivityModel,
+      };
+    }
+
+    // Sliders are the source of truth; the number boxes mirror them live
+    // (so dragging the slider updates the box) and push back to the slider
+    // on "change" (blur/Enter — not every keystroke, so typing an in-
+    // progress value like "0.000" doesn't get clamped mid-edit).
+    const paramPairs = [
+      { slider: 'rotationHours', box: 'rotationHoursValue' },
+      { slider: 'albedo', box: 'albedoValue' },
+      { slider: 'regolithK', box: 'regolithKValue' },
+      { slider: 'bulkK', box: 'bulkKValue' },
+      { slider: 'regolithThickness', box: 'regolithThicknessValue' },
+    ];
+
+    function refreshReadouts() {
+      const p = readParams();
+      els.rotationHoursValue.value = p.rotationHours;
+      els.rotationHoursDays.textContent = `(${(p.rotationHours / 24).toFixed(1)} days)`;
+      els.albedoValue.value = p.albedo;
+      els.regolithKValue.value = p.regolithK;
+      els.bulkKValue.value = p.bulkK;
+      els.regolithThicknessValue.value = p.regolithThickness;
+      document.querySelectorAll('[data-preset-rotation]').forEach((btn) => {
+        btn.classList.toggle('active', Math.abs(Number(btn.getAttribute('data-preset-rotation')) - p.rotationHours) < 0.05);
+      });
+    }
+
+    // ── URL state: versioned so a future change to what's stored doesn't
+    // silently misinterpret an old shared link. ─────────────────────────
+    const URL_STATE_VERSION = '1';
+    function readStateFromUrl() {
+      const hash = location.hash.slice(1);
+      if (!hash) return null;
+      const params = new URLSearchParams(hash);
+      if (params.get('v') !== URL_STATE_VERSION) return null;
+      return {
+        rotationHours: params.get('rh'),
+        albedo: params.get('al'),
+        regolithK: params.get('rk'),
+        bulkK: params.get('bk'),
+        regolithThickness: params.get('rt'),
+        conductivityModel: params.get('cm'),
+      };
+    }
+    function pushStateToUrl() {
+      const p = readParams();
+      const params = new URLSearchParams();
+      params.set('v', URL_STATE_VERSION);
+      params.set('rh', p.rotationHours);
+      params.set('al', p.albedo);
+      params.set('rk', p.regolithK);
+      params.set('bk', p.bulkK);
+      params.set('rt', p.regolithThickness);
+      if (p.conductivityModel) params.set('cm', p.conductivityModel);
+      const hash = '#' + params.toString();
+      if (location.hash !== hash) history.replaceState(null, '', hash);
+    }
+    const restoredState = readStateFromUrl();
+    if (restoredState) {
+      if (restoredState.rotationHours) els.rotationHours.value = restoredState.rotationHours;
+      if (restoredState.albedo) els.albedo.value = restoredState.albedo;
+      if (restoredState.regolithK) els.regolithK.value = restoredState.regolithK;
+      if (restoredState.bulkK) els.bulkK.value = restoredState.bulkK;
+      if (restoredState.regolithThickness) els.regolithThickness.value = restoredState.regolithThickness;
+    }
+
+    // Once a run has completed, the Simulate button disables itself (see
+    // runSimulation's completion handler) so the reader isn't tempted to
+    // click it again for no reason. Any parameter edit after that means the
+    // last run no longer reflects the current settings, so it needs to
+    // re-enable — every input path below (slider drag, typed value,
+    // rotation preset) funnels through this.
+    let hasRunOnce = false;
+    function markParamsChanged() {
+      els.runSim.disabled = false;
+      // Only overwrite the hint with "changed" phrasing once there's
+      // actually been a run to invalidate — otherwise a reader tweaking a
+      // slider before ever clicking Simulate sees a message implying they
+      // already ran something they haven't.
+      if (hasRunOnce) els.runSimHint.textContent = 'Parameters changed — click to run again.';
+    }
+
+    // Blocking choice: conductivity model (STYLE-GUIDE lists "model" as a
+    // choice that could bias the reader — randomize the two options' order,
+    // pre-select neither, and tell the reader the order is random). Picking
+    // one reveals the parameter grid and Simulate button for the first
+    // time; switching afterward doesn't hide them again, it just adjusts
+    // which rows apply (the simple model's three parameters are meaningless
+    // once conductivity is derived from depth and temperature instead).
+    const modelChoiceButtons = [els.modelChoiceSimple, els.modelChoiceMetzger];
+    if (Math.random() < 0.5) {
+      els.modelChoiceOptions.appendChild(els.modelChoiceSimple);
+      els.modelChoiceOptions.appendChild(els.modelChoiceMetzger);
+    } else {
+      els.modelChoiceOptions.appendChild(els.modelChoiceMetzger);
+      els.modelChoiceOptions.appendChild(els.modelChoiceSimple);
+    }
+
+    function applyConductivityModelVisibility() {
+      const isMetzger = conductivityModel === 'metzger';
+      els.regolithKRow.hidden = isMetzger;
+      els.bulkKRow.hidden = isMetzger;
+      els.regolithThicknessRow.hidden = isMetzger;
+    }
+
+    function chooseConductivityModel(model, { fromRestore = false } = {}) {
+      conductivityModel = model;
+      modelChoiceButtons.forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-conductivity-model') === model);
+      });
+      const chosenBtn = model === 'metzger' ? els.modelChoiceMetzger : els.modelChoiceSimple;
+      els.modelChoiceChosen.textContent = `You chose: ${chosenBtn.querySelector('.model-choice-title').textContent}`;
+      els.modelChoiceChosen.hidden = false;
+      applyConductivityModelVisibility();
+      const firstReveal = els.paramGrid.hidden;
+      els.paramGrid.hidden = false;
+      els.simulateRow.hidden = false;
+      if (!fromRestore) {
+        pushStateToUrl();
+        if (hasRunOnce) markParamsChanged();
+        sendFeatureBeacon('labs/airless-body/00-conductivity-model-chosen');
+        if (firstReveal) els.paramGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    modelChoiceButtons.forEach((btn) => {
+      btn.addEventListener('click', () => chooseConductivityModel(btn.getAttribute('data-conductivity-model')));
+    });
+    if (restoredState && restoredState.conductivityModel) {
+      chooseConductivityModel(restoredState.conductivityModel, { fromRestore: true });
+    }
+
+    paramPairs.forEach(({ slider, box }) => {
+      els[slider].addEventListener('input', () => { refreshReadouts(); pushStateToUrl(); markParamsChanged(); });
+      els[box].addEventListener('change', () => {
+        const min = Number(els[slider].min), max = Number(els[slider].max);
+        const typed = clamp(Number(els[box].value), min, max);
+        els[slider].value = typed;
+        refreshReadouts();
+        pushStateToUrl();
+        markParamsChanged();
+      });
+    });
+    document.querySelectorAll('[data-preset-rotation]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        els.rotationHours.value = btn.getAttribute('data-preset-rotation');
+        refreshReadouts();
+        pushStateToUrl();
+        markParamsChanged();
+      });
+    });
+    refreshReadouts();
+    pushStateToUrl();
+
+    let currentViewMode = 'dawn';
+    let lastGlobeState = null; // { model, recorder, tSec } — set once a simulation has run
+    function redrawGlobe() {
+      if (!lastGlobeState) return;
+      drawGlobe(els.globeCanvas, lastGlobeState.model, lastGlobeState.recorder, lastGlobeState.tSec, currentViewMode);
+    }
+    function updateViewModeActiveStates() {
+      document.querySelectorAll('[data-view-mode]').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-view-mode') === currentViewMode);
+      });
+    }
+    document.querySelectorAll('[data-view-mode]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        currentViewMode = btn.getAttribute('data-view-mode');
+        updateViewModeActiveStates();
+        redrawGlobe();
+      });
+    });
+    updateViewModeActiveStates();
+
+    // ── Simple reusable multi-series line chart (canvas, no deps) ──────
+    function drawLineChart(canvas, series, { xLabel = '', yLabel = '', xMin: xMinOpt = null, xMax: xMaxOpt = null, yMin = null, yMax = null, xToLocalHour = null } = {}) {
+      // Match the internal pixel buffer to the canvas's actual CSS display
+      // size (times devicePixelRatio for sharpness on high-DPI screens),
+      // the same pattern used elsewhere on the site (network-altitude,
+      // sunshine-temperature) — NOT a fixed internal resolution scaled via
+      // CSS width:100%/height:auto. The earlier version used a fixed
+      // 900x320 canvas with height:auto, which locks the aspect ratio: on a
+      // narrow mobile width, the whole raster (including text, since it's
+      // drawn as pixels at the original resolution) gets scaled down
+      // together, making labels shrink to unreadable sizes instead of
+      // staying legible with the plot just getting squatter.
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const padL = 60, padR = 20, padT = 20, padB = 40;
+      const plotW = w - padL - padR, plotH = h - padT - padB;
+
+      // Manual min/max (not Math.min(...arr)) — spreading a large points
+      // array as call arguments hits the JS engine's argument-count limit
+      // and throws "Maximum call stack size exceeded" (hit directly in
+      // testing: the final-period series has one point per timestep, which
+      // can run into the thousands).
+      let xMinFound = Infinity, xMaxFound = -Infinity, yMinFound = Infinity, yMaxFound = -Infinity;
+      let anyPoints = false;
+      series.forEach((s) => s.points.forEach((pt) => {
+        anyPoints = true;
+        if (pt.x < xMinFound) xMinFound = pt.x;
+        if (pt.x > xMaxFound) xMaxFound = pt.x;
+        if (pt.y < yMinFound) yMinFound = pt.y;
+        if (pt.y > yMaxFound) yMaxFound = pt.y;
+      }));
+      if (!anyPoints) return;
+      // xMin/xMax can be fixed to the known final range (e.g. period 1 to
+      // totalPeriods) rather than auto-scaling to whatever data exists so
+      // far — otherwise the whole plot visibly stretches/rescales as each
+      // new point arrives, which reads as noisy jitter rather than
+      // progress. With a fixed range, the growing line's leading edge
+      // creeping toward the right border doubles as a progress indicator.
+      const xMin = xMinOpt !== null ? xMinOpt : xMinFound;
+      const xMax = xMaxOpt !== null ? xMaxOpt : xMaxFound;
+      const computedYMin = yMin !== null ? yMin : yMinFound;
+      const computedYMax = yMax !== null ? yMax : yMaxFound;
+
+      const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#888';
+      const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || 'rgba(128,128,128,0.2)';
+
+      function xToPix(x) { return padL + ((x - xMin) / (xMax - xMin || 1)) * plotW; }
+      function yToPix(y) { return padT + plotH - ((y - computedYMin) / (computedYMax - computedYMin || 1)) * plotH; }
+
+      // Night/day background shading — makes "which part of the cycle am I
+      // looking at" legible at a glance instead of having to cross-reference
+      // the x-axis numbers against the model's noon-centered hour
+      // convention. Sampled in small steps across the visible range since
+      // the day/night boundary doesn't land on a round pixel otherwise.
+      if (xToLocalHour) {
+        const steps = 96;
+        for (let i = 0; i < steps; i++) {
+          const x0 = xMin + ((xMax - xMin) * i) / steps;
+          const x1 = xMin + ((xMax - xMin) * (i + 1)) / steps;
+          const localHour = xToLocalHour((x0 + x1) / 2);
+          const isNight = localHour < 6 || localHour >= 18;
+          ctx.fillStyle = isNight ? 'rgba(60,80,160,0.10)' : 'rgba(255,200,80,0.08)';
+          ctx.fillRect(xToPix(x0), padT, Math.max(1, xToPix(x1) - xToPix(x0)), plotH);
+        }
+      }
+
+      ctx.strokeStyle = gridColor;
+      ctx.fillStyle = textColor;
+      ctx.font = '11px sans-serif';
+      ctx.lineWidth = 1;
+      const yTicks = 5;
+      for (let i = 0; i <= yTicks; i++) {
+        const yVal = computedYMin + ((computedYMax - computedYMin) * i) / yTicks;
+        const yPix = padT + plotH - (plotH * i) / yTicks;
+        ctx.beginPath();
+        ctx.moveTo(padL, yPix);
+        ctx.lineTo(padL + plotW, yPix);
+        ctx.stroke();
+        ctx.fillText(yVal.toFixed(0), 4, yPix + 4);
+      }
+
+      series.filter((s) => s.visible !== false).forEach((s) => {
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        // Sort by x before drawing — samples aren't always generated in
+        // increasing-x order (e.g. the diurnal-cycle sample can start
+        // partway through a rotation and wrap around local hour 24 back to
+        // 0), and drawing in raw push-order would connect a wrapped point
+        // straight back across the chart as a stray line.
+        const sorted = [...s.points].sort((a, b) => a.x - b.x);
+        sorted.forEach((pt, i) => {
+          const px = xToPix(pt.x), py = yToPix(pt.y);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+      });
+
+      ctx.fillStyle = textColor;
+      ctx.fillText(xLabel, padL + plotW / 2 - 20, h - 6);
+    }
+
+    // Reusable legend, matching the main site's legend-btn convention:
+    // border color shows the series' line color when visible, grey
+    // (--border) when hidden. seriesList items need {label, color, visible}
+    // (mutated in place) and onToggle(seriesList) is called to redraw after
+    // each click.
+    function createLegend(containerEl, seriesList, onToggle) {
+      const offBorder = cssVar('--border') || 'rgba(255,255,255,0.28)';
+      containerEl.innerHTML = '';
+      containerEl.classList.add('chart-legend');
+      seriesList.forEach((s) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'legend-btn';
+        btn.textContent = s.label;
+        function applyStyle() {
+          btn.style.borderColor = s.visible !== false ? s.color : offBorder;
+          btn.classList.toggle('series-off', s.visible === false);
+        }
+        applyStyle();
+        btn.addEventListener('click', () => {
+          s.visible = s.visible === false ? true : false;
+          applyStyle();
+          onToggle();
+        });
+        containerEl.appendChild(btn);
+      });
+    }
+
+    // ── Colormap: temperature (K) -> RGB ────────────────────────────────
+    function tempToColor(t) {
+      // Standard blue-cold / red-hot diverging gradient, passing through
+      // near-white at a moderate mid-temperature.
+      const stops = [
+        { k: 60, c: [20, 40, 130] },
+        { k: 150, c: [60, 110, 210] },
+        { k: 230, c: [225, 230, 235] },
+        { k: 310, c: [220, 90, 60] },
+        { k: 400, c: [165, 20, 20] },
+      ];
+      if (t <= stops[0].k) return `rgb(${stops[0].c.join(',')})`;
+      for (let i = 0; i < stops.length - 1; i++) {
+        if (t >= stops[i].k && t <= stops[i + 1].k) {
+          const f = (t - stops[i].k) / (stops[i + 1].k - stops[i].k);
+          const c = stops[i].c.map((v, idx) => Math.round(v + f * (stops[i + 1].c[idx] - v)));
+          return `rgb(${c.join(',')})`;
+        }
+      }
+      return `rgb(${stops[stops.length - 1].c.join(',')})`;
+    }
+
+    // H is the Sun-relative hour angle of a body-fixed longitude "now":
+    // H=0 midday, pi/2 dusk, pi midnight, 3*pi/2 dawn — matches the same
+    // convention as incidentFlux()/tSecToLocalHour(). Derived from the same
+    // relationship temperatureAtLongitude() uses (secondsAgo = lonDeg/360 *
+    // period), since a longitude's current state equals the simulated
+    // column's state from that many seconds ago.
+    function hourAngleOfLongitude(lonDeg, phase) {
+      return phase - (lonDeg * Math.PI) / 180;
+    }
+
+    // A small circular (or, for the side views, flattened elliptical) arrow
+    // — like a "rotate" icon — showing spin direction, drawn as a partial
+    // ring with an arrowhead at its leading end. rx/ry let the side views
+    // draw this as an ellipse (foreshortened, since we're looking at the
+    // rotation plane edge-on there) rather than a circle, which only makes
+    // sense face-on in the polar views. Canvas angles increase clockwise on
+    // screen (since y grows downward), so clockwise=true draws with
+    // increasing angle and clockwise=false with decreasing angle — matching
+    // that directly rather than fighting it.
+    function drawRotationIndicator(ctx, cx, cy, rx, ry, clockwise, textColor, showLabel = true) {
+      const start = -Math.PI / 2; // top
+      const sweep = Math.PI * 1.5; // 270°, leaving a gap so it reads as directional, not a closed loop
+      const end = clockwise ? start + sweep : start - sweep;
+      ctx.strokeStyle = '#ffcc55';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rx, ry, 0, start, end, !clockwise);
+      ctx.stroke();
+      // Tangent of the ellipse at the leading end, normalized — an ellipse's
+      // tangent isn't just (-sinθ, cosθ) the way a circle's is, since rx/ry
+      // scale the two axes differently.
+      const rawTangent = clockwise
+        ? { x: -rx * Math.sin(end), y: ry * Math.cos(end) }
+        : { x: rx * Math.sin(end), y: -ry * Math.cos(end) };
+      const tlen = Math.hypot(rawTangent.x, rawTangent.y) || 1;
+      const tangent = { x: rawTangent.x / tlen, y: rawTangent.y / tlen };
+      const headPx = cx + rx * Math.cos(end), headPy = cy + ry * Math.sin(end);
+      const perp = { x: -tangent.y, y: tangent.x };
+      const arrowSize = 7;
+      ctx.beginPath();
+      ctx.moveTo(headPx + tangent.x * arrowSize, headPy + tangent.y * arrowSize);
+      ctx.lineTo(headPx - perp.x * arrowSize * 0.6, headPy - perp.y * arrowSize * 0.6);
+      ctx.lineTo(headPx + perp.x * arrowSize * 0.6, headPy + perp.y * arrowSize * 0.6);
+      ctx.closePath();
+      ctx.fillStyle = '#ffcc55';
+      ctx.fill();
+      if (showLabel) {
+        ctx.fillStyle = textColor;
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Rotation', cx, cy + ry + 16);
+        ctx.textAlign = 'left';
+      }
+    }
+
+    function drawGlobe(canvas, model, recorder, tSec, viewMode) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w * 0.5, cy = h * 0.5, radiusPx = Math.min(w, h) * 0.32;
+      const phase = (2 * Math.PI * tSec) / model.params.rotationPeriodSec;
+      const obliquityRad = (model.params.obliquityDeg * Math.PI) / 180;
+      const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#a8a090';
+
+      const latSteps = 24, lonSteps = 36;
+      const latStepDeg = 180 / latSteps, lonStepDeg = 360 / lonSteps;
+
+      function closestLatIndex(latCenterRad) {
+        let idx = 0, best = Infinity;
+        for (let i = 0; i < model.nLat; i++) {
+          const d = Math.abs(model.latCenterRad[i] - latCenterRad);
+          if (d < best) { best = d; idx = i; }
+        }
+        return idx;
+      }
+
+      if (viewMode === 'above' || viewMode === 'below') {
+        // Polar/plan view: whole hemisphere visible at once (no near/far
+        // culling needed), pole at center, equator at the outer edge.
+        // Midday (H=0) placed at the top, increasing clockwise through
+        // dusk/midnight/dawn — an arbitrary but fixed, explicit convention
+        // for this view (not validated against a side-view screenshot the
+        // way the equatorial views were, since it's a different projection
+        // style entirely).
+        const isAbove = viewMode === 'above';
+        for (let li = 0; li < latSteps / 2; li++) {
+          const latLo = isAbove ? li * latStepDeg : -90 + li * latStepDeg;
+          const latHi = latLo + latStepDeg;
+          const latCenterDeg = (latLo + latHi) / 2;
+          const latCenterRad = (latCenterDeg * Math.PI) / 180;
+          const closestLatIdx = closestLatIndex(latCenterRad);
+          // radius=0 at the pole (lat=+-90), radius=radiusPx at the equator (lat=0)
+          const rOf = (latDeg) => radiusPx * (1 - Math.abs(latDeg) / 90);
+
+          for (let lo = 0; lo < lonSteps; lo++) {
+            const lonLo = lo * lonStepDeg, lonHi = lonLo + lonStepDeg;
+            const lonCenterDeg = (lonLo + lonHi) / 2;
+            const H = hourAngleOfLongitude(lonCenterDeg, phase);
+            // Looking from below flips the apparent sense of rotation.
+            const screenAngle = isAbove ? H : -H;
+
+            const corners = [
+              [rOf(latLo), hourAngleOfLongitude(lonLo, phase)],
+              [rOf(latLo), hourAngleOfLongitude(lonHi, phase)],
+              [rOf(latHi), hourAngleOfLongitude(lonHi, phase)],
+              [rOf(latHi), hourAngleOfLongitude(lonLo, phase)],
+            ].map(([r, h]) => {
+              const a = isAbove ? h : -h;
+              return { px: cx + r * Math.sin(a), py: cy - r * Math.cos(a) };
+            });
+
+            const t = recorder.temperatureAtLongitude(closestLatIdx, lonCenterDeg);
+            ctx.fillStyle = t == null ? '#555' : tempToColor(t);
+            ctx.beginPath();
+            ctx.moveTo(corners[0].px, corners[0].py);
+            for (let k = 1; k < corners.length; k++) ctx.lineTo(corners[k].px, corners[k].py);
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
+        // Sun-direction arrow, pointing toward H=0 (midday) at the top.
+        ctx.strokeStyle = '#ffcc55';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - radiusPx - 10);
+        ctx.lineTo(cx, cy - radiusPx - 40);
+        ctx.stroke();
+        ctx.fillStyle = '#ffcc55';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - radiusPx - 46);
+        ctx.lineTo(cx - 6, cy - radiusPx - 36);
+        ctx.lineTo(cx + 6, cy - radiusPx - 36);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = textColor;
+        ctx.font = '13px sans-serif';
+        ctx.fillText('Sun direction', cx - 34, cy - radiusPx - 52);
+
+        // Rotation direction, drawn off to the side rather than over the
+        // heatmap itself. Derived from how screenAngle is built above:
+        // 'above' uses screenAngle=H directly, and since a = angle in
+        // px=cx+r*sin(a), py=cy-r*cos(a), increasing a sweeps a point from
+        // top toward +x then down — clockwise on screen. 'below' negates H,
+        // so it sweeps the opposite way — counterclockwise.
+        drawRotationIndicator(ctx, cx + radiusPx + 46, cy, 20, 20, isAbove, textColor);
+        return;
+      }
+
+      // Equatorial side view (dawn/dusk-centered). viewOffset sets which
+      // Sun-relative hour angle faces the viewer dead-center: validated
+      // directly against a screenshot for 'dawn' (viewOffset=+pi/2 puts
+      // midday at the left limb, matching the drawn Sun's position, with
+      // dawn at center and midnight at the right limb); 'dusk' mirrors it
+      // (viewOffset=-pi/2: midday left, dusk center, midnight right —
+      // wait, kept symmetric by construction, see project() below).
+      const viewOffset = viewMode === 'dusk' ? -Math.PI / 2 : Math.PI / 2;
+
+      function project(latDeg, lonDeg) {
+        const latRad = (latDeg * Math.PI) / 180;
+        const lonRad = (lonDeg * Math.PI) / 180 - phase - viewOffset;
+        const x0 = Math.cos(latRad) * Math.sin(lonRad);
+        const y0 = Math.sin(latRad);
+        const z0 = Math.cos(latRad) * Math.cos(lonRad);
+        // tilt by obliquity around the x-axis for a bit of visual polar perspective
+        const y = y0 * Math.cos(obliquityRad) - z0 * Math.sin(obliquityRad);
+        const z = y0 * Math.sin(obliquityRad) + z0 * Math.cos(obliquityRad);
+        return { px: cx + x0 * radiusPx, py: cy - y * radiusPx, z };
+      }
+
+      // Rotation axis: a dashed line through both poles, extended a bit past
+      // the sphere. Drawn BEFORE the surface quads below so the sphere
+      // paints over the segment that passes behind/through it — only the
+      // portions poking out above and below the globe stay visible.
+      const northPole = project(90, 0);
+      const southPole = project(-90, 0);
+      const axisExtend = radiusPx * 0.22;
+      const axisDx = southPole.px - northPole.px, axisDy = southPole.py - northPole.py;
+      const axisLen = Math.hypot(axisDx, axisDy) || 1;
+      const axisUx = axisDx / axisLen, axisUy = axisDy / axisLen;
+      const axisTop = { px: northPole.px - axisUx * axisExtend, py: northPole.py - axisUy * axisExtend };
+      const axisBottom = { px: southPole.px + axisUx * axisExtend, py: southPole.py + axisUy * axisExtend };
+      ctx.strokeStyle = '#ffcc55';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(axisTop.px, axisTop.py);
+      ctx.lineTo(axisBottom.px, axisBottom.py);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Drawn as filled quadrilaterals covering each grid cell's actual
+      // angular extent, rather than small overlapping circles at cell
+      // centers — gives a clean, gapless surface instead of a scalloped,
+      // dotted-looking silhouette.
+      for (let li = 0; li < latSteps; li++) {
+        const latLo = -90 + li * latStepDeg, latHi = latLo + latStepDeg;
+        const latCenterDeg = (latLo + latHi) / 2;
+        const latCenterRad = (latCenterDeg * Math.PI) / 180;
+        const closestLatIdx = closestLatIndex(latCenterRad);
+        for (let lo = 0; lo < lonSteps; lo++) {
+          const lonLo = lo * lonStepDeg, lonHi = lonLo + lonStepDeg;
+          const lonCenterDeg = (lonLo + lonHi) / 2;
+
+          const center = project(latCenterDeg, lonCenterDeg);
+          if (center.z < 0) continue; // back-facing, skip the whole cell
+
+          const corners = [
+            project(latLo, lonLo),
+            project(latLo, lonHi),
+            project(latHi, lonHi),
+            project(latHi, lonLo),
+          ];
+          const t = recorder.temperatureAtLongitude(closestLatIdx, lonCenterDeg);
+          ctx.fillStyle = t == null ? '#555' : tempToColor(t);
+          ctx.beginPath();
+          ctx.moveTo(corners[0].px, corners[0].py);
+          for (let k = 1; k < corners.length; k++) ctx.lineTo(corners[k].px, corners[k].py);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+
+      // Sun: the illuminating direction, not an object to scale — drawn as
+      // a large disc mostly off-canvas, positioned on whichever side the
+      // sub-solar point actually faces in this view (left for 'dawn',
+      // right for 'dusk' — both put midday at their outer limb, on
+      // opposite sides), so only a small arc of its limb cuts into frame.
+      const sunOnLeft = viewMode !== 'dusk';
+      const sunRadius = h * 1.3;
+      const sunVisibleSliver = 70;
+      const sunCx = sunOnLeft ? -sunRadius + sunVisibleSliver : w + sunRadius - sunVisibleSliver;
+      const sunCy = h * 0.5;
+      ctx.fillStyle = '#ffcc55';
+      ctx.beginPath();
+      ctx.arc(sunCx, sunCy, sunRadius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.fillStyle = textColor;
+      ctx.font = '13px sans-serif';
+      ctx.fillText('Sun', sunOnLeft ? sunVisibleSliver - 22 : w - sunVisibleSliver - 26, sunCy + 4);
+
+      // Spin-direction glyph, positioned just above the axis line's top end.
+      // This depicts the same physical rotation shown in the "From above"
+      // view's own rotation indicator — it's always the same spin,
+      // regardless of which side we're viewing it from, so it doesn't flip
+      // between 'dawn' and 'dusk' (only the Sun's screen position does).
+      drawRotationIndicator(ctx, axisTop.px, axisTop.py - 14, 14, 6, true, textColor, false);
+    }
+
+    // Local hour matching incidentFlux()'s convention: hourAngle=0 (tSec a
+    // multiple of the rotation period) is subsolar noon (hour 12), and hour
+    // increases forward in time through afternoon/dusk/midnight/dawn back
+    // to noon — this must match Hurley et al.'s noon-centered hour
+    // convention for the comparison chart to be phase-aligned. (Previously
+    // this used "elapsed time since sampling started" instead, which is an
+    // arbitrary phase, not tied to noon — that produced the visible phase
+    // shift between the model and reference curves.)
+    function tSecToLocalHour(tSec, period) {
+      const fractionOfPeriod = ((tSec % period) + period) % period / period;
+      return (12 + 24 * fractionOfPeriod) % 24;
+    }
+
+    // ── Hurley et al. (2014) analytic lunar equatorial temperature ─────
+    function hurleyEquatorialTemp(localHour) {
+      const h = ((localHour % 24) + 24) % 24;
+      const psiDeg = 15 * Math.abs(h - 12);
+      if (psiDeg < 90) {
+        const psiRad = (psiDeg * Math.PI) / 180;
+        return 262 * Math.sqrt(Math.cos(psiRad)) + 130;
+      }
+      // Nightside polynomial in Sun-state longitude phi (radians): per
+      // Hurley et al. (2014) Eq. 4 and Fig. 1 caption, phi=0 at subsolar
+      // noon, phi=pi/2 at dusk, phi=pi at midnight, phi=3*pi/2 at dawn —
+      // verified directly against the paper (fetched via NTRS) after an
+      // earlier wrong guess (phi = h/24*2*pi) produced a ~445K artifact at
+      // midnight. The function is NOT symmetric dusk-to-dawn by design —
+      // the paper states it "decreases from 130 K post-dusk to 95 K
+      // pre-dawn," reflecting continuous nightside cooling, with a known,
+      // paper-acknowledged ~35K discontinuity right at the dawn/day
+      // handoff (the paper notes the fit is least accurate at the
+      // terminator). hAdjusted keeps hour increasing monotonically through
+      // midnight instead of wrapping back to 0 so phi tracks correctly.
+      const hAdjusted = h < 12 ? h + 24 : h;
+      const phi = (hAdjusted - 12) * (Math.PI / 12);
+      const a = [444.738, -448.937, 239.668, -63.8844, 8.34064, -0.423502];
+      let val = 0;
+      for (let i = 0; i < a.length; i++) val += a[i] * Math.pow(phi, i);
+      return val;
+    }
+
+    async function runSimulation() {
+      els.runSim.disabled = true;
+      els.simProgress.hidden = false;
+      els.simProgressFill.style.width = '0%';
+      els.simProgressLabel.textContent = 'Starting…';
+      const wallClockStart = performance.now();
+      // Reveal the diagnostic sections right away so the reader watches
+      // them populate/animate as the run progresses. The Compare-with-NASA
+      // button becomes visible too, but disabled — showing there's a next
+      // step coming rather than having it appear out of nowhere — and only
+      // enables once the run actually finishes and there's something to
+      // compare. The comparison section itself stays hidden until clicked.
+      els.globeSection.hidden = false;
+      els.longSection.hidden = false;
+      els.shortSection.hidden = false;
+      els.comparePromptSection.hidden = false;
+      els.revealCompare.disabled = true;
+      els.revealCompareHint.textContent = 'Enables once the simulation finishes.';
+      els.compareSection.hidden = true;
+      sendFeatureBeacon('labs/airless-body/02-simulation-run');
+      pushStateToUrl();
+      const p = readParams();
+      const params = {
+        radius: MOON_DEFAULTS.radius,
+        albedo: p.albedo,
+        solarConstant: MOON_DEFAULTS.solarConstant,
+        obliquityDeg: MOON_DEFAULTS.obliquityDeg,
+        rotationPeriodSec: p.rotationHours * 3600,
+        conductivityModel: p.conductivityModel,
+        regolithThickness: p.regolithThickness,
+        regolithK: p.regolithK,
+        regolithRho: MOON_DEFAULTS.regolithRho,
+        regolithC: MOON_DEFAULTS.regolithC,
+        bulkK: p.bulkK,
+        bulkRho: MOON_DEFAULTS.bulkRho,
+        bulkC: MOON_DEFAULTS.bulkC,
+        nLatBands: MOON_DEFAULTS.nLatBands,
+        coreCellCount: MOON_DEFAULTS.coreCellCount,
+      };
+      const model = createModel(params);
+      model.setUniformTemperature(220);
+      const driver = createConvergenceDriver(model, { periodsPerHeal: 3 });
+      const recorder = createSurfaceHistoryRecorder(model);
+
+      const latIndex = {
+        equator: closestLatBand(model, 0),
+        mid: closestLatBand(model, 45),
+        pole: closestLatBand(model, 80),
+      };
+      const totalPeriods = 18;
+      let periodsDone = 0;
+
+      // Advance in small chunks (not whole multi-period batches) so the
+      // globe visibly animates and gets fine-grained history throughout the
+      // run — previously the globe only redrew once every few *periods*
+      // using a history buffer that had only been sampled that infrequently
+      // too, so it showed no visible day/night structure and never
+      // appeared to move.
+      const period = model.params.rotationPeriodSec;
+      const chunksPerPeriod = 30;
+      const chunkSec = period / chunksPerPeriod;
+
+      const longSeries = {
+        equator: { label: 'Equator', color: '#e05050', points: [] },
+        mid: { label: 'Mid-latitude (45°)', color: '#d4a855', points: [] },
+        pole: { label: 'Near-pole (80°)', color: '#4a7fd6', points: [] },
+      };
+      function redrawLongChart() {
+        drawLineChart(els.longChart, Object.values(longSeries), { xLabel: 'Rotation period #', yLabel: 'K', xMin: 1, xMax: totalPeriods });
+      }
+      createLegend(document.getElementById('longChartLegend'), Object.values(longSeries), redrawLongChart);
+
+      // Diurnal-cycle chart updates live, period by period, during the
+      // main run too — not just once at the very end. Points accumulate
+      // continuously against elapsed simulated time (never reset) rather
+      // than being redrawn against a local-hour-0-24 axis and wiped every
+      // period — wiping to empty at each period boundary produced a jarring
+      // "back to one point" jump. Accumulating against a fixed, known-in-
+      // advance time range instead reads as a wave extending steadily
+      // rightward, doubling as a progress indicator (same trick as the
+      // "settling in" chart's fixed period-count x-axis). finalPeriod()
+      // below then replaces this with one clean, non-accelerated pass
+      // plotted against local hour (0-24) for the definitive NASA
+      // comparison, since that's the axis Hurley et al.'s curve needs.
+      const shortSeries = {
+        equator: { label: 'Equator', color: '#e05050', points: [] },
+        mid: { label: 'Mid-latitude (45°)', color: '#d4a855', points: [] },
+        pole: { label: 'Near-pole (80°)', color: '#4a7fd6', points: [] },
+      };
+      const liveShortXMax = (totalPeriods * period) / 3600;
+      // Bounds live in mutable variables (not baked into the legend
+      // callback as constants) because the window keeps sliding forward —
+      // the legend toggle needs to redraw with whatever the *current*
+      // bounds are, not whatever they were when the legend was first wired.
+      let shortXMin = 0, shortXMax = liveShortXMax;
+      const periodHours = period / 3600;
+      function redrawShortChart() {
+        drawLineChart(els.shortChart, Object.values(shortSeries), {
+          xLabel: 'Elapsed time (hours)', yLabel: 'K', xMin: shortXMin, xMax: shortXMax,
+          xToLocalHour: (x) => tSecToLocalHour(x * 3600, period),
+        });
+      }
+      createLegend(document.getElementById('shortChartLegend'), Object.values(shortSeries), redrawShortChart);
+      currentChartRedraws = [redrawLongChart, redrawShortChart];
+      const shortSampleIntervalSec = period / 240;
+      let nextShortSampleAt = 0;
+
+      // tSec=0 is always local noon (incidentFlux's hourAngle=0), so every
+      // period *boundary* (an exact multiple of the period) is ALSO always
+      // local noon — sampling there for the convergence chart looked flat
+      // because noon is exactly the phase that equilibrates fastest (the
+      // thin surface cell tracks instantaneous peak solar flux almost in
+      // lockstep, regardless of how settled the deep interior is). Tracking
+      // the *minimum* reached during each period instead is far more
+      // diagnostic: the predawn low depends on how much heat has conducted
+      // up from the still-settling interior, so it actually shows the slow
+      // convergence this chart is supposed to illustrate.
+      let periodMin = { equator: Infinity, mid: Infinity, pole: Infinity };
+
+      function stepBatch() {
+        const result = driver.stepChunk(chunkSec, (tSec) => {
+          recorder.record(tSec);
+          ['equator', 'mid', 'pole'].forEach((k) => {
+            const T = model.T[latIndex[k]][0];
+            if (T < periodMin[k]) periodMin[k] = T;
+          });
+          if (tSec >= nextShortSampleAt) {
+            nextShortSampleAt += shortSampleIntervalSec;
+            const elapsedHours = tSec / 3600;
+            ['equator', 'mid', 'pole'].forEach((k) => {
+              shortSeries[k].points.push({ x: elapsedHours, y: model.T[latIndex[k]][0] });
+            });
+          }
+        });
+        lastGlobeState = { model, recorder, tSec: driver.tSec };
+        drawGlobe(els.globeCanvas, model, recorder, driver.tSec, currentViewMode);
+
+        // Sliding window exactly one period wide, scrolling forward with
+        // tSec — not full accumulation (which just showed the whole run
+        // compressed and static-looking) and not a per-period reset (which
+        // jumped back to one point every cycle). A fixed-width window that
+        // continuously advances is what actually reads as the wave
+        // scrolling past, the way a real strip-chart would.
+        const headHours = driver.tSec / 3600;
+        shortXMin = headHours - periodHours;
+        shortXMax = headHours;
+        ['equator', 'mid', 'pole'].forEach((k) => {
+          shortSeries[k].points = shortSeries[k].points.filter((pt) => pt.x >= shortXMin);
+        });
+        redrawShortChart();
+
+        if (result.periodJustCompleted) {
+          periodsDone = driver.periodsCompleted;
+          ['equator', 'mid', 'pole'].forEach((k) => {
+            longSeries[k].points.push({ x: periodsDone, y: periodMin[k] });
+            periodMin[k] = Infinity;
+          });
+          redrawLongChart();
+        }
+        els.runStatus.textContent = `Period ${periodsDone} of ~${totalPeriods} (simulated t=${(driver.tSec / 3600).toFixed(1)} h)…`;
+        const pct = Math.min(100, (100 * driver.tSec) / (totalPeriods * period));
+        els.simProgressFill.style.width = `${pct.toFixed(1)}%`;
+        // Once a couple of periods have actually completed, the observed
+        // wall-clock rate is a much better time estimate than guessing
+        // upfront — periods can vary in real compute cost depending on how
+        // close to instability the timestep gets.
+        let etaText = '';
+        if (periodsDone >= 2) {
+          const elapsedWallSec = (performance.now() - wallClockStart) / 1000;
+          const secPerPeriod = elapsedWallSec / periodsDone;
+          const remainingSec = Math.max(0, secPerPeriod * (totalPeriods - periodsDone));
+          etaText = ` — ~${remainingSec < 60 ? remainingSec.toFixed(0) + 's' : (remainingSec / 60).toFixed(1) + 'm'} remaining`;
+        }
+        els.simProgressLabel.textContent = `Period ${periodsDone} of ~${totalPeriods}${etaText}`;
+
+        if (periodsDone < totalPeriods) {
+          setTimeout(stepBatch, 0);
+        } else {
+          finalPeriod();
+        }
+      }
+
+      function finalPeriod() {
+        els.runStatus.textContent = 'Sampling final settled rotation…';
+        // One clean, non-accelerated physics pass — but sampled into TWO
+        // separate x-conventions rather than reusing (and overwriting)
+        // shortSeries: the diurnal chart keeps scrolling in the same
+        // elapsed-time window it's been using the whole run (no axis
+        // switch = no jump at the end), while the NASA comparison needs
+        // local-hour alignment, derived from the same tSec values.
+        const equatorCleanLocalHour = [];
+        let elapsed = 0, tSec = driver.tSec;
+        // Physics steps at whatever the stability limit requires (can be
+        // many thousands over a full period), but the charts only need a
+        // few hundred points — sample at a fixed interval rather than
+        // pushing a point on every single physics step.
+        const sampleIntervalSec = period / 240;
+        let nextSampleAt = 0;
+        while (elapsed < period) {
+          const dt = model.stableTimestep();
+          const thisDt = Math.min(dt, period - elapsed);
+          model.step(thisDt, tSec);
+          tSec += thisDt; elapsed += thisDt;
+          recorder.record(tSec);
+          if (elapsed >= nextSampleAt) {
+            nextSampleAt += sampleIntervalSec;
+            const elapsedHours = tSec / 3600;
+            ['equator', 'mid', 'pole'].forEach((k) => {
+              shortSeries[k].points.push({ x: elapsedHours, y: model.T[latIndex[k]][0] });
+            });
+            equatorCleanLocalHour.push({ x: tSecToLocalHour(tSec, period), y: model.T[latIndex.equator][0] });
+          }
+        }
+        const headHours = tSec / 3600;
+        shortXMin = headHours - periodHours;
+        shortXMax = headHours;
+        ['equator', 'mid', 'pole'].forEach((k) => {
+          shortSeries[k].points = shortSeries[k].points.filter((pt) => pt.x >= shortXMin);
+        });
+        redrawShortChart();
+
+        // NASA comparison: this model's equator vs. Hurley et al. (2014).
+        const modelSeries = { label: 'This model (equator)', color: '#e05050', points: equatorCleanLocalHour };
+        const referencePoints = [];
+        for (let h = 0; h <= 24; h += 0.25) referencePoints.push({ x: h, y: hurleyEquatorialTemp(h) });
+        const referenceSeries = { label: 'Diviner-derived reference (Hurley et al. 2014)', color: '#4a7fd6', points: referencePoints };
+        const compareSeriesList = [modelSeries, referenceSeries];
+        function redrawCompareChart() {
+          drawLineChart(els.compareChart, compareSeriesList, { xLabel: 'Local hour', yLabel: 'K', xToLocalHour: (x) => x });
+        }
+        redrawCompareChart();
+        createLegend(document.getElementById('compareChartLegend'), compareSeriesList, redrawCompareChart);
+        currentChartRedraws = [redrawLongChart, redrawShortChart, redrawCompareChart];
+
+        els.compareForewarning.innerHTML = buildForewarningHtml(params);
+
+        // Summary numbers — the one-line takeaway readers actually want,
+        // rather than having to read it off the charts themselves.
+        const modelYs = equatorCleanLocalHour.map((pt) => pt.y);
+        const modelMean = modelYs.reduce((a, b) => a + b, 0) / modelYs.length;
+        const modelPeak = Math.max(...modelYs);
+        const modelTrough = Math.min(...modelYs);
+        const nasaYs = referencePoints.map((pt) => pt.y);
+        const nasaMean = nasaYs.reduce((a, b) => a + b, 0) / nasaYs.length;
+        els.summaryMean.textContent = `${modelMean.toFixed(1)} K`;
+        els.summaryNasaMean.textContent = `${nasaMean.toFixed(1)} K`;
+        const diff = modelMean - nasaMean;
+        els.summaryDiff.textContent = `${diff >= 0 ? '+' : ''}${diff.toFixed(1)} K`;
+        els.summaryPeak.textContent = `${modelPeak.toFixed(0)} K`;
+        els.summaryTrough.textContent = `${modelTrough.toFixed(0)} K`;
+
+        els.runStatus.textContent = `Done — ${periodsDone} periods converged, plus one settled rotation sampled.`;
+        els.simProgressFill.style.width = '100%';
+        els.simProgressLabel.textContent = 'Done';
+        // Stays disabled until a parameter actually changes — re-running
+        // with identical inputs would just reproduce the same result.
+        els.runSim.disabled = true;
+        els.runSimHint.textContent = 'You ran the simulation — change a parameter above to run again.';
+        hasRunOnce = true;
+        els.revealCompare.disabled = false;
+        els.revealCompareHint.textContent = 'Click to reveal the comparison.';
+      }
+
+      setTimeout(stepBatch, 0);
+    }
+
+    function closestLatBand(model, latDeg) {
+      const target = (latDeg * Math.PI) / 180;
+      let best = 0, bestD = Infinity;
+      for (let i = 0; i < model.nLat; i++) {
+        const d = Math.abs(model.latCenterRad[i] - target);
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      return best;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function buildForewarningHtml(params) {
+      // Which conductivity model was used isn't framed as a "change" from a
+      // default — neither model is a default (it's a blocking choice with
+      // no pre-selection) — so it's stated plainly, the same way regardless
+      // of which was picked.
+      const modelNote = params.conductivityModel === 'metzger'
+        ? 'This run used the depth- and temperature-dependent conductivity model (Metzger et al.).'
+        : 'This run used the layered, fixed conductivity model.';
+      const diffs = [];
+      const rotDays = (params.rotationPeriodSec / 86400).toFixed(1);
+      const moonDays = (MOON_DEFAULTS.rotationPeriodHours / 24).toFixed(1);
+      if (Math.abs(params.rotationPeriodSec / 3600 - MOON_DEFAULTS.rotationPeriodHours) > 0.5) {
+        diffs.push(`Rotation period: ${rotDays} days (Moon: ${moonDays} days)`);
+      }
+      if (Math.abs(params.albedo - MOON_DEFAULTS.albedo) > 0.005) {
+        diffs.push(`Albedo: ${params.albedo.toFixed(3)} (Moon: ${MOON_DEFAULTS.albedo})`);
+      }
+      // The simple model's three parameters below don't apply once
+      // conductivity is derived from depth and temperature instead, so they
+      // aren't meaningful "changes" in that mode.
+      if (params.conductivityModel !== 'metzger') {
+        if (Math.abs(params.regolithK - MOON_DEFAULTS.regolithK) > 0.00005) {
+          diffs.push(`Surface conductivity: ${params.regolithK.toFixed(4)} W/(m·K) (Moon estimate: ${MOON_DEFAULTS.regolithK})`);
+        }
+        if (Math.abs(params.bulkK - MOON_DEFAULTS.bulkK) > 0.05) {
+          diffs.push(`Deep conductivity: ${params.bulkK.toFixed(2)} W/(m·K) (Moon estimate: ${MOON_DEFAULTS.bulkK})`);
+        }
+        if (Math.abs(params.regolithThickness - MOON_DEFAULTS.regolithThickness) > 0.05) {
+          diffs.push(`Regolith thickness: ${params.regolithThickness.toFixed(1)} m (Moon estimate: ${MOON_DEFAULTS.regolithThickness})`);
+        }
+      }
+      if (diffs.length === 0) {
+        return `<p>${modelNote} Everything else used the Moon’s parameters as best currently sourced — if the model itself is accurate, this should come out close to the measured curve below. If it doesn’t, that’s suggestive of the model rather than these particular inputs — though it could also mean the literature estimates used for those inputs are themselves off, not the model’s physics.</p>`;
+      }
+      const items = diffs.map((d) => `<li>${escapeHtml(d)}</li>`).join('');
+      return `<p>${modelNote}</p><p><strong>You changed:</strong></p><ul class="forewarning-list">${items}</ul><p>Any difference from the measured curve below could come from these changes rather than the model itself — that’s expected, not a failure.</p>`;
+    }
+
+    els.runSim.addEventListener('click', runSimulation);
+    els.revealCompare.addEventListener('click', () => {
+      els.compareSection.hidden = false;
+      els.comparePromptSection.hidden = true; // served its purpose — no need to leave it sitting there
+      // The compare chart was drawn while this section was still hidden, so
+      // its canvas had clientWidth/clientHeight 0 at draw time (drawLineChart
+      // sizes itself from those). Redraw now that it's actually visible.
+      currentChartRedraws.forEach((fn) => fn());
+      sendFeatureBeacon('labs/airless-body/03-nasa-comparison-revealed');
+      els.compareSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Reset lab: this page keeps all its state in the URL hash (no
+    // localStorage), so dropping the hash and reloading is enough to get
+    // back to defaults with every result section hidden again — matching
+    // the other labs' resetLab convention (see sunshine-temperature).
+    const resetBtn = document.getElementById('resetLab');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        window.location.href = window.location.pathname;
+      });
+    }
+  </script>
+
+</BaseLayout>

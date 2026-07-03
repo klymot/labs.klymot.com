@@ -1287,3 +1287,310 @@ select:focus {
   margin: 0.75rem 0 0; padding: 0;
   display: flex; flex-direction: column; gap: 0.75rem;
 }
+
+/* ── lab-airless-body ────────────────────────────────────────────
+   Sticks just below .site-header (3.25rem fixed height) while a
+   simulation is running, so progress stays visible after scrolling
+   down to look at the charts. */
+.lab-airless-body .sim-progress-sticky {
+  position: sticky;
+  top: 3.25rem;
+  z-index: 9;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+.lab-airless-body .sim-progress-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.5rem 1rem;
+}
+.lab-airless-body .sim-progress-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
+.lab-airless-body .sim-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.15s linear;
+}
+.lab-airless-body .sim-progress-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.lab-airless-body .hook {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0.5rem 0 0.75rem;
+}
+.lab-airless-body .learn-list {
+  margin: 0.75rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+.lab-airless-body .learn-list li {
+  margin-bottom: 0.3rem;
+}
+
+/* Blocking-action buttons — bigger and more visually distinct than the
+   secondary mini-tool/reset-btn controls, since these are the actual
+   blocking choices that unlock everything below them. */
+.lab-airless-body .primary-cta {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.75rem 1.75rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: var(--accent);
+  color: var(--bg);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.lab-airless-body .primary-cta:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.lab-airless-body .primary-cta:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.lab-airless-body .primary-cta:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.lab-airless-body .primary-cta-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  margin-top: 1.25rem;
+}
+.lab-airless-body .primary-cta-hint {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.lab-airless-body .comparison-note {
+  border: 1px solid var(--border-strong);
+  background: var(--bg-secondary);
+  border-radius: 0.5rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+.lab-airless-body .comparison-note p {
+  margin: 0 0 0.5rem;
+}
+.lab-airless-body .comparison-note p:last-child {
+  margin-bottom: 0;
+}
+.lab-airless-body .comparison-note strong {
+  color: var(--text);
+}
+.lab-airless-body .forewarning-list {
+  margin: 0 0 0.5rem;
+  padding-left: 1.2rem;
+}
+.lab-airless-body .forewarning-list li {
+  margin-bottom: 0.2rem;
+}
+
+.lab-airless-body .summary-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.lab-airless-body .summary-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.85rem 1rem;
+  text-align: center;
+}
+.lab-airless-body .summary-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+.lab-airless-body .summary-value {
+  display: block;
+  font-family: var(--font-mono, monospace);
+  font-size: 1.4rem;
+  color: var(--text);
+}
+
+.lab-airless-body .param-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.1rem;
+  margin-top: 1rem;
+}
+.lab-airless-body .param-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+.lab-airless-body .param-row label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+.lab-airless-body .param-row input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.lab-airless-body .param-slider-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.lab-airless-body .param-slider-col input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.lab-airless-body .param-value-input {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  width: 8ch;
+  text-align: right;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.4rem;
+}
+.lab-airless-body .param-value-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+/* Remove the spinner arrows — this is a precise-entry box, not a stepper. */
+.lab-airless-body .param-value-input::-webkit-outer-spin-button,
+.lab-airless-body .param-value-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.lab-airless-body .param-value-input[type='number'] {
+  appearance: textfield;
+}
+.lab-airless-body .param-value-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+}
+.lab-airless-body .param-value-suffix {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.lab-airless-body .param-presets {
+  display: flex;
+  gap: 0.5rem;
+}
+.lab-airless-body .mini-tool.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+@media (max-width: 640px) {
+  .lab-airless-body .param-row {
+    grid-template-columns: 1fr;
+  }
+}
+.lab-airless-body .model-choice {
+  margin-bottom: 1.5rem;
+}
+.lab-airless-body .model-choice-prompt {
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+.lab-airless-body .model-choice-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 640px) {
+  .lab-airless-body .model-choice-options {
+    grid-template-columns: 1fr;
+  }
+}
+.lab-airless-body .model-choice-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-align: left;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.lab-airless-body .model-choice-btn:hover {
+  border-color: var(--accent);
+}
+.lab-airless-body .model-choice-btn.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.lab-airless-body .model-choice-title {
+  font-weight: 600;
+}
+.lab-airless-body .model-choice-desc {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+.lab-airless-body .model-choice-chosen {
+  margin-top: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+.lab-airless-body .beta-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lab-airless-body .beta-gate-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: min(90vw, 320px);
+}
+.lab-airless-body .beta-gate-card label {
+  font-weight: 600;
+  color: var(--text);
+}
+.lab-airless-body .beta-gate-card input {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1rem;
+}
+.lab-airless-body .beta-gate-card button {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+  cursor: pointer;
+}
+.lab-airless-body .beta-gate-error {
+  color: #e05050;
+  font-size: 0.9rem;
+}

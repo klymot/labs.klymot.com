@@ -1,0 +1,1 @@
+function e(e){return getComputedStyle(document.documentElement).getPropertyValue(e).trim()}function t(e,t,n){return Math.max(t,Math.min(n,e))}export{e as n,t};
