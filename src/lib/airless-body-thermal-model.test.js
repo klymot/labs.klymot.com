@@ -119,6 +119,38 @@ describe('createConvergenceDriver', () => {
     }
   });
 
+  it('keeps all temperatures finite and within a sane physical range over a long run (Aitken jump-rejection regression)', () => {
+    // Regression test for a latent instability in extrapolateAndJump()'s
+    // Aitken delta-squared jump: once a cell's period-over-period trend goes
+    // nearly linear (tiny genuine curvature — e.g. a deep cell whose
+    // temperature hasn't started changing yet, or one that's already nearly
+    // converged), the second difference (c - 2b + a) can decay into
+    // floating-point noise while still exceeding the near-zero-denom guard,
+    // producing a wildly unphysical extrapolated jump that then poisons
+    // neighboring cells via conduction. A finer grid (more depth shells, so
+    // more deep, slow-to-respond cells) gives this failure mode room to
+    // appear; without the proportionality/sane-range guards on the jump,
+    // this exact configuration goes non-physical (a core cell overshooting
+    // to roughly -6 K) within the very first acceleration batch.
+    const model = createModel(moonParams({ nLatBands: 8, coreCellCount: 8 }));
+    model.setUniformTemperature(250);
+    const driver = createConvergenceDriver(model, { periodsPerHeal: 3 });
+
+    const totalPeriods = 12;
+    const batches = Math.ceil(totalPeriods / 3);
+    for (let b = 0; b < batches; b++) {
+      driver.runOneBatch();
+      for (let i = 0; i < model.nLat; i++) {
+        for (let j = 0; j < model.nDepth; j++) {
+          const t = model.T[i][j];
+          expect(Number.isFinite(t)).toBe(true);
+          expect(t).toBeGreaterThan(1);
+          expect(t).toBeLessThan(1000);
+        }
+      }
+    }
+  }, 20000);
+
   it('stepChunk advances periods and fires onStep for every physics step', () => {
     const model = createModel(moonParams({ nLatBands: 6, coreCellCount: 4 }));
     model.setUniformTemperature(250);

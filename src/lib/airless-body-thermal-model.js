@@ -467,6 +467,26 @@ export function createModel(params) {
  * process itself is the "watch it evolve" visualization, not a separate
  * animation layered on top.
  */
+// Guards against a latent numerical-stability failure in
+// extrapolateAndJump()'s Aitken delta-squared jump: once a cell's
+// period-over-period trend goes nearly linear (tiny genuine curvature —
+// typically a deep, already-nearly-converged cell), the second difference
+// (denom, below) decays into floating-point noise faster than the first
+// differences do. It can sit just above the near-zero-denom threshold while
+// the extrapolated value blows up to something wildly unphysical, which then
+// poisons neighboring cells via conduction over subsequent periods. Two
+// independent guards catch this from different angles:
+//  - JUMP_PROPORTIONALITY_LIMIT: reject a jump that is disproportionate to
+//    the cell's own recently observed trend (catches a bad jump even if it
+//    happens to land inside the sane range below).
+//  - MIN_SANE_TEMPERATURE_K / MAX_SANE_TEMPERATURE_K: a generously wide
+//    physical sanity range for an airless-body regolith column — well
+//    outside any temperature this model should ever produce — that rejects
+//    egregious blowups directly.
+const JUMP_PROPORTIONALITY_LIMIT = 50;
+const MIN_SANE_TEMPERATURE_K = 1;
+const MAX_SANE_TEMPERATURE_K = 1000;
+
 export function createConvergenceDriver(model, options = {}) {
   const periodsPerHeal = options.periodsPerHeal ?? 4;
   const jumpDamping = options.jumpDamping ?? 0.85;
@@ -514,8 +534,13 @@ export function createConvergenceDriver(model, options = {}) {
         const denom = c - 2 * b + a;
         if (Math.abs(denom) > 1e-9) {
           const extrap = c - ((c - b) * (c - b)) / denom;
-          current[i][j] = b + jumpDamping * (extrap - b);
-          anyJump = true;
+          const recentTrend = Math.max(Math.abs(c - b), Math.abs(b - a));
+          const disproportionate = Math.abs(extrap - c) > JUMP_PROPORTIONALITY_LIMIT * recentTrend;
+          const outOfSaneRange = extrap < MIN_SANE_TEMPERATURE_K || extrap > MAX_SANE_TEMPERATURE_K;
+          if (!disproportionate && !outOfSaneRange) {
+            current[i][j] = b + jumpDamping * (extrap - b);
+            anyJump = true;
+          }
         }
       }
     }
