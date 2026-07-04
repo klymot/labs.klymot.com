@@ -411,7 +411,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     import { clamp, cssVar } from '../../lib/lab-utils.js';
     import { sendFeatureBeacon } from '../../lib/analytics.js';
 
-    sendFeatureBeacon('labs/airless-body/01-visited');
+    sendFeatureBeacon('labs/airless-body/00-visited');
 
     const MOON_DEFAULTS = {
       radius: 1737400,
@@ -619,7 +619,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (!fromRestore) {
         pushStateToUrl();
         if (hasRunOnce) markParamsChanged();
-        sendFeatureBeacon('labs/airless-body/00-conductivity-model-chosen');
+        sendFeatureBeacon('labs/airless-body/01-conductivity-model-chosen');
         if (firstReveal) els.paramGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
