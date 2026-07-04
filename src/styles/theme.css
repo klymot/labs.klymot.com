@@ -1413,6 +1413,18 @@ select:focus {
   font-weight: 700;
 }
 
+/* This lab's three-latitude legend buttons push .chart-container a bit
+   short on narrow phones (the shared 220px default was sized for shorter
+   legends elsewhere on the site) -- a bit more room here specifically. */
+.lab-airless-body .chart-container {
+  height: 260px;
+}
+@media (min-width: 640px) {
+  .lab-airless-body .chart-container {
+    height: 300px;
+  }
+}
+
 .lab-airless-body .summary-panel {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));

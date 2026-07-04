@@ -261,12 +261,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="container">
         <div class="prose">
           <h2 id="long-timescale-heading">Settling in: many rotations</h2>
-          <p>The coldest point reached during each rotation, for three representative latitudes. This is what actually moves as the deep interior settles — the daytime peak equilibrates almost immediately regardless.</p>
+          <p>The coldest point reached during each rotation, for three representative latitudes — equator, mid-latitude (45°), and near-pole (80°). This is what actually moves as the deep interior settles — the daytime peak equilibrates almost immediately regardless.</p>
         </div>
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-container" id="longChartContainer" role="img" aria-label="Chart of temperature settling over many rotation periods">
-              <canvas id="longChart" style="display:block; width:100%; height:280px;"></canvas>
+              <canvas id="longChart" style="display:block; width:100%; height:100%;"></canvas>
             </div>
             <div id="longChartLegend"></div>
           </div>
@@ -284,7 +284,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-container" id="shortChartContainer" role="img" aria-label="Chart of one settled rotation's diurnal temperature cycle">
-              <canvas id="shortChart" style="display:block; width:100%; height:280px;"></canvas>
+              <canvas id="shortChart" style="display:block; width:100%; height:100%;"></canvas>
             </div>
             <div id="shortChartLegend"></div>
           </div>
@@ -370,7 +370,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-container" id="compareChartContainer" role="img" aria-label="Chart comparing the model's equatorial temperature curve to Diviner-derived reference data">
-              <canvas id="compareChart" style="display:block; width:100%; height:280px;"></canvas>
+              <canvas id="compareChart" style="display:block; width:100%; height:100%;"></canvas>
             </div>
             <div id="compareChartLegend"></div>
           </div>
@@ -1185,8 +1185,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       const longSeries = {
         equator: { label: 'Equator', color: '#e05050', points: [] },
-        mid: { label: 'Mid-latitude (45°)', color: '#d4a855', points: [] },
-        pole: { label: 'Near-pole (80°)', color: '#4a7fd6', points: [] },
+        mid: { label: 'Mid-latitude', color: '#d4a855', points: [] },
+        pole: { label: 'Near-pole', color: '#4a7fd6', points: [] },
       };
       function redrawLongChart() {
         drawLineChart(els.longChart, Object.values(longSeries), { xLabel: 'Rotation period #', yLabel: 'K', xMin: 1, xMax: totalPeriods });
@@ -1207,8 +1207,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       // comparison, since that's the axis Hurley et al.'s curve needs.
       const shortSeries = {
         equator: { label: 'Equator', color: '#e05050', points: [] },
-        mid: { label: 'Mid-latitude (45°)', color: '#d4a855', points: [] },
-        pole: { label: 'Near-pole (80°)', color: '#4a7fd6', points: [] },
+        mid: { label: 'Mid-latitude', color: '#d4a855', points: [] },
+        pole: { label: 'Near-pole', color: '#4a7fd6', points: [] },
       };
       const liveShortXMax = (totalPeriods * period) / 3600;
       // Bounds live in mutable variables (not baked into the legend
