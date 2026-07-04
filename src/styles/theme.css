@@ -1395,12 +1395,22 @@ select:focus {
 .lab-airless-body .comparison-note strong {
   color: var(--text);
 }
-.lab-airless-body .forewarning-list {
+.lab-airless-body .forewarning-checklist {
   margin: 0 0 0.5rem;
-  padding-left: 1.2rem;
+  padding-left: 0;
+  list-style: none;
 }
-.lab-airless-body .forewarning-list li {
-  margin-bottom: 0.2rem;
+.lab-airless-body .forewarning-checklist li {
+  position: relative;
+  margin-bottom: 0.3rem;
+  padding-left: 1.3rem;
+}
+.lab-airless-body .forewarning-checklist li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
 }
 
 .lab-airless-body .summary-panel {

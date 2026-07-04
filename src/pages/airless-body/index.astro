@@ -333,6 +333,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <p>Compare the two conductivity models at a few different rotation periods, not just the Moon's real one. Does switching models matter more at some rotation speeds than others?</p>
           </div>
         </details>
+        <details class="expander">
+          <summary>What does changing the Moon's albedo do?</summary>
+          <div class="expander-body">
+            <p>Leave the conductivity model and rotation period fixed, and change only the Bond albedo. Which way does the daytime peak move — and does the nighttime low move by a similar amount, a smaller one, or barely at all?</p>
+          </div>
+        </details>
         <div class="prose">
           <p>See <a href="#sources">data sources &amp; methodology</a> below for the papers behind the reference curve and both conductivity models.</p>
           <div id="compareForewarning" class="comparison-note"></div>
@@ -1396,41 +1402,42 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
 
     function buildForewarningHtml(params) {
-      // Which conductivity model was used isn't framed as a "change" from a
-      // default — neither model is a default (it's a blocking choice with
-      // no pre-selection) — so it's stated plainly, the same way regardless
-      // of which was picked.
-      const modelNote = params.conductivityModel === 'metzger'
-        ? 'This run used the depth- and temperature-dependent conductivity model (Metzger et al.).'
-        : 'This run used the layered, fixed conductivity model.';
-      const diffs = [];
+      // A full checklist of every relevant setting, changed or not, read
+      // right before the graph — rather than only calling out what changed
+      // (the previous design), so the reader starts from a complete picture
+      // of this specific run instead of having to infer what's default.
+      const items = [];
+      items.push(params.conductivityModel === 'metzger'
+        ? 'Depth- and temperature-dependent conductivity model (Metzger et al.)'
+        : 'Layered, fixed conductivity model');
+
       const rotDays = (params.rotationPeriodSec / 86400).toFixed(1);
       const moonDays = (MOON_DEFAULTS.rotationPeriodHours / 24).toFixed(1);
-      if (Math.abs(params.rotationPeriodSec / 3600 - MOON_DEFAULTS.rotationPeriodHours) > 0.5) {
-        diffs.push(`Rotation period: ${rotDays} days (Moon: ${moonDays} days)`);
-      }
-      if (Math.abs(params.albedo - MOON_DEFAULTS.albedo) > 0.005) {
-        diffs.push(`Albedo: ${params.albedo.toFixed(3)} (Moon: ${MOON_DEFAULTS.albedo})`);
-      }
+      items.push(Math.abs(params.rotationPeriodSec / 3600 - MOON_DEFAULTS.rotationPeriodHours) > 0.5
+        ? `Rotation period changed to ${rotDays} days (Moon: ${moonDays} days)`
+        : `Rotation period unchanged (${moonDays} days, the Moon's real value)`);
+
+      items.push(Math.abs(params.albedo - MOON_DEFAULTS.albedo) > 0.005
+        ? `Bond albedo changed to ${params.albedo.toFixed(3)} (Moon: ${MOON_DEFAULTS.albedo})`
+        : `Bond albedo unchanged (${MOON_DEFAULTS.albedo}, the Moon's real value)`);
+
       // The simple model's three parameters below don't apply once
       // conductivity is derived from depth and temperature instead, so they
-      // aren't meaningful "changes" in that mode.
+      // aren't meaningful checklist entries in that mode.
       if (params.conductivityModel !== 'metzger') {
-        if (Math.abs(params.regolithK - MOON_DEFAULTS.regolithK) > 0.00005) {
-          diffs.push(`Surface conductivity: ${params.regolithK.toFixed(4)} W/(m·K) (Moon estimate: ${MOON_DEFAULTS.regolithK})`);
-        }
-        if (Math.abs(params.bulkK - MOON_DEFAULTS.bulkK) > 0.05) {
-          diffs.push(`Deep conductivity: ${params.bulkK.toFixed(2)} W/(m·K) (Moon estimate: ${MOON_DEFAULTS.bulkK})`);
-        }
-        if (Math.abs(params.regolithThickness - MOON_DEFAULTS.regolithThickness) > 0.05) {
-          diffs.push(`Regolith thickness: ${params.regolithThickness.toFixed(1)} m (Moon estimate: ${MOON_DEFAULTS.regolithThickness})`);
-        }
+        items.push(Math.abs(params.regolithK - MOON_DEFAULTS.regolithK) > 0.00005
+          ? `Surface conductivity changed to ${params.regolithK.toFixed(4)} W/(m·K) (Moon estimate: ${MOON_DEFAULTS.regolithK})`
+          : `Surface conductivity unchanged (${MOON_DEFAULTS.regolithK} W/(m·K), the Moon estimate)`);
+        items.push(Math.abs(params.bulkK - MOON_DEFAULTS.bulkK) > 0.05
+          ? `Deep conductivity changed to ${params.bulkK.toFixed(2)} W/(m·K) (Moon estimate: ${MOON_DEFAULTS.bulkK})`
+          : `Deep conductivity unchanged (${MOON_DEFAULTS.bulkK} W/(m·K), the Moon estimate)`);
+        items.push(Math.abs(params.regolithThickness - MOON_DEFAULTS.regolithThickness) > 0.05
+          ? `Regolith thickness changed to ${params.regolithThickness.toFixed(1)} m (Moon estimate: ${MOON_DEFAULTS.regolithThickness})`
+          : `Regolith thickness unchanged (${MOON_DEFAULTS.regolithThickness} m, the Moon estimate)`);
       }
-      if (diffs.length === 0) {
-        return `<p>${modelNote} Everything else used the Moon’s parameters as best currently sourced — if the model itself is accurate, this should come out close to the measured curve below. If it doesn’t, that’s suggestive of the model rather than these particular inputs — though it could also mean the literature estimates used for those inputs are themselves off, not the model’s physics.</p>`;
-      }
-      const items = diffs.map((d) => `<li>${escapeHtml(d)}</li>`).join('');
-      return `<p>${modelNote}</p><p><strong>You changed:</strong></p><ul class="forewarning-list">${items}</ul><p>Any difference from the measured curve below could come from these changes rather than the model itself — that’s expected, not a failure.</p>`;
+
+      const listItems = items.map((d) => `<li>${escapeHtml(d)}</li>`).join('');
+      return `<p><strong>This run used:</strong></p><ul class="forewarning-checklist">${listItems}</ul><p>The curve below represents the real Moon. Any difference from it may come from these modelling choices as well as the model's own limitations (see above).</p>`;
     }
 
     els.runSim.addEventListener('click', runSimulation);
