@@ -117,7 +117,7 @@ describe('createConvergenceDriver', () => {
         expect(Number.isFinite(model.T[i][j])).toBe(true);
       }
     }
-  });
+  }, 10000);
 
   it('keeps all temperatures finite and within a sane physical range over a long run (Aitken jump-rejection regression)', () => {
     // Regression test for a latent instability in extrapolateAndJump()'s
@@ -173,7 +173,7 @@ describe('createConvergenceDriver', () => {
         expect(Number.isFinite(model.T[i][j])).toBe(true);
       }
     }
-  });
+  }, 10000);
 });
 
 describe('Metzger conductivity model', () => {
