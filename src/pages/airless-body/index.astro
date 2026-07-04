@@ -310,6 +310,31 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="container">
         <div class="prose">
           <h2 id="compare-heading">Compare to NASA's measured lunar temperatures</h2>
+          <div class="comparison-note">
+            <p><strong>Read this before drawing conclusions from the number below.</strong> This is a deliberately simplified model, also built to run smoothly on a phone in a browser tab — real effects like surface roughness, a mixed rock-and-dust surface, and heat storage below the single outermost simulated layer are left out entirely. Those omissions don't necessarily cancel out against each other, but sometimes they do — worth keeping in mind if a run lands unusually close to the measured curve below. As a rough guide, landing within about 5 K is a reasonable sign this simplified model is capturing the right physics; landing much closer than that isn't evidence of a more precise result, just as likely to be a few simplifications happening to offset one another.</p>
+            <p>What this tool is better suited for is comparing two runs against each other, not reading either one in isolation. A few things worth trying yourself — expand each for how to set it up, not what you'll find:</p>
+          </div>
+        </div>
+        <details class="expander">
+          <summary>Do we need the depth- and temperature-dependent conductivity model?</summary>
+          <div class="expander-body">
+            <p>Run the simulation once with each conductivity model, everything else left at the Moon's defaults, and compare both results against the curve below. Does the more detailed model land closer overall — and if so, is that during the day, the night, or both?</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>How does the Moon's rotation speed affect its temperature?</summary>
+          <div class="expander-body">
+            <p>Keep the conductivity model fixed and change only the rotation period. What happens to the average, hottest, and coldest temperatures as the simulated day gets longer or shorter?</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>Where does the conductivity model choice matter most?</summary>
+          <div class="expander-body">
+            <p>Compare the two conductivity models at a few different rotation periods, not just the Moon's real one. Does switching models matter more at some rotation speeds than others?</p>
+          </div>
+        </details>
+        <div class="prose">
+          <p>See <a href="#sources">data sources &amp; methodology</a> below for the papers behind the reference curve and both conductivity models.</p>
           <div id="compareForewarning" class="comparison-note"></div>
         </div>
 
