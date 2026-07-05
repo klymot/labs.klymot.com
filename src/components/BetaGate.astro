@@ -1,0 +1,51 @@
+---
+// Full-screen soft lock for labs under beta testing — see src/lib/beta-gate.js
+// for the behaviour (and why it is deliberately not a security boundary).
+// Render this as the first element inside BaseLayout; the .beta-gate styles
+// are shared in theme.css under the .lab-page scope.
+//
+// passwordHash is a bcrypt hash of the lab's access code — only the hash
+// lives in the repo. storageKey is the per-lab localStorage flag, e.g.
+// "airless-body-beta-unlocked".
+interface Props {
+  passwordHash: string;
+  storageKey: string;
+}
+const { passwordHash, storageKey } = Astro.props;
+---
+<div id="betaGate" class="beta-gate" data-password-hash={passwordHash} data-storage-key={storageKey}>
+  <form id="betaGateForm" class="beta-gate-card">
+    <label for="betaGateInput">Lab beta tester access code</label>
+    <input type="password" id="betaGateInput" autocomplete="off" autocapitalize="off" spellcheck="false" />
+    <button type="submit">Submit</button>
+    <p id="betaGateError" class="beta-gate-error" hidden>Incorrect code.</p>
+  </form>
+</div>
+
+<script>
+  import bcrypt from 'bcryptjs';
+  import { sendPageBeacon } from '../lib/analytics.js';
+  import { initBetaGate } from '../lib/beta-gate.js';
+
+  const gate = document.getElementById('betaGate');
+  if (gate) {
+    initBetaGate({
+      gate,
+      form: document.getElementById('betaGateForm') as HTMLFormElement,
+      input: document.getElementById('betaGateInput') as HTMLInputElement,
+      error: document.getElementById('betaGateError') as HTMLElement,
+      checkCode: (code) => bcrypt.compareSync(code, gate.dataset.passwordHash ?? ''),
+      storageKey: gate.dataset.storageKey ?? '',
+      // The page-view beacon fires here, not in the page's head script, so it
+      // only counts visitors who actually get past the gate — a bounce off
+      // the password prompt shouldn't count as a real page view. A returning
+      // visitor with the unlock flag already in localStorage counts
+      // immediately (they're not hitting an unfamiliar gate); a first-time
+      // visitor only counts once they enter the correct code. No feature
+      // beacon for the unlock itself — the beta gate is temporary, and each
+      // page's funnel event names/numbers should stay exactly as they are so
+      // nothing needs renumbering once the gate goes away.
+      onUnlock: sendPageBeacon,
+    });
+  }
+</script>

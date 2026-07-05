@@ -1,63 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import BetaGate from '../../components/BetaGate.astro';
 ---
 <BaseLayout title="The Cherry-Picking Machine — beta" description="Lab under beta testing, shared by invitation — not linked from the labs index." bodyClass="lab-page lab-cherry-picking">
 
-  <div id="betaGate" class="beta-gate">
-    <form id="betaGateForm" class="beta-gate-card">
-      <label for="betaGateInput">Lab beta tester access code</label>
-      <input type="password" id="betaGateInput" autocomplete="off" autocapitalize="off" spellcheck="false" />
-      <button type="submit">Submit</button>
-      <p id="betaGateError" class="beta-gate-error" hidden>Incorrect code.</p>
-    </form>
-  </div>
-  <script>
-    import bcrypt from 'bcryptjs';
-    import { sendPageBeacon } from '../../lib/analytics.js';
-
-    // Not a real security boundary — client-side hash check, easily
-    // bypassed by anyone who opens devtools. The only goal is keeping a
-    // casual visitor who stumbles on this unlisted link from seeing
-    // anything beyond this prompt; a determined person getting past it is
-    // out of scope.
-    const PASSWORD_HASH = '$2b$10$T/11.XZIzaUkSPYJoeUDkOw8IZhpCTCgC1PQzAJMmzOeLF0CTehLy';
-    const STORAGE_KEY = 'cherry-picking-beta-unlocked';
-
-    const gate = document.getElementById('betaGate');
-    const form = document.getElementById('betaGateForm');
-    const input = document.getElementById('betaGateInput');
-    const error = document.getElementById('betaGateError');
-
-    // Page-view beacon lives here, not in the head script, so it only
-    // fires for visitors who actually get past the gate — a bounce off
-    // the password prompt shouldn't count as a real page view. A returning
-    // visitor with the unlock flag already in localStorage counts
-    // immediately (they're not hitting an unfamiliar gate); a first-time
-    // visitor only counts once they enter the correct code. No feature
-    // beacon for the unlock itself — the beta gate is temporary, and the
-    // rest of the page's funnel event names/numbers should stay exactly as
-    // they are so nothing needs renumbering once the gate goes away.
-    function unlock() {
-      try { localStorage.setItem(STORAGE_KEY, '1'); } catch (_) {}
-      gate.style.display = 'none';
-      sendPageBeacon();
-    }
-
-    try {
-      if (localStorage.getItem(STORAGE_KEY) === '1') unlock();
-    } catch (_) {}
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (bcrypt.compareSync(input.value, PASSWORD_HASH)) {
-        unlock();
-      } else {
-        error.hidden = false;
-        input.value = '';
-        input.focus();
-      }
-    });
-  </script>
+  <BetaGate passwordHash="$2b$10$T/11.XZIzaUkSPYJoeUDkOw8IZhpCTCgC1PQzAJMmzOeLF0CTehLy" storageKey="cherry-picking-beta-unlocked" />
 
   <header class="site-header">
     <div class="container header-inner">
