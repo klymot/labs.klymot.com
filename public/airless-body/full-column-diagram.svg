@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 420"
+     role="img" aria-label="Diagram of the full column from the Moon's surface to its centre, divided into boxes that grow thicker with depth, ending in a single ball-shaped cell at the centre">
+  <title>The whole column, right down to the centre</title>
+  <desc>The same stack of boxes as the near-surface diagram, continued all the way down. Boxes grow thicker with depth because deep material changes temperature far more slowly. A single ball-shaped cell stands in for the very centre.</desc>
+
+  <defs>
+    <marker id="fc-arr-flux" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#d4a855"/>
+    </marker>
+    <marker id="fc-arr-lead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+      <polygon points="0 0,6 2,0 4" fill="#a8a090"/>
+    </marker>
+  </defs>
+
+  <!-- ── Surface fluxes, small — full detail is the previous diagram ── -->
+  <line x1="280" y1="18" x2="280" y2="42" stroke="#d4a855" stroke-width="2" marker-end="url(#fc-arr-flux)"/>
+  <text x="292" y="30" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#a8a090">Surface: sunlight in, radiation out</text>
+  <text x="292" y="44" font-family="system-ui,-apple-system,sans-serif" font-size="11" fill="#a8a090" opacity="0.8">(as in the diagram above)</text>
+
+  <!-- ── Boxes, thin at top to thick at bottom ──────────────────────
+       x: 230 to 390 (width 160)
+       box1: 50-64   (h14)
+       box2: 64-84   (h20)
+       box3: 84-112  (h28)
+       box4: 112-150 (h38)
+       box5: 150-200 (h50)
+       box6: 200-264 (h64)
+  -->
+  <rect x="230" y="50"  width="160" height="14" fill="#152c4a" stroke="#d4a855" stroke-width="2"/>
+  <rect x="230" y="64"  width="160" height="20" fill="#152c4a" stroke="#d4a855" stroke-width="2"/>
+  <rect x="230" y="84"  width="160" height="28" fill="#152c4a" stroke="#d4a855" stroke-width="2"/>
+  <rect x="230" y="112" width="160" height="38" fill="#152c4a" stroke="#d4a855" stroke-width="2"/>
+  <rect x="230" y="150" width="160" height="50" fill="#152c4a" stroke="#d4a855" stroke-width="2"/>
+  <rect x="230" y="200" width="160" height="64" fill="#152c4a" stroke="#d4a855" stroke-width="2"/>
+
+  <!-- ── Conduction arrows at each junction, fading with depth ──────
+       junctions at y = 64, 84, 112, 150, 200                       -->
+  <g stroke="#d4a855" stroke-width="1.4" fill="none">
+    <line x1="285" y1="58"  x2="285" y2="70"  marker-end="url(#fc-arr-flux)" opacity="1"/>
+    <line x1="315" y1="70"  x2="315" y2="58"  marker-end="url(#fc-arr-flux)" opacity="1"/>
+
+    <line x1="285" y1="78"  x2="285" y2="90"  marker-end="url(#fc-arr-flux)" opacity="0.85"/>
+    <line x1="315" y1="90"  x2="315" y2="78"  marker-end="url(#fc-arr-flux)" opacity="0.85"/>
+
+    <line x1="285" y1="106" x2="285" y2="118" marker-end="url(#fc-arr-flux)" opacity="0.7"/>
+    <line x1="315" y1="118" x2="315" y2="106" marker-end="url(#fc-arr-flux)" opacity="0.7"/>
+
+    <line x1="285" y1="144" x2="285" y2="156" marker-end="url(#fc-arr-flux)" opacity="0.55"/>
+    <line x1="315" y1="156" x2="315" y2="144" marker-end="url(#fc-arr-flux)" opacity="0.55"/>
+
+    <line x1="285" y1="194" x2="285" y2="206" marker-end="url(#fc-arr-flux)" opacity="0.4"/>
+    <line x1="315" y1="206" x2="315" y2="194" marker-end="url(#fc-arr-flux)" opacity="0.4"/>
+  </g>
+
+  <!-- ── Conduction label, pointing at the topmost (liveliest) junction ── -->
+  <line x1="140" y1="64" x2="228" y2="64" stroke="#a8a090" stroke-width="1" fill="none" marker-end="url(#fc-arr-lead)"/>
+  <text x="10" y="50" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#a8a090">Conduction between</text>
+  <text x="10" y="65" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#a8a090">neighbours, same as</text>
+  <text x="10" y="80" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#a8a090">above — all the way down</text>
+
+  <!-- ── Callout: boxes grow thicker with depth ──────────────────── -->
+  <line x1="392" y1="170" x2="415" y2="170" stroke="#a8a090" stroke-width="1" fill="none" marker-end="url(#fc-arr-lead)"/>
+  <text x="418" y="160" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#a8a090">Thicker with depth —</text>
+  <text x="418" y="175" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#a8a090">deep material barely</text>
+  <text x="418" y="190" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#a8a090">changes hour to hour</text>
+
+  <!-- ── Link down into the centre cell ─────────────────────────── -->
+  <line x1="285" y1="264" x2="285" y2="284" stroke="#d4a855" stroke-width="1.4" opacity="0.3" marker-end="url(#fc-arr-flux)"/>
+  <line x1="315" y1="284" x2="315" y2="264" stroke="#d4a855" stroke-width="1.4" opacity="0.3" marker-end="url(#fc-arr-flux)"/>
+
+  <!-- ── Centre cell: a ball, not a wedge ─────────────────────────── -->
+  <circle cx="300" cy="330" r="40" fill="#152c4a" stroke="#d4a855" stroke-width="2"/>
+  <text x="300" y="334" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="11" fill="#a8a090">centre</text>
+
+  <line x1="344" y1="330" x2="367" y2="330" stroke="#a8a090" stroke-width="1" fill="none" marker-end="url(#fc-arr-lead)"/>
+  <text x="370" y="320" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#a8a090">A single ball-shaped cell</text>
+  <text x="370" y="335" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#a8a090">stands in for the very centre</text>
+  <text x="370" y="350" font-family="system-ui,-apple-system,sans-serif" font-size="11" fill="#a8a090" opacity="0.8">(no wedge tapering to a point)</text>
+</svg>

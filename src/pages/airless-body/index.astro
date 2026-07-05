@@ -130,10 +130,47 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <p>This is intentionally a "surface physics only" model — no internal heat from the Moon itself, so the result depends only on sunlight, conduction, and radiation.</p>
         </div>
         <details class="expander">
+          <summary>How does the model actually work?</summary>
+          <div class="expander-body">
+            <p>Picture the Moon sliced like a loaf of bread, one column running straight down from the surface to the very centre. That column is chopped into a stack of boxes — thin ones near the surface, fatter ones deeper down. Each box is treated as one uniform blob: one temperature, one composition, no structure of its own.</p>
+            <p>Every box only ever talks to its immediate neighbours, the one above it and the one below. It gains or loses heat by conduction to and from those neighbours — and, only at the very top of the stack, gains heat from sunlight by day and loses heat to space as thermal radiation, day and night.</p>
+            <div class="diagram-wrap">
+              <img
+                src="/airless-body/thin-slice-diagram.svg"
+                alt="Diagram of three stacked boxes just below the surface. The top box absorbs sunlight by day and radiates heat to space at all times; every box exchanges heat by conduction only with the box directly above and below it."
+                class="airless-body-diagram"
+                width="560"
+                height="320"
+                loading="lazy"
+              />
+            </div>
+            <p>Zoom out and the same rule applies all the way down, box after box, growing thicker with depth, until a single ball-shaped cell at the very centre stands in for the whole core (see "More on the numerical scheme" below for why).</p>
+            <div class="diagram-wrap">
+              <img
+                src="/airless-body/full-column-diagram.svg"
+                alt="Diagram of the full column from the surface to the centre, showing boxes that grow thicker with depth and a single ball-shaped cell standing in for the centre."
+                class="airless-body-diagram"
+                width="560"
+                height="420"
+                loading="lazy"
+              />
+            </div>
+            <p>None of this happens in one leap. The simulation advances in small steps of time — a few simulated minutes at once — and at each step works out, for every box, how much heat it gained or lost since the last step, then nudges that box's temperature by the resulting amount before moving on. Thousands of these small steps, one after another, is what turns "boxes exchanging heat with their neighbours" into a full day/night cycle — and enough repeated cycles is what settles into the steady state plotted throughout this page.</p>
+          </div>
+        </details>
+        <details class="expander">
           <summary>What is lunar regolith?</summary>
           <div class="expander-body">
             <p>Regolith is the loose layer of dust, broken rock, and rubble that blankets the Moon's solid bedrock — built up over billions of years as meteorite impacts, large and small, kept pulverizing the surface. It isn't "soil" in the Earth sense: no water, no organic matter, just fragmented mineral grains.</p>
             <p>Those grains barely touch each other, especially with no air pressure to pack them together, so heat has very few solid paths to conduct through — a big part of why regolith conducts heat so poorly (see "More on conductive heat transfer" below).</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>Why does the Sun's angle in the sky matter, not just day or night?</summary>
+          <div class="expander-body">
+            <p>Sunlight arrives as parallel rays. Straight overhead, that bundle of rays lands on the smallest possible patch of ground — maximum energy per square metre. Tilt the same bundle to a shallower angle and it spreads over a wider patch, so the same total energy gets diluted over more area. This is Lambert's cosine law: the sunlight a patch of ground actually receives scales with <code>cos(angle from directly overhead)</code> — full strength with the Sun straight up, tapering smoothly to zero right at sunrise and sunset, where the rays graze the surface edge-on.</p>
+            <p>That angle isn't just "time of day" — it comes from three things combined: latitude, the Sun's declination (how far north or south of the equator it's shining, cycling with the orbit and the axial tilt), and the hour angle (how far the rotation has carried this point since local noon). Put those three together and you get how high the Sun sits in the sky, for any latitude, at any time of day, at any point in the year — and that's exactly what multiplies against the raw solar constant to give the sunlight a given box actually receives right now.</p>
+            <p>It's this smooth cosine taper, not a day/night on-off switch, that produces the gentle warm-up around sunrise and cool-down around sunset in the simulated temperature curve, rather than a sudden step.</p>
           </div>
         </details>
         <details class="expander">
@@ -155,6 +192,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <div class="expander-body">
             <p>Depth cells are geometrically graded (thin near the surface, where the diurnal thermal wave actually lives, coarser with depth) and switch to mass-conserving spacing near the center, ending in a single innermost cell that represents a small ball rather than a vanishing wedge — avoiding the coordinate singularity at r=0 without needing to resolve it exactly.</p>
             <p>Reaching a periodic steady state by pure explicit time-marching can take many simulated rotation periods, especially for the real deep interior. This uses Aitken-extrapolation acceleration: run a few real periods, extrapolate each cell's asymptotic value from the trend, jump most of the way there, then run more real periods to "heal" whatever the jump got wrong — same equations and domain throughout, just a faster way of finding that same model's steady state.</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>Why not just simulate one rotation?</summary>
+          <div class="expander-body">
+            <p>Because the surface and the deep interior settle at wildly different speeds. Only the top few centimetres actually feel the day/night cycle within a single rotation (see "More on conductive heat transfer" above for why conduction here is so slow). Everything below that thin skin barely warms or cools on any single pass — heat trickles down only a little further each rotation, and whatever's already down there keeps conducting back up and down long after the rotation that put it there has ended.</p>
+            <p>That means a box a metre down isn't just reflecting "today" — it's a running memory of many previous rotations layered on top of each other. Simulating a single rotation from a guessed starting temperature captures none of that memory. Only after enough repeated rotations does every box's day-to-day swing stop changing from one rotation to the next; that repeating pattern is a periodic steady state, and it's the only point at which the simulated temperatures actually mean anything (see "More on the numerical scheme" above for how this model reaches that state faster than by brute-force repetition alone).</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>Why is one longitude enough?</summary>
+          <div class="expander-body">
+            <p>Lunar regolith conducts so poorly that heat barely moves a few centimetres vertically over an entire rotation (see "More on conductive heat transfer" above) — let alone sideways, between one longitude and its neighbour, a surface distance measured in hundreds of kilometres. Whatever's happening at one longitude simply can't conduct its way over to affect the next one before the whole pattern has already reversed with the next sunrise. East-west conduction is negligible enough to ignore entirely.</p>
+            <p>That has a convenient consequence: every longitude experiences exactly the same day/night cycle as every other longitude at the same latitude, just shifted in time by however far apart they are in rotation phase. Once a single simulated column settles into its repeating daily cycle, every other longitude's history is already sitting inside that same cycle — just read starting from a different point in the rotation. The globe elsewhere on this page is built exactly that way: one column's temperature history, replayed at every longitude with a different time-shift, rather than an actual simulation of each one separately.</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>Why doesn't this version include the Moon's own internal heat?</summary>
+          <div class="expander-body">
+            <p>It isn't that internal heat is assumed to be negligible — this version simply doesn't model it, on purpose. The deep boundary at the very centre carries no imposed heat flow of its own; it's given a starting temperature and then left to evolve purely by conduction from everything above it, the same rule every other box follows.</p>
+            <p>That's a deliberate choice about what this particular model is testing: how much of the Moon's surface temperature is explained by sunlight, conduction, and radiation alone, with nothing else added. Whether folding in a small steady geothermal flux at depth — the kind Apollo's own heat-flow probes measured at two landing sites — would noticeably change the answer is a genuinely open, separate question. Testing it means adding a flux term to this same validated model, not assuming the answer either way in advance.</p>
           </div>
         </details>
       </div>

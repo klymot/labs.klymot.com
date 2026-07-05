@@ -657,6 +657,15 @@ canvas { filter: saturate(0.93); }
   opacity: 0.92;
 }
 
+.airless-body-diagram {
+  display: block;
+  max-width: 560px;
+  width: 100%;
+  margin-inline: auto;
+  height: auto;
+  opacity: 0.92;
+}
+
 /* ── Network chart (Section 2) ────────────────────────────────── */
 .network-chart-container {
   position: relative;
