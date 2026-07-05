@@ -1,0 +1,1412 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="The Cherry-Picking Machine — beta" description="Lab under beta testing, shared by invitation — not linked from the labs index." bodyClass="lab-page lab-cherry-picking">
+
+  <div id="betaGate" class="beta-gate">
+    <form id="betaGateForm" class="beta-gate-card">
+      <label for="betaGateInput">Lab beta tester access code</label>
+      <input type="password" id="betaGateInput" autocomplete="off" autocapitalize="off" spellcheck="false" />
+      <button type="submit">Submit</button>
+      <p id="betaGateError" class="beta-gate-error" hidden>Incorrect code.</p>
+    </form>
+  </div>
+  <script>
+    import bcrypt from 'bcryptjs';
+    import { sendPageBeacon } from '../../lib/analytics.js';
+
+    // Not a real security boundary — client-side hash check, easily
+    // bypassed by anyone who opens devtools. The only goal is keeping a
+    // casual visitor who stumbles on this unlisted link from seeing
+    // anything beyond this prompt; a determined person getting past it is
+    // out of scope.
+    const PASSWORD_HASH = '$2b$10$T/11.XZIzaUkSPYJoeUDkOw8IZhpCTCgC1PQzAJMmzOeLF0CTehLy';
+    const STORAGE_KEY = 'cherry-picking-beta-unlocked';
+
+    const gate = document.getElementById('betaGate');
+    const form = document.getElementById('betaGateForm');
+    const input = document.getElementById('betaGateInput');
+    const error = document.getElementById('betaGateError');
+
+    // Page-view beacon lives here, not in the head script, so it only
+    // fires for visitors who actually get past the gate — a bounce off
+    // the password prompt shouldn't count as a real page view. A returning
+    // visitor with the unlock flag already in localStorage counts
+    // immediately (they're not hitting an unfamiliar gate); a first-time
+    // visitor only counts once they enter the correct code. No feature
+    // beacon for the unlock itself — the beta gate is temporary, and the
+    // rest of the page's funnel event names/numbers should stay exactly as
+    // they are so nothing needs renumbering once the gate goes away.
+    function unlock() {
+      try { localStorage.setItem(STORAGE_KEY, '1'); } catch (_) {}
+      gate.style.display = 'none';
+      sendPageBeacon();
+    }
+
+    try {
+      if (localStorage.getItem(STORAGE_KEY) === '1') unlock();
+    } catch (_) {}
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (bcrypt.compareSync(input.value, PASSWORD_HASH)) {
+        unlock();
+      } else {
+        error.hidden = false;
+        input.value = '';
+        input.focus();
+      }
+    });
+  </script>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <nav class="header-nav" aria-label="Site navigation">
+        <a class="brand-link" href="https://klymot.com" aria-label="klymot home">
+          <span class="brand-logo" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="22" height="22">
+              <circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"/>
+              <ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/>
+              <circle cx="19.5" cy="10.5" r="2" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="brand-title">klymot</span>
+          <span class="brand-sub">· labs</span>
+        </a>
+        <a href="/" class="back-link" aria-label="Back to labs index">← Labs</a>
+      </nav>
+      <div class="header-actions">
+        <button class="reset-btn" id="resetLab" type="button" aria-label="Reset all choices">Reset lab</button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" type="button">◐</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ── Hero ──────────────────────────────────────────────────────── -->
+    <div class="container">
+      <div class="page-hero">
+        <span class="eyebrow" aria-hidden="true">Lab under beta testing — shared by invitation</span>
+        <h1>The Cherry-Picking Machine</h1>
+        <p class="hook">Anyone quoting a temperature trend has made two quiet choices: how many years to include, and which years. Here you make both — over and over — on a real thermometer record.</p>
+        <p class="lede">Pick a weather station. Pick a window length. Drag the window through the record — every position you pass over adds another trend to your tally. Then see where the whole record lands in the distribution you made.</p>
+        <ul class="learn-list">
+          <li>What a trend line fitted to a run of years actually measures, and what its confidence band means.</li>
+          <li>How to build, by dragging, the distribution of window trends a single record contains.</li>
+          <li>Where the full record's own trend sits among the window trends you sampled.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── Section: What counts as a trend ───────────────────────────── -->
+    <section class="lab-section" id="concept" aria-labelledby="concept-heading">
+      <div class="container">
+        <div class="prose">
+          <h2 id="concept-heading">What counts as a "trend" here</h2>
+          <p>Take any consecutive run of years from a station's record and you can fit a straight line through its annual mean temperatures. The slope of that line — in degrees per decade — is the number people mean when they quote a warming or cooling trend "over the last N years".</p>
+          <p>That number depends on two choices: how long the run is, and where it sits in the record. This lab puts both choices in your hands and keeps a running tally of every answer they produce. It does not tell you what the tally should look like.</p>
+        </div>
+        <details class="expander">
+          <summary>How is the trend line fitted?</summary>
+          <div class="expander-body">
+            <p>By ordinary least squares — the straight line that minimizes the summed squared vertical distances to the annual points. It's the same fitting method used for the trend overlays on klymot.com's station charts. The slope is reported in °C per decade; the same fit expressed per year or per century would just rescale the number without changing anything else.</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>What does the shaded band around the trend line mean?</summary>
+          <div class="expander-body">
+            <p>It's the 95% confidence interval on the slope: the range of slopes that would be statistically compatible with the scatter of the points around the fitted line. A wide band means the years in the window vary a lot around the line, so the slope is poorly pinned down; a narrow band means the opposite.</p>
+            <p>One subtlety: consecutive years are not independent — a warm year tends to follow a warm year. The interval here accounts for that by shrinking the effective number of data points using the window's own year-to-year correlation (an AR(1) "effective sample size" correction, standard in the climate literature — see Data sources). Without it, the band would be too narrow.</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>Where do the annual values come from?</summary>
+          <div class="expander-body">
+            <p>Each annual value is the average of the station's twelve monthly mean temperatures for that year, from the NOAA GHCN monthly dataset (see Data sources). Years missing any month are left out entirely, so a year with no winter readings can't masquerade as a warm year. Gaps this creates are visible as breaks in the chart line, and a window must contain at least 80% of its years to produce a trend.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── Section: Station choice (blocking) ────────────────────────── -->
+    <section class="lab-section" id="station" aria-labelledby="station-heading">
+      <div class="container">
+        <div class="prose">
+          <h2 id="station-heading">Choose a station</h2>
+          <p>Six long-running stations, one from each of six broad regions of the world. The list was drawn mechanically — in each region, the station whose record has the most complete years — so no station is on it because of what its data shows.</p>
+        </div>
+        <details class="expander">
+          <summary>Exactly how was this list drawn?</summary>
+          <div class="expander-body">
+            <p>From the NOAA GHCNm v4 unadjusted archive (as published in July 2026): a "complete year" is one with all twelve monthly values present and no quality-control flag. The world was split into six fixed latitude/longitude boxes roughly matching the inhabited continents, and within each box the station with the most complete years was taken — ties broken alphabetically by station ID. No station was added, removed, or swapped after applying the rule.</p>
+            <p>One quirk the rule produced: the Africa box's top station is Funchal, on the Atlantic island of Madeira, which sits inside that box. It was kept as-is rather than hand-adjusted, since hand adjustments are exactly what the rule is there to prevent.</p>
+          </div>
+        </details>
+        <p class="random-order-note">Stations are shown in a random order to avoid nudging your choice.</p>
+        <div class="station-grid" id="stationGrid" role="group" aria-label="Select a station"></div>
+        <div id="stationInfo" class="station-pills"></div>
+        <p id="stationPrompt" class="select-prompt" aria-live="polite">Select a station above to continue.</p>
+      </div>
+    </section>
+
+    <!-- ── Section: Dataset choice (blocking, revealed after station) ── -->
+    <section class="lab-section" id="dataset" aria-labelledby="dataset-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="dataset-heading">Choose which version of the record to use</h2>
+          <p>Every GHCN station has two published versions of its monthly record. Both are real, maintained datasets; they differ in whether adjustments for station changes have been applied. Pick the one you want to work with — you can switch later, though switching clears the tally you've built, because a distribution belongs to one version of one record.</p>
+        </div>
+        <details class="expander">
+          <summary>What kinds of adjustments are these?</summary>
+          <div class="expander-body">
+            <p>Station histories contain changes that have nothing to do with climate: the station moves, the instrument is replaced, the time of day the thermometer is read changes. NOAA's pairwise homogenization algorithm compares each station with its neighbours to detect such changes and estimates an offset for each one; the adjusted series is the reported series with those offsets applied. The unadjusted series is the reported series without them.</p>
+            <p>You can inspect what the adjustments look like for any individual station on <a href="https://www.klymot.com" target="_blank" rel="noopener">klymot.com</a> (Adjustments tab in the station view).</p>
+          </div>
+        </details>
+        <p class="random-order-note">The two versions are shown in a random order to avoid nudging your choice.</p>
+        <div class="prediction-grid" id="datasetGrid" role="group" aria-label="Choose a record version"></div>
+        <div id="datasetChosenBanner" class="chosen-banner" hidden>
+          <span class="check" aria-hidden="true">✓</span>
+          <span>You chose: <strong id="datasetChosenLabel"></strong></span>
+        </div>
+        <p id="datasetPrompt" class="select-prompt" aria-live="polite">Choose a version above to continue.</p>
+      </div>
+    </section>
+
+    <!-- ── Section: The machine (revealed after both choices) ────────── -->
+    <section class="lab-section" id="explore" aria-labelledby="explore-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="explore-heading">Drag the window</h2>
+          <p>The gold line is the station's annual mean temperature, complete years only. The highlighted band is your window: drag it along the record (or use the arrow keys, or the ‹ › buttons) and the trend fitted inside it updates live. Every window position you pass over adds its trend to the tally below.</p>
+        </div>
+
+        <div class="window-length-row">
+          <span class="window-length-label" id="windowLengthLabel">Window length</span>
+          <div class="toggle-row" role="group" aria-labelledby="windowLengthLabel">
+            <button type="button" class="toggle-btn" data-window-length="15">15 yr</button>
+            <button type="button" class="toggle-btn" data-window-length="20">20 yr</button>
+            <button type="button" class="toggle-btn" data-window-length="30">30 yr</button>
+            <button type="button" class="toggle-btn" data-window-length="60">60 yr</button>
+            <button type="button" class="toggle-btn" data-window-length="90">90 yr</button>
+          </div>
+        </div>
+        <p class="random-order-note">The window's starting length and position are randomized on each visit; both are yours to change at any time.</p>
+        <details class="expander">
+          <summary>Why these window lengths?</summary>
+          <div class="expander-body">
+            <p>The shorter lengths (15 and 20 years) match the windows most often quoted in public arguments about recent trends. The longer ones are there because of a specific, genuinely contested question: several studies have reported an apparent oscillation of roughly 60–70 years in parts of the climate record — most prominently in North Atlantic sea-surface temperatures — while others argue the apparent cycle is an artifact of records too short to contain even three full repeats. The Data sources section below cites one paper on each side; this lab endorses neither.</p>
+            <p>The lengths are chosen so you can probe the idea yourself. If a record did contain a roughly 60-year cycle, a 30-year window could sit entirely inside a rising or falling phase, a 60-year window would tend to span one full swing, and a 90-year window would always straddle more than one. One caution when comparing: the spread of window trends shrinks as windows get longer for any noisy record, cycle or no cycle — so the comparison to make is between the tallies at different lengths, not the mere fact that longer windows disagree less.</p>
+          </div>
+        </details>
+
+        <div class="chart-bleed" style="margin-top:1rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-header">
+              <span class="chart-title" id="recordChartTitle">Annual mean temperature</span>
+              <div class="chart-toolbar" aria-label="Move the window">
+                <button class="mini-tool" data-window-action="back-window" aria-label="Move window back by one window length" type="button">«</button>
+                <button class="mini-tool" data-window-action="back-year" aria-label="Move window back one year" type="button">‹</button>
+                <button class="mini-tool" data-window-action="fwd-year" aria-label="Move window forward one year" type="button">›</button>
+                <button class="mini-tool" data-window-action="fwd-window" aria-label="Move window forward by one window length" type="button">»</button>
+              </div>
+            </div>
+            <div class="chart-container" id="recordChartContainer">
+              <canvas id="recordChart" style="display:block;width:100%;height:100%;touch-action:pan-y" tabindex="0" role="slider" aria-label="Window position along the record. Use arrow keys to move the window."></canvas>
+              <div class="chart-tooltip" id="recordTooltip" hidden></div>
+              <p class="chart-loading" id="recordChartLoading" hidden><span class="spinner" aria-hidden="true"></span>Loading…</p>
+            </div>
+            <div class="window-readout" aria-live="off">
+              <div class="window-readout-stat">
+                <span class="window-readout-label">Window</span>
+                <span class="window-readout-value" id="readoutWindow">—</span>
+              </div>
+              <div class="window-readout-stat">
+                <span class="window-readout-label">Trend in window</span>
+                <span class="window-readout-value" id="readoutTrend">—</span>
+              </div>
+              <div class="window-readout-stat">
+                <span class="window-readout-label">Fit 95% interval</span>
+                <span class="window-readout-value" id="readoutCi">—</span>
+              </div>
+              <div class="window-readout-stat">
+                <span class="window-readout-label">Years present</span>
+                <span class="window-readout-value" id="readoutYears">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-bleed" style="margin-top:1.5rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-header">
+              <span class="chart-title" id="histChartTitle">Every window trend you've passed over</span>
+              <span class="chart-meta">°C per decade</span>
+            </div>
+            <div class="chart-container" id="histChartContainer">
+              <canvas id="histChart" style="display:block;width:100%;height:100%"></canvas>
+              <div class="chart-tooltip" id="histTooltip" hidden></div>
+            </div>
+            <div class="hist-key" id="histKey"></div>
+            <p class="chart-hint">This tally is your own sample of the record's window trends — only positions you've actually passed over are counted.</p>
+            <div class="lag-progress" style="margin-top:0.75rem">
+              <div class="lag-progress-track"><div class="lag-progress-fill" id="coverageFill"></div></div>
+              <span class="lag-progress-label" id="coverageLabel">Sampled 0 window positions.</span>
+            </div>
+          </div>
+        </div>
+
+        <details class="expander" id="dataTableExpander">
+          <summary>View the annual values as a table</summary>
+          <div class="expander-body">
+            <div class="data-table-wrap">
+              <table class="data-table" id="annualTable">
+                <thead><tr><th scope="col">Year</th><th scope="col">Annual mean (°C)</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── Section: Reveal prompt ─────────────────────────────────────── -->
+    <section class="lab-section" id="reveal" aria-labelledby="reveal-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="reveal-heading">Where does the whole record land?</h2>
+          <p>The tally above is your own sample of what a window of this record can show. Once you've swept at least half of the possible window positions at one window length, you can place the trend of the entire record — one line fitted to every complete year it contains — on the same chart.</p>
+        </div>
+        <div class="primary-cta-row">
+          <button type="button" class="primary-cta" id="revealFull" disabled>Reveal the full-record trend</button>
+          <p class="primary-cta-hint" id="revealFullHint">Unlocks once you've swept at least half of the window positions at one window length.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section: Full record (revealed on demand) ─────────────────── -->
+    <section class="lab-section" id="full-record" aria-labelledby="full-record-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="full-record-heading">The full-record trend</h2>
+        </div>
+        <div class="window-readout" style="margin-top:0.5rem">
+          <div class="window-readout-stat">
+            <span class="window-readout-label">Full record</span>
+            <span class="window-readout-value" id="fullReadoutWindow">—</span>
+          </div>
+          <div class="window-readout-stat">
+            <span class="window-readout-label">Trend</span>
+            <span class="window-readout-value" id="fullReadoutTrend">—</span>
+          </div>
+          <div class="window-readout-stat">
+            <span class="window-readout-label">Fit 95% interval</span>
+            <span class="window-readout-value" id="fullReadoutCi">—</span>
+          </div>
+          <div class="window-readout-stat">
+            <span class="window-readout-label">Years used</span>
+            <span class="window-readout-value" id="fullReadoutYears">—</span>
+          </div>
+        </div>
+        <div class="prose" style="margin-top:1.25rem">
+          <p>It's now marked on the tally chart and drawn across the record chart above. Some things worth examining — the lab takes no position on any of them:</p>
+          <ul>
+            <li>Where the full-record value falls within the distribution you built — near the middle, or out in a tail.</li>
+            <li>How much of your distribution lies on each side of zero.</li>
+            <li>How the spread of the distribution changes when you switch window lengths.</li>
+            <li>Whether another station, or the other version of this record, gives a similar picture or a different one.</li>
+          </ul>
+        </div>
+        <details class="expander">
+          <summary>Is the full-record trend the "true" trend?</summary>
+          <div class="expander-body">
+            <p>The full record is itself a window — the longest one this station allows. Fitting one straight line through two or three centuries answers a different question than fitting one through a decade, and neither is automatically the question you care about. This lab only shows what each choice of window produces; deciding which window matches the question being asked is yours to make — and worth asking of any trend you're quoted.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── Data sources (always reachable) ───────────────────────────── -->
+    <section class="lab-section" id="sources">
+      <div class="container">
+        <details class="expander sources-expander">
+          <summary>Data sources &amp; methodology</summary>
+          <div class="expander-body">
+            <dl class="sources-list">
+              <dt>Station temperature records — NOAA GHCNm v4</dt>
+              <dd>Monthly mean temperatures from the NOAA Global Historical Climatology Network Monthly v4, in both its unadjusted (QCU) and adjusted (QCF) versions. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018</a>. Series are fetched per station from klymot.com's published data mirror (<code>www.klymot.com/data/&#123;qcu,qcf&#125;/&lt;station-id&gt;.csv</code>), the same files behind the main site's station explorer, updated as NOAA publishes.</dd>
+              <dt>Station list</dt>
+              <dd>Drawn mechanically from the GHCNm v4 QCU archive as published in July 2026: within each of six fixed latitude/longitude regions, the station with the most years having all twelve monthly values present and unflagged. The rule, boxes, and its one quirk (Funchal topping the Africa box) are described in the "Exactly how was this list drawn?" expander above.</dd>
+              <dt>Trend fitting and confidence intervals</dt>
+              <dd>Ordinary least squares on annual means (complete years only); 95% interval on the slope with an AR(1) effective-sample-size correction for year-to-year autocorrelation, following the approach in <a href="https://doi.org/10.1029/1999JD901105" target="_blank" rel="noopener">Santer et al., 2000</a>.</dd>
+              <dt>The roughly-60-year-cycle question</dt>
+              <dd>Referenced by the "Why these window lengths?" expander; the lab endorses neither side. For an oscillation of period 65–70 years in the instrumental record: <a href="https://doi.org/10.1038/367723a0" target="_blank" rel="noopener">Schlesinger &amp; Ramankutty, 1994</a>. For the view that the apparent oscillation is an artifact of forced changes and a short record: <a href="https://doi.org/10.1002/2014GL059233" target="_blank" rel="noopener">Mann, Steinman &amp; Miller, 2014</a>.</dd>
+            </dl>
+            <p class="sources-footer">This is a neutral exploration tool. No window is endorsed as the right one.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© Klymot</p>
+    </div>
+  </footer>
+
+  <script>
+    import { sendFeatureBeacon } from '../../lib/analytics.js';
+    import { cssVar, clamp } from '../../lib/lab-utils.js';
+    import { createSectionTracker } from '../../lib/lab-sections.js';
+    import { parseCsv, niceStep } from '../../../public/js/chart-fns.js';
+    import {
+      WINDOW_LENGTHS,
+      annualMeans,
+      windowTrend,
+      validStartYears,
+      fullRecordTrend,
+      buildHistogram,
+      stepsBetween,
+    } from '../../lib/cherry-picking-stats.js';
+
+    sendFeatureBeacon('labs/cherry-picking/00-visited');
+
+    const KLYMOT_DATA_BASE = 'https://www.klymot.com/data';
+    const COVERAGE_THRESHOLD = 0.5;
+
+    // Drawn mechanically from the GHCNm v4 QCU archive (July 2026): within
+    // each of six lat/lon regions, the station with the most complete years.
+    // See the "Exactly how was this list drawn?" expander. Do not hand-edit
+    // this list — rerun the rule instead.
+    const STATION_POOL = [
+      { id: 'USW00014758', name: 'New Haven', place: 'Connecticut, United States', region: 'North America', since: 1781, completeYears: 209 },
+      { id: 'AR000875850', name: 'Buenos Aires Observatorio', place: 'Argentina', region: 'South America', since: 1856, completeYears: 163 },
+      { id: 'NLM00006260', name: 'De Bilt', place: 'Netherlands', region: 'Europe', since: 1706, completeYears: 320 },
+      { id: 'PO000008522', name: 'Funchal', place: 'Madeira, Portugal', region: 'Africa box (Atlantic island)', since: 1867, completeYears: 144 },
+      { id: 'IN020040900', name: 'Madras / Minambakkam', place: 'Chennai, India', region: 'Asia', since: 1796, completeYears: 189 },
+      { id: 'ASN00026020', name: 'Mount Gambier Post Office', place: 'South Australia, Australia', region: 'Oceania', since: 1861, completeYears: 157 },
+    ];
+
+    const DATASET_OPTIONS = [
+      {
+        key: 'qcu',
+        label: 'Unadjusted (QCU)',
+        desc: 'Monthly values as reported by the station, after basic quality control. No adjustments for site moves, instrument changes, or observation-time changes.',
+      },
+      {
+        key: 'qcf',
+        label: 'Adjusted (QCF)',
+        desc: "The same record after NOAA's pairwise homogenization algorithm has estimated and removed the effects of detected station changes.",
+      },
+    ];
+
+    const SECTION_IDS = [
+      { id: 'concept', headingId: 'concept-heading' },
+      { id: 'station', headingId: 'station-heading' },
+      { id: 'dataset', headingId: 'dataset-heading' },
+      { id: 'explore', headingId: 'explore-heading' },
+      { id: 'reveal', headingId: 'reveal-heading' },
+      { id: 'full-record', headingId: 'full-record-heading' },
+      { id: 'sources', headingId: null },
+    ];
+
+    /* ── State ─────────────────────────────────────────────────────── */
+    let stationId = null;       // blocking choice 1
+    let datasetKey = null;      // blocking choice 2
+    let windowLen = null;       // non-blocking, randomized initial value
+    let windowStart = null;     // randomized initial position
+    let annual = null;          // [{year, mean}] for current station+dataset
+    let fullTrend = null;
+    let fullRevealed = false;
+    // Per window length: Map(startYear -> trend), only positions passed over.
+    let visitedByLen = new Map();
+    let validStartsByLen = new Map();
+    const seriesCache = new Map(); // `${id}:${key}` -> annual series
+
+    let stationBeaconSent = false;
+    let datasetBeaconSent = false;
+    let distributionBeaconSent = false;
+    let revealBeaconSent = false;
+    let sectionTracker = null;
+    let restoring = false;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
+
+    const els = {};
+    [
+      'stationGrid', 'stationInfo', 'stationPrompt',
+      'datasetGrid', 'datasetChosenBanner', 'datasetChosenLabel', 'datasetPrompt',
+      'recordChart', 'recordChartContainer', 'recordChartTitle', 'recordTooltip', 'recordChartLoading',
+      'readoutWindow', 'readoutTrend', 'readoutCi', 'readoutYears',
+      'histChart', 'histChartContainer', 'histChartTitle', 'histTooltip', 'histKey',
+      'coverageFill', 'coverageLabel',
+      'revealFull', 'revealFullHint',
+      'fullReadoutWindow', 'fullReadoutTrend', 'fullReadoutCi', 'fullReadoutYears',
+      'annualTable', 'resetLab',
+    ].forEach((id) => { els[id] = document.getElementById(id); });
+
+    const sections = {
+      dataset: document.getElementById('dataset'),
+      explore: document.getElementById('explore'),
+      reveal: document.getElementById('reveal'),
+      fullRecord: document.getElementById('full-record'),
+    };
+
+    /* ── Small utilities ───────────────────────────────────────────── */
+    function shuffleArray(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function fmtSlope(v) {
+      return `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(2)}`;
+    }
+
+    function yearTickStep(startYear, endYear) {
+      const span = Math.max(1, endYear - startYear);
+      const rawStep = Math.ceil(span / 6);
+      return [1, 2, 5, 10, 20, 25, 50, 100].find((step) => step >= rawStep) || 100;
+    }
+
+    function stationById(id) {
+      return STATION_POOL.find((s) => s.id === id) || null;
+    }
+
+    function getVisited() {
+      if (!visitedByLen.has(windowLen)) visitedByLen.set(windowLen, new Map());
+      return visitedByLen.get(windowLen);
+    }
+
+    function getValidStarts(len) {
+      if (!annual) return [];
+      if (!validStartsByLen.has(len)) validStartsByLen.set(len, validStartYears(annual, len));
+      return validStartsByLen.get(len);
+    }
+
+    function startBounds() {
+      if (!annual || !annual.length) return null;
+      const first = annual[0].year;
+      const last = annual[annual.length - 1].year;
+      if (last - first + 1 < windowLen) return null;
+      return { min: first, max: last - windowLen + 1 };
+    }
+
+    /* ── URL state ─────────────────────────────────────────────────── */
+    function readStateFromUrl() {
+      const hash = location.hash.slice(1);
+      const params = new URLSearchParams(hash);
+      if (hash && params.get('v') !== '1') return {};
+      const w = parseInt(params.get('w') || '', 10);
+      const p = parseInt(params.get('p') || '', 10);
+      return {
+        s: params.get('s') || null,
+        d: params.get('d') || null,
+        w: Number.isFinite(w) ? w : null,
+        p: Number.isFinite(p) ? p : null,
+        fr: params.get('fr') === '1',
+        sec: params.get('sec') || null,
+      };
+    }
+
+    function pushStateToUrl() {
+      if (restoring) return;
+      const params = new URLSearchParams();
+      params.set('v', '1');
+      if (stationId) params.set('s', stationId);
+      if (datasetKey) params.set('d', datasetKey);
+      if (stationId && datasetKey && windowLen) params.set('w', String(windowLen));
+      if (stationId && datasetKey && windowStart != null) params.set('p', String(windowStart));
+      if (fullRevealed) params.set('fr', '1');
+      if (sectionTracker && sectionTracker.getCurrentSectionId()) params.set('sec', sectionTracker.getCurrentSectionId());
+      const hash = '#' + params.toString();
+      if (location.hash !== hash) history.replaceState(null, '', hash);
+    }
+
+    // Dragging generates state changes far faster than the URL needs them.
+    let pushStateTimer = null;
+    function schedulePushState() {
+      if (pushStateTimer) clearTimeout(pushStateTimer);
+      pushStateTimer = setTimeout(() => { pushStateTimer = null; pushStateToUrl(); }, 200);
+    }
+
+    /* ── Record chart ──────────────────────────────────────────────── */
+    let recordLayout = null; // set by drawRecordChart, used by pointer/tooltip
+
+    function drawRecordChart() {
+      const container = els.recordChartContainer;
+      const canvas = els.recordChart;
+      if (!container || !canvas || !annual || !annual.length) return;
+
+      const W = container.clientWidth || 600;
+      const H = container.clientHeight || 260;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const gold = cssVar('--accent') || '#d4a855';
+      const windowColor = cssVar('--series-obs') || '#5090f8';
+      const fullColor = cssVar('--series-obs-adjusted') || '#d45a4f';
+      const textColor = cssVar('--text-secondary') || '#a8a090';
+      const gridColor = 'rgba(212,168,85,0.12)';
+      const pad = { top: 16, right: 24, bottom: 36, left: 52 };
+      const cW = W - pad.left - pad.right;
+      const cH = H - pad.top - pad.bottom;
+
+      const minYr = annual[0].year;
+      const maxYr = annual[annual.length - 1].year;
+      const means = annual.map((d) => d.mean);
+      const minT = Math.min(...means);
+      const maxT = Math.max(...means);
+      const padT = (maxT - minT) * 0.1 || 0.5;
+      const loT = minT - padT;
+      const hiT = maxT + padT;
+
+      function xp(yr) { return pad.left + ((yr - minYr) / Math.max(1, maxYr - minYr)) * cW; }
+      function yp(t) { return pad.top + (1 - (t - loT) / Math.max(1e-9, hiT - loT)) * cH; }
+      function yearAtX(px) { return minYr + ((px - pad.left) / Math.max(1e-9, cW)) * (maxYr - minYr); }
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Grid + y labels
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 1;
+      ctx.fillStyle = textColor;
+      ctx.font = '11px system-ui, sans-serif';
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.top + (cH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + cW, y);
+        ctx.stroke();
+        const t = hiT - (hiT - loT) * (i / 4);
+        ctx.textAlign = 'right';
+        ctx.fillText(t.toFixed(1) + ' °C', pad.left - 6, y + 4);
+      }
+
+      // X labels
+      ctx.textAlign = 'center';
+      const xStep = yearTickStep(minYr, maxYr);
+      for (let yr = Math.ceil(minYr / xStep) * xStep; yr <= maxYr; yr += xStep) {
+        ctx.fillText(String(yr), xp(yr), H - 8);
+      }
+
+      // Window band
+      const winEnd = windowStart + windowLen - 1;
+      const bx0 = xp(windowStart - 0.5);
+      const bx1 = xp(winEnd + 0.5);
+      ctx.fillStyle = 'rgba(80,144,248,0.10)';
+      ctx.fillRect(bx0, pad.top, bx1 - bx0, cH);
+      ctx.strokeStyle = windowColor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(bx0, pad.top); ctx.lineTo(bx0, pad.top + cH);
+      ctx.moveTo(bx1, pad.top); ctx.lineTo(bx1, pad.top + cH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Annual series (with gaps)
+      ctx.strokeStyle = gold;
+      ctx.lineWidth = 1.5;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      let prevYear = null;
+      annual.forEach((d) => {
+        if (prevYear === null || d.year > prevYear + 1) ctx.moveTo(xp(d.year), yp(d.mean));
+        else ctx.lineTo(xp(d.year), yp(d.mean));
+        prevYear = d.year;
+      });
+      ctx.stroke();
+
+      // Full-record trend line (only after reveal)
+      if (fullRevealed && fullTrend) {
+        ctx.strokeStyle = fullColor;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(xp(minYr), yp(fullTrend.intercept + fullTrend.slopePerYear * minYr));
+        ctx.lineTo(xp(maxYr), yp(fullTrend.intercept + fullTrend.slopePerYear * maxYr));
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Window trend + confidence wedge
+      const trend = windowTrend(annual, windowStart, windowLen);
+      if (trend) {
+        const pivotY = trend.intercept + trend.slopePerYear * trend.meanYear;
+        const sLo = trend.slopePerYear - trend.ciHalfPerDecade / 10;
+        const sHi = trend.slopePerYear + trend.ciHalfPerDecade / 10;
+        const x0 = windowStart;
+        const x1 = winEnd;
+        ctx.fillStyle = 'rgba(80,144,248,0.18)';
+        ctx.beginPath();
+        ctx.moveTo(xp(x0), yp(pivotY + sLo * (x0 - trend.meanYear)));
+        ctx.lineTo(xp(x1), yp(pivotY + sLo * (x1 - trend.meanYear)));
+        ctx.lineTo(xp(x1), yp(pivotY + sHi * (x1 - trend.meanYear)));
+        ctx.lineTo(xp(x0), yp(pivotY + sHi * (x0 - trend.meanYear)));
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = windowColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(xp(x0), yp(trend.intercept + trend.slopePerYear * x0));
+        ctx.lineTo(xp(x1), yp(trend.intercept + trend.slopePerYear * x1));
+        ctx.stroke();
+      }
+
+      recordLayout = { xp, yp, yearAtX, pad, cW, cH };
+      updateSliderAria(trend);
+    }
+
+    function updateSliderAria(trend) {
+      const bounds = startBounds();
+      if (!bounds) return;
+      const canvas = els.recordChart;
+      canvas.setAttribute('aria-valuemin', String(bounds.min));
+      canvas.setAttribute('aria-valuemax', String(bounds.max));
+      canvas.setAttribute('aria-valuenow', String(windowStart));
+      const t = trend || windowTrend(annual, windowStart, windowLen);
+      canvas.setAttribute('aria-valuetext',
+        t
+          ? `Window ${t.startYear} to ${t.endYear}, trend ${fmtSlope(t.slopePerDecade)} °C per decade`
+          : `Window ${windowStart} to ${windowStart + windowLen - 1}, not enough data for a trend`);
+    }
+
+    function updateReadout() {
+      const winEnd = windowStart + windowLen - 1;
+      els.readoutWindow.textContent = `${windowStart}–${winEnd}`;
+      const t = windowTrend(annual, windowStart, windowLen);
+      if (t) {
+        els.readoutTrend.textContent = `${fmtSlope(t.slopePerDecade)} °C/decade`;
+        els.readoutCi.textContent = `±${t.ciHalfPerDecade.toFixed(2)} °C/decade`;
+        els.readoutYears.textContent = `${t.nYears} of ${windowLen}`;
+      } else {
+        els.readoutTrend.textContent = 'not enough data';
+        els.readoutCi.textContent = '—';
+        const present = annual.filter((d) => d.year >= windowStart && d.year <= winEnd).length;
+        els.readoutYears.textContent = `${present} of ${windowLen}`;
+      }
+    }
+
+    /* ── Histogram chart ───────────────────────────────────────────── */
+    let histLayout = null;
+
+    function drawHistChart() {
+      const container = els.histChartContainer;
+      const canvas = els.histChart;
+      if (!container || !canvas) return;
+      if (!annual) {
+        // Series is (re)loading: blank the canvas so the outgoing record's
+        // tally isn't left on screen.
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        histLayout = null;
+        return;
+      }
+
+      const W = container.clientWidth || 600;
+      const H = container.clientHeight || 260;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const gold = cssVar('--accent') || '#d4a855';
+      const windowColor = cssVar('--series-obs') || '#5090f8';
+      const fullColor = cssVar('--series-obs-adjusted') || '#d45a4f';
+      const textColor = cssVar('--text-secondary') || '#a8a090';
+      const mutedColor = cssVar('--muted') || '#5a6880';
+      const gridColor = 'rgba(212,168,85,0.12)';
+      const pad = { top: 16, right: 24, bottom: 36, left: 40 };
+      const cW = W - pad.left - pad.right;
+      const cH = H - pad.top - pad.bottom;
+
+      ctx.clearRect(0, 0, W, H);
+
+      const visited = getVisited();
+      const values = [...visited.values()].map((t) => t.slopePerDecade);
+      const hist = buildHistogram(values, Math.max(10, Math.min(24, Math.floor(cW / 26))));
+
+      if (!hist) {
+        ctx.fillStyle = mutedColor;
+        ctx.font = '13px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Drag the window above to add trends to this tally.', W / 2, H / 2);
+        histLayout = null;
+        return;
+      }
+
+      // X domain: histogram extent widened to include any markers, then made
+      // symmetric about zero — an asymmetric axis would visually exaggerate
+      // whichever tail happens to reach further, and a centred zero keeps
+      // tallies comparable across stations and window lengths.
+      let extent = Math.max(
+        Math.abs(hist.start),
+        Math.abs(hist.start + hist.counts.length * hist.binWidth),
+      );
+      const currentT = windowTrend(annual, windowStart, windowLen);
+      if (currentT) extent = Math.max(extent, Math.abs(currentT.slopePerDecade));
+      if (fullRevealed && fullTrend) extent = Math.max(extent, Math.abs(fullTrend.slopePerDecade));
+      const xPad = extent * 0.06 || 0.1;
+      const xLo = -extent - xPad;
+      const xHi = extent + xPad;
+
+      const maxCount = Math.max(...hist.counts, 1);
+      function xp(v) { return pad.left + ((v - xLo) / Math.max(1e-9, xHi - xLo)) * cW; }
+      function yp(c) { return pad.top + (1 - c / maxCount) * cH; }
+
+      // Grid + y labels (integer counts)
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 1;
+      ctx.fillStyle = textColor;
+      ctx.font = '11px system-ui, sans-serif';
+      const yTick = Math.max(1, Math.round(niceStep(maxCount, 4)));
+      for (let c = 0; c <= maxCount; c += yTick) {
+        const y = yp(c);
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + cW, y);
+        ctx.stroke();
+        ctx.textAlign = 'right';
+        ctx.fillText(String(c), pad.left - 6, y + 4);
+      }
+
+      // X labels
+      ctx.textAlign = 'center';
+      const xTick = niceStep(xHi - xLo, 6);
+      const decimals = Math.max(0, -Math.floor(Math.log10(xTick)) + (xTick < 1 ? 0 : 0));
+      for (let v = Math.ceil(xLo / xTick) * xTick; v <= xHi + 1e-9; v += xTick) {
+        const tick = Math.abs(v) < xTick * 1e-6 ? 0 : v; // avoid "-0.0" labels
+        ctx.fillText(tick.toFixed(Math.min(3, Math.max(decimals, 1))), xp(tick), H - 8);
+      }
+
+      // Zero line
+      if (xLo < 0 && xHi > 0) {
+        ctx.strokeStyle = 'rgba(212,168,85,0.35)';
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(xp(0), pad.top);
+        ctx.lineTo(xp(0), pad.top + cH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Bars
+      ctx.fillStyle = 'rgba(212,168,85,0.55)';
+      ctx.strokeStyle = gold;
+      ctx.lineWidth = 1;
+      hist.counts.forEach((count, i) => {
+        if (!count) return;
+        const v0 = hist.start + i * hist.binWidth;
+        const x0 = xp(v0);
+        const x1 = xp(v0 + hist.binWidth);
+        const y = yp(count);
+        ctx.fillRect(x0, y, Math.max(1, x1 - x0 - 1), pad.top + cH - y);
+        ctx.strokeRect(x0, y, Math.max(1, x1 - x0 - 1), pad.top + cH - y);
+      });
+
+      // Current-window marker
+      if (currentT) {
+        const x = xp(currentT.slopePerDecade);
+        ctx.strokeStyle = windowColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x, pad.top + 8);
+        ctx.lineTo(x, pad.top + cH);
+        ctx.stroke();
+        ctx.fillStyle = windowColor;
+        ctx.beginPath();
+        ctx.moveTo(x - 5, pad.top);
+        ctx.lineTo(x + 5, pad.top);
+        ctx.lineTo(x, pad.top + 8);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Full-record marker (after reveal)
+      if (fullRevealed && fullTrend) {
+        const x = xp(fullTrend.slopePerDecade);
+        ctx.strokeStyle = fullColor;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(x, pad.top);
+        ctx.lineTo(x, pad.top + cH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      histLayout = { xp, hist, xLo, xHi, pad, cW, cH };
+      updateHistAria(values.length);
+    }
+
+    function updateHistAria(nValues) {
+      els.histChartContainer.setAttribute('role', 'img');
+      els.histChartContainer.setAttribute('aria-label',
+        `Histogram of the ${nValues} ${windowLen}-year window trends sampled so far, in °C per decade.`);
+    }
+
+    function updateHistKey() {
+      const windowColor = cssVar('--series-obs') || '#5090f8';
+      const fullColor = cssVar('--series-obs-adjusted') || '#d45a4f';
+      const gold = cssVar('--accent') || '#d4a855';
+      const items = [
+        `<span class="hist-key-item"><span class="hist-key-swatch" style="background:${gold};opacity:0.7"></span>Window trends you've passed over</span>`,
+        `<span class="hist-key-item"><span class="hist-key-swatch" style="background:${windowColor}"></span>Current window</span>`,
+      ];
+      if (fullRevealed) {
+        items.push(`<span class="hist-key-item"><span class="hist-key-swatch" style="background:${fullColor}"></span>Full record</span>`);
+      }
+      els.histKey.innerHTML = items.join('');
+    }
+
+    /* ── Coverage / unlock ─────────────────────────────────────────── */
+    function bestCoverage() {
+      let best = 0;
+      for (const len of WINDOW_LENGTHS) {
+        const starts = getValidStarts(len);
+        if (!starts.length) continue;
+        const visited = visitedByLen.get(len);
+        if (!visited) continue;
+        best = Math.max(best, visited.size / starts.length);
+      }
+      return best;
+    }
+
+    function updateCoverage() {
+      const starts = getValidStarts(windowLen);
+      const visited = getVisited();
+      const frac = starts.length ? visited.size / starts.length : 0;
+      els.coverageFill.style.width = `${Math.round(Math.min(1, frac) * 100)}%`;
+      els.coverageLabel.textContent =
+        `Sampled ${visited.size} of ${starts.length} possible ${windowLen}-year window positions.`;
+
+      if (fullRevealed) return;
+      const unlocked = bestCoverage() >= COVERAGE_THRESHOLD;
+      els.revealFull.disabled = !unlocked;
+      els.revealFullHint.textContent = unlocked
+        ? 'Ready when you are.'
+        : 'Unlocks once you’ve swept at least half of the window positions at one window length.';
+      if (unlocked && !distributionBeaconSent) {
+        sendFeatureBeacon('labs/cherry-picking/03-distribution-built');
+        distributionBeaconSent = true;
+      }
+    }
+
+    /* ── Window movement ───────────────────────────────────────────── */
+    function visitPosition(start) {
+      const visited = getVisited();
+      if (visited.has(start)) return;
+      const t = windowTrend(annual, start, windowLen);
+      if (t) visited.set(start, t);
+    }
+
+    function moveWindowTo(nextStart, { fill = false } = {}) {
+      const bounds = startBounds();
+      if (!bounds) return;
+      const target = clamp(nextStart, bounds.min, bounds.max);
+      if (target === windowStart) return;
+      if (fill && windowStart != null) {
+        stepsBetween(windowStart, target).forEach(visitPosition);
+      } else {
+        visitPosition(target);
+      }
+      windowStart = target;
+      updateReadout();
+      drawRecordChart();
+      drawHistChart();
+      updateCoverage();
+      schedulePushState();
+    }
+
+    function setWindowLen(len, { fromRestore = false } = {}) {
+      if (!WINDOW_LENGTHS.includes(len)) return;
+      windowLen = len;
+      document.querySelectorAll('[data-window-length]').forEach((btn) => {
+        btn.classList.toggle('active', Number(btn.getAttribute('data-window-length')) === len);
+        btn.setAttribute('aria-pressed', Number(btn.getAttribute('data-window-length')) === len ? 'true' : 'false');
+      });
+      els.histChartTitle.textContent = `Every ${len}-year trend you've passed over`;
+      if (annual) {
+        const bounds = startBounds();
+        if (bounds) {
+          windowStart = clamp(windowStart ?? bounds.min, bounds.min, bounds.max);
+          visitPosition(windowStart);
+        }
+        updateReadout();
+        drawRecordChart();
+        drawHistChart();
+        updateCoverage();
+      }
+      if (!fromRestore) schedulePushState();
+    }
+
+    /* ── Station choice (blocking) ─────────────────────────────────── */
+    function renderStationCards() {
+      const grid = els.stationGrid;
+      grid.innerHTML = '';
+      shuffleArray(STATION_POOL).forEach((st) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'station-card' + (st.id === stationId ? ' active' : '');
+        btn.dataset.stationId = st.id;
+        btn.setAttribute('aria-pressed', st.id === stationId ? 'true' : 'false');
+        btn.innerHTML = `
+          <span class="sc-since">from ${st.since}</span>
+          <span class="sc-name">${st.name}, ${st.place}</span>
+          <span class="sc-caveat">${st.region} · ${st.completeYears} complete years</span>
+        `;
+        btn.addEventListener('click', () => chooseStation(st.id));
+        grid.appendChild(btn);
+      });
+    }
+
+    function updateStationCards() {
+      document.querySelectorAll('.station-card').forEach((c) => {
+        const active = c.dataset.stationId === stationId;
+        c.classList.toggle('active', active);
+        c.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    }
+
+    function updateStationInfo() {
+      const st = stationById(stationId);
+      if (!st) { els.stationInfo.innerHTML = ''; return; }
+      const klymotUrl = `https://www.klymot.com/#station=${st.id};bu;2020;-;-;-;-;-`;
+      els.stationInfo.innerHTML =
+        `<span class="station-pill">${st.id}</span>` +
+        `<span class="station-dist">${st.name}, ${st.place}</span>` +
+        `<a class="station-klymot-link" href="${klymotUrl}" target="_blank" rel="noopener">View on klymot.com →</a>`;
+    }
+
+    function chooseStation(id, { fromRestore = false } = {}) {
+      if (!stationById(id)) return;
+      const changed = stationId !== null && stationId !== id;
+      stationId = id;
+      updateStationCards();
+      updateStationInfo();
+      els.stationPrompt.hidden = true;
+      const firstReveal = sections.dataset.hidden;
+      sections.dataset.hidden = false;
+      els.recordChartTitle.textContent = `Annual mean temperature — ${stationById(id).name}`;
+      if (changed) clearTally();
+      if (!fromRestore) {
+        if (!stationBeaconSent) {
+          sendFeatureBeacon('labs/cherry-picking/01-station-selected');
+          stationBeaconSent = true;
+        }
+        pushStateToUrl();
+        if (firstReveal) sections.dataset.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
+        if (datasetKey) loadAndShow();
+      }
+    }
+
+    /* ── Dataset choice (blocking) ─────────────────────────────────── */
+    function renderDatasetCards() {
+      const grid = els.datasetGrid;
+      grid.innerHTML = '';
+      shuffleArray(DATASET_OPTIONS).forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'prediction-card' + (opt.key === datasetKey ? ' chosen' : '');
+        btn.dataset.key = opt.key;
+        btn.innerHTML = `
+          <span class="prediction-card-label">${opt.label}</span>
+          <span class="prediction-card-desc">${opt.desc}</span>
+        `;
+        btn.addEventListener('click', () => chooseDataset(opt.key));
+        grid.appendChild(btn);
+      });
+    }
+
+    function chooseDataset(key, { fromRestore = false } = {}) {
+      const opt = DATASET_OPTIONS.find((o) => o.key === key);
+      if (!opt) return;
+      const changed = datasetKey !== null && datasetKey !== key;
+      datasetKey = key;
+      document.querySelectorAll('#datasetGrid .prediction-card').forEach((c) => {
+        c.classList.toggle('chosen', c.dataset.key === key);
+      });
+      els.datasetChosenLabel.textContent = opt.label;
+      els.datasetChosenBanner.hidden = false;
+      els.datasetPrompt.hidden = true;
+      const firstReveal = sections.explore.hidden;
+      sections.explore.hidden = false;
+      sections.reveal.hidden = fullRevealed;
+      if (changed) clearTally();
+      if (!fromRestore) {
+        if (!datasetBeaconSent) {
+          sendFeatureBeacon('labs/cherry-picking/02-dataset-selected');
+          datasetBeaconSent = true;
+        }
+        pushStateToUrl();
+        if (firstReveal) sections.explore.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
+        loadAndShow();
+      }
+    }
+
+    // A tally of window trends belongs to one version of one record —
+    // switching station or dataset starts it (and the reveal) over.
+    function clearTally() {
+      visitedByLen = new Map();
+      validStartsByLen = new Map();
+      fullRevealed = false;
+      fullTrend = null;
+      sections.fullRecord.hidden = true;
+      if (!sections.explore.hidden) sections.reveal.hidden = false;
+      els.revealFull.disabled = true;
+      updateHistKey();
+    }
+
+    /* ── Data loading ──────────────────────────────────────────────── */
+    async function fetchAnnual(id, key) {
+      const cacheKey = `${id}:${key}`;
+      if (seriesCache.has(cacheKey)) return seriesCache.get(cacheKey);
+      const resp = await fetch(`${KLYMOT_DATA_BASE}/${key}/${id}.csv`);
+      if (!resp.ok) throw new Error(`${resp.status} ${key}/${id}.csv`);
+      const series = annualMeans(parseCsv(await resp.text()));
+      seriesCache.set(cacheKey, series);
+      return series;
+    }
+
+    function fillAnnualTable() {
+      const tbody = els.annualTable.querySelector('tbody');
+      tbody.innerHTML = '';
+      const frag = document.createDocumentFragment();
+      annual.forEach((d) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${d.year}</td><td>${d.mean.toFixed(2)}</td>`;
+        frag.appendChild(tr);
+      });
+      tbody.appendChild(frag);
+    }
+
+    function showLoadError(message) {
+      const loading = els.recordChartLoading;
+      loading.hidden = false;
+      loading.innerHTML = `
+        <span>Could not load the station record.</span>
+        <button type="button" class="mini-tool" data-retry-load style="margin-left:0.5rem;pointer-events:auto">Retry</button>
+      `;
+      loading.querySelector('[data-retry-load]').addEventListener('click', () => loadAndShow());
+      if (message) console.error('Station record load error:', message);
+    }
+
+    // Blank the live readouts while a series is (re)loading, so numbers from
+    // the outgoing record can't be mistaken for the incoming one.
+    function clearExploreReadouts() {
+      ['readoutWindow', 'readoutTrend', 'readoutCi', 'readoutYears'].forEach((id) => {
+        els[id].textContent = '—';
+      });
+      els.coverageFill.style.width = '0%';
+      els.coverageLabel.textContent = 'Loading…';
+    }
+
+    let loadToken = 0;
+    async function loadAndShow({ restoredStart = null, restoredReveal = false } = {}) {
+      if (!stationId || !datasetKey) return;
+      const token = ++loadToken;
+      // Freeze interaction on the outgoing series immediately — otherwise a
+      // drag during the fetch would tally the old record's trends into the
+      // new record's distribution.
+      annual = null;
+      clearExploreReadouts();
+      drawHistChart();
+      const recordCtx = els.recordChart.getContext('2d');
+      recordCtx.clearRect(0, 0, els.recordChart.width, els.recordChart.height);
+      els.recordChartLoading.hidden = false;
+      els.recordChartLoading.innerHTML = '<span class="spinner" aria-hidden="true"></span>Loading…';
+      try {
+        const series = await fetchAnnual(stationId, datasetKey);
+        if (token !== loadToken) return; // superseded by a newer choice
+        annual = series;
+        validStartsByLen = new Map();
+        els.recordChartLoading.hidden = true;
+
+        const bounds = startBounds();
+        if (!bounds) {
+          showLoadError('record too short for the chosen window');
+          return;
+        }
+        if (restoredStart != null) {
+          windowStart = clamp(restoredStart, bounds.min, bounds.max);
+        } else {
+          // Random initial position — no window is presented as the natural
+          // place to start looking.
+          windowStart = bounds.min + Math.floor(Math.random() * (bounds.max - bounds.min + 1));
+        }
+        visitPosition(windowStart);
+        fullTrend = fullRecordTrend(annual);
+        fillAnnualTable();
+        updateReadout();
+        drawRecordChart();
+        drawHistChart();
+        updateHistKey();
+        updateCoverage();
+        if (restoredReveal && fullTrend) revealFullRecord({ fromRestore: true });
+        schedulePushState();
+      } catch (err) {
+        if (token !== loadToken) return;
+        showLoadError(err.message || 'unknown error');
+      }
+    }
+
+    /* ── Full-record reveal ────────────────────────────────────────── */
+    function revealFullRecord({ fromRestore = false } = {}) {
+      if (!fullTrend) return;
+      fullRevealed = true;
+      sections.reveal.hidden = true;
+      sections.fullRecord.hidden = false;
+      els.fullReadoutWindow.textContent = `${fullTrend.startYear}–${fullTrend.endYear}`;
+      els.fullReadoutTrend.textContent = `${fmtSlope(fullTrend.slopePerDecade)} °C/decade`;
+      els.fullReadoutCi.textContent = `±${fullTrend.ciHalfPerDecade.toFixed(2)} °C/decade`;
+      els.fullReadoutYears.textContent = String(fullTrend.nYears);
+      updateHistKey();
+      drawRecordChart();
+      drawHistChart();
+      if (!fromRestore) {
+        if (!revealBeaconSent) {
+          sendFeatureBeacon('labs/cherry-picking/04-full-record-revealed');
+          revealBeaconSent = true;
+        }
+        pushStateToUrl();
+        sections.fullRecord.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
+      }
+    }
+
+    /* ── Record chart interaction ──────────────────────────────────── */
+    function wireRecordInteraction() {
+      const canvas = els.recordChart;
+      const tooltip = els.recordTooltip;
+      let dragOffset = null; // years between pointer and windowStart while dragging
+
+      function pointerYear(e) {
+        const rect = canvas.getBoundingClientRect();
+        return recordLayout ? recordLayout.yearAtX(e.clientX - rect.left) : null;
+      }
+
+      canvas.addEventListener('pointerdown', (e) => {
+        if (!annual || !recordLayout) return;
+        const yr = pointerYear(e);
+        if (yr == null) return;
+        try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+        const winEnd = windowStart + windowLen - 1;
+        if (yr >= windowStart - 0.5 && yr <= winEnd + 0.5) {
+          dragOffset = yr - windowStart;
+        } else {
+          dragOffset = windowLen / 2;
+          moveWindowTo(Math.round(yr - windowLen / 2));
+        }
+        tooltip.hidden = true;
+        e.preventDefault();
+      });
+
+      canvas.addEventListener('pointermove', (e) => {
+        if (!annual || !recordLayout) return;
+        if (dragOffset != null) {
+          const yr = pointerYear(e);
+          if (yr != null) moveWindowTo(Math.round(yr - dragOffset), { fill: true });
+          return;
+        }
+        // Hover tooltip (desktop): nearest year's value.
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        let best = null;
+        let bestDist = Infinity;
+        annual.forEach((d) => {
+          const dx = Math.abs(x - recordLayout.xp(d.year));
+          if (dx < bestDist) { bestDist = dx; best = d; }
+        });
+        if (best && bestDist < 30) {
+          tooltip.textContent = `${best.year}  ${best.mean.toFixed(2)} °C`;
+          tooltip.hidden = false;
+          const ttW = tooltip.offsetWidth || 120;
+          let left = x + 14;
+          if (left + ttW > rect.width - 8) left = x - ttW - 14;
+          tooltip.style.left = Math.max(4, left) + 'px';
+          tooltip.style.top = '12px';
+        } else {
+          tooltip.hidden = true;
+        }
+      });
+
+      function endDrag() { dragOffset = null; }
+      canvas.addEventListener('pointerup', endDrag);
+      canvas.addEventListener('pointercancel', endDrag);
+      canvas.addEventListener('mouseleave', () => { tooltip.hidden = true; });
+
+      canvas.addEventListener('keydown', (e) => {
+        if (!annual) return;
+        const bounds = startBounds();
+        if (!bounds) return;
+        let handled = true;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') moveWindowTo(windowStart - 1, { fill: true });
+        else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') moveWindowTo(windowStart + 1, { fill: true });
+        else if (e.key === 'PageDown') moveWindowTo(windowStart - windowLen, { fill: true });
+        else if (e.key === 'PageUp') moveWindowTo(windowStart + windowLen, { fill: true });
+        else if (e.key === 'Home') moveWindowTo(bounds.min);
+        else if (e.key === 'End') moveWindowTo(bounds.max);
+        else handled = false;
+        if (handled) e.preventDefault();
+      });
+
+      document.querySelectorAll('[data-window-action]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (!annual) return;
+          const action = btn.getAttribute('data-window-action');
+          if (action === 'back-year') moveWindowTo(windowStart - 1, { fill: true });
+          else if (action === 'fwd-year') moveWindowTo(windowStart + 1, { fill: true });
+          else if (action === 'back-window') moveWindowTo(windowStart - windowLen, { fill: true });
+          else if (action === 'fwd-window') moveWindowTo(windowStart + windowLen, { fill: true });
+        });
+      });
+    }
+
+    function wireHistTooltip() {
+      const canvas = els.histChart;
+      const tooltip = els.histTooltip;
+      canvas.addEventListener('mousemove', (e) => {
+        if (!histLayout) { tooltip.hidden = true; return; }
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const { hist, xLo, xHi, pad, cW } = histLayout;
+        const v = xLo + ((x - pad.left) / Math.max(1e-9, cW)) * (xHi - xLo);
+        const i = Math.floor((v - hist.start) / hist.binWidth);
+        if (i < 0 || i >= hist.counts.length || !hist.counts[i]) { tooltip.hidden = true; return; }
+        const b0 = hist.start + i * hist.binWidth;
+        tooltip.textContent =
+          `${fmtSlope(b0)} to ${fmtSlope(b0 + hist.binWidth)} °C/decade\n${hist.counts[i]} window${hist.counts[i] === 1 ? '' : 's'}`;
+        tooltip.hidden = false;
+        const ttW = tooltip.offsetWidth || 160;
+        let left = x + 14;
+        if (left + ttW > rect.width - 8) left = x - ttW - 14;
+        tooltip.style.left = Math.max(4, left) + 'px';
+        tooltip.style.top = '12px';
+      });
+      canvas.addEventListener('mouseleave', () => { tooltip.hidden = true; });
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────────── */
+    function wireReset() {
+      els.resetLab.addEventListener('click', () => {
+        stationId = null;
+        datasetKey = null;
+        annual = null;
+        fullTrend = null;
+        fullRevealed = false;
+        visitedByLen = new Map();
+        validStartsByLen = new Map();
+        windowLen = WINDOW_LENGTHS[Math.floor(Math.random() * WINDOW_LENGTHS.length)];
+        windowStart = null;
+
+        updateStationCards();
+        els.stationInfo.innerHTML = '';
+        els.stationPrompt.hidden = false;
+        document.querySelectorAll('#datasetGrid .prediction-card').forEach((c) => c.classList.remove('chosen'));
+        els.datasetChosenBanner.hidden = true;
+        els.datasetPrompt.hidden = false;
+        sections.dataset.hidden = true;
+        sections.explore.hidden = true;
+        sections.reveal.hidden = true;
+        sections.fullRecord.hidden = true;
+        els.revealFull.disabled = true;
+        clearExploreReadouts();
+        setWindowLen(windowLen, { fromRestore: true });
+
+        pushStateToUrl();
+        window.scrollTo({ top: 0, behavior: scrollBehavior });
+      });
+    }
+
+    /* ── Theme / resize redraws ────────────────────────────────────── */
+    function wireRedraws() {
+      window.addEventListener('klymot:theme-toggled', () => {
+        if (!annual) return;
+        drawRecordChart();
+        drawHistChart();
+        updateHistKey();
+      });
+      const observer = new ResizeObserver(() => {
+        if (!annual) return;
+        drawRecordChart();
+        drawHistChart();
+      });
+      observer.observe(els.recordChartContainer);
+      observer.observe(els.histChartContainer);
+    }
+
+    /* ── Initialisation ────────────────────────────────────────────── */
+    function initialize() {
+      const urlState = readStateFromUrl();
+      sectionTracker = createSectionTracker(SECTION_IDS, { onChange: pushStateToUrl });
+      sectionTracker.setCurrentSectionId(urlState.sec || null);
+      window.addEventListener('scroll', sectionTracker.syncSectionState, { passive: true });
+
+      renderStationCards();
+      renderDatasetCards();
+      wireRecordInteraction();
+      wireHistTooltip();
+      wireReset();
+      wireRedraws();
+
+      document.querySelectorAll('[data-window-length]').forEach((btn) => {
+        btn.addEventListener('click', () => setWindowLen(Number(btn.getAttribute('data-window-length'))));
+      });
+      els.revealFull.addEventListener('click', () => {
+        if (!els.revealFull.disabled) revealFullRecord();
+      });
+
+      // Non-blocking window length: randomized initial value unless restored.
+      const restoredLen = WINDOW_LENGTHS.includes(urlState.w) ? urlState.w : null;
+      restoring = true;
+      setWindowLen(restoredLen || WINDOW_LENGTHS[Math.floor(Math.random() * WINDOW_LENGTHS.length)], { fromRestore: true });
+
+      // Restore blocking choices from the URL, revealing every section they
+      // unlock synchronously before any data fetch starts (§4.1 of the
+      // style rationale) — then restore the scroll position exactly once.
+      const restoredStation = urlState.s && stationById(urlState.s) ? urlState.s : null;
+      const restoredDataset = urlState.d && DATASET_OPTIONS.some((o) => o.key === urlState.d) ? urlState.d : null;
+      if (restoredStation) {
+        chooseStation(restoredStation, { fromRestore: true });
+        if (restoredDataset) {
+          chooseDataset(restoredDataset, { fromRestore: true });
+          if (urlState.fr) {
+            sections.reveal.hidden = true;
+            sections.fullRecord.hidden = false;
+          }
+        }
+      }
+      restoring = false;
+      sectionTracker.restoreSectionFromUrl(urlState.sec);
+
+      if (restoredStation && restoredDataset) {
+        // loadAndShow pushes state itself once the fetch lands — pushing here
+        // too would briefly strip p/fr from a shared link's URL.
+        loadAndShow({ restoredStart: urlState.p, restoredReveal: urlState.fr });
+      } else {
+        pushStateToUrl();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initialize);
+  </script>
+</BaseLayout>

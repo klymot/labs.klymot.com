@@ -1332,26 +1332,28 @@ select:focus {
   white-space: nowrap;
 }
 
-.lab-airless-body .hook {
+/* Hero hook/learn-list and primary-cta are shared by every lab that uses
+   them (currently the beta labs) — scoped to .lab-page, not one lab. */
+.lab-page .hook {
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text);
   margin: 0.5rem 0 0.75rem;
 }
-.lab-airless-body .learn-list {
+.lab-page .learn-list {
   margin: 0.75rem 0 0;
   padding-left: 1.2rem;
   color: var(--text-secondary);
   font-size: 0.92rem;
 }
-.lab-airless-body .learn-list li {
+.lab-page .learn-list li {
   margin-bottom: 0.3rem;
 }
 
 /* Blocking-action buttons — bigger and more visually distinct than the
    secondary mini-tool/reset-btn controls, since these are the actual
    blocking choices that unlock everything below them. */
-.lab-airless-body .primary-cta {
+.lab-page .primary-cta {
   font-family: var(--font-sans);
   font-size: 1rem;
   font-weight: 600;
@@ -1363,17 +1365,17 @@ select:focus {
   cursor: pointer;
   transition: background 0.15s, transform 0.1s;
 }
-.lab-airless-body .primary-cta:hover:not(:disabled) {
+.lab-page .primary-cta:hover:not(:disabled) {
   background: var(--accent-hover);
 }
-.lab-airless-body .primary-cta:active:not(:disabled) {
+.lab-page .primary-cta:active:not(:disabled) {
   transform: scale(0.98);
 }
-.lab-airless-body .primary-cta:disabled {
+.lab-page .primary-cta:disabled {
   opacity: 0.6;
   cursor: default;
 }
-.lab-airless-body .primary-cta-row {
+.lab-page .primary-cta-row {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1381,7 +1383,7 @@ select:focus {
   gap: 0.4rem;
   margin-top: 1.25rem;
 }
-.lab-airless-body .primary-cta-hint {
+.lab-page .primary-cta-hint {
   font-size: 0.82rem;
   color: var(--text-secondary);
   margin: 0;
@@ -1585,7 +1587,8 @@ select:focus {
   color: var(--text-secondary);
   font-size: 0.9rem;
 }
-.lab-airless-body .beta-gate {
+/* Beta-lab soft lock — shared by every lab still under beta testing. */
+.lab-page .beta-gate {
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -1594,17 +1597,17 @@ select:focus {
   align-items: center;
   justify-content: center;
 }
-.lab-airless-body .beta-gate-card {
+.lab-page .beta-gate-card {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   width: min(90vw, 320px);
 }
-.lab-airless-body .beta-gate-card label {
+.lab-page .beta-gate-card label {
   font-weight: 600;
   color: var(--text);
 }
-.lab-airless-body .beta-gate-card input {
+.lab-page .beta-gate-card input {
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1612,7 +1615,7 @@ select:focus {
   color: var(--text);
   font-size: 1rem;
 }
-.lab-airless-body .beta-gate-card button {
+.lab-page .beta-gate-card button {
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--accent);
   border-radius: 6px;
@@ -1621,7 +1624,129 @@ select:focus {
   font-weight: 600;
   cursor: pointer;
 }
-.lab-airless-body .beta-gate-error {
+.lab-page .beta-gate-error {
   color: #e05050;
   font-size: 0.9rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   cherry-picking specific
+   ═══════════════════════════════════════════════════════════════════ */
+
+.lab-cherry-picking .random-order-note {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-block: 0 0.5rem;
+}
+
+.lab-cherry-picking .control-note {
+  min-height: 1.1rem;
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+/* Window-length picker: a labelled, non-blocking display control. */
+.lab-cherry-picking .window-length-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-block: 1rem;
+}
+.lab-cherry-picking .window-length-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.lab-cherry-picking .window-length-row .toggle-row {
+  flex: 1;
+  max-width: 320px;
+  min-width: 220px;
+}
+
+/* Live readout strip under the record chart. */
+.lab-cherry-picking .window-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+.lab-cherry-picking .window-readout-stat {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+.lab-cherry-picking .window-readout-label {
+  display: block;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+.lab-cherry-picking .window-readout-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The record chart doubles as a keyboard slider for the window. */
+.lab-cherry-picking .chart-container canvas:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Small colour-key chips under the histogram. */
+.lab-cherry-picking .hist-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-top: 0.6rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+.lab-cherry-picking .hist-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.lab-cherry-picking .hist-key-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+/* Data-table fallback (accessibility / "just give me the numbers"). */
+.lab-cherry-picking .data-table-wrap {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.lab-cherry-picking .data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.lab-cherry-picking .data-table th,
+.lab-cherry-picking .data-table td {
+  padding: 0.25rem 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+.lab-cherry-picking .data-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+  color: var(--text);
+  font-family: var(--font-sans);
 }
