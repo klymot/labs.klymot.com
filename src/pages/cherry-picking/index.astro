@@ -85,13 +85,12 @@ import BetaGate from '../../components/BetaGate.astro';
       <div class="container">
         <div class="prose">
           <h2 id="station-heading">Choose a station</h2>
-          <p>Six long-running stations, one from each of six broad regions of the world. The list was drawn mechanically — in each region, the station whose record has the most complete years — so no station is on it because of what its data shows.</p>
+          <p>These long-running stations span a wide range of surrounding built-up land, from very little local development to dense urban areas. Built-up context is shown on each card so you can consider it as part of your choice rather than having it hidden.</p>
         </div>
         <details class="expander">
-          <summary>Exactly how was this list drawn?</summary>
+          <summary>How were these stations chosen?</summary>
           <div class="expander-body">
-            <p>From the NOAA GHCNm v4 unadjusted archive (as published in July 2026): a "complete year" is one with all twelve monthly values present and no quality-control flag. The world was split into six fixed latitude/longitude boxes roughly matching the inhabited continents, and within each box the station with the most complete years was taken — ties broken alphabetically by station ID. No station was added, removed, or swapped after applying the rule.</p>
-            <p>One quirk the rule produced: the Africa box's top station is Funchal, on the Atlantic island of Madeira, which sits inside that box. It was kept as-is rather than hand-adjusted, since hand adjustments are exactly what the rule is there to prevent.</p>
+            <p>The lab uses long-running stations with substantial historical records that collectively span a broad range of surrounding built-up land. They are presented in a random order to avoid suggesting that any one station is the "right" place to start.</p>
           </div>
         </details>
         <p class="random-order-note">Stations are shown in a random order to avoid nudging your choice.</p>
@@ -288,7 +287,7 @@ import BetaGate from '../../components/BetaGate.astro';
               <dt>Station temperature records — NOAA GHCNm v4</dt>
               <dd>Monthly mean temperatures from the NOAA Global Historical Climatology Network Monthly v4, in both its unadjusted (QCU) and adjusted (QCF) versions. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018</a>. Series are fetched per station from klymot.com's published data mirror (<code>www.klymot.com/data/&#123;qcu,qcf&#125;/&lt;station-id&gt;.csv</code>), the same files behind the main site's station explorer, updated as NOAA publishes.</dd>
               <dt>Station list</dt>
-              <dd>Drawn mechanically from the GHCNm v4 QCU archive as published in July 2026: within each of six fixed latitude/longitude regions, the station with the most years having all twelve monthly values present and unflagged. The rule, boxes, and its one quirk (Funchal topping the Africa box) are described in the "Exactly how was this list drawn?" expander above.</dd>
+              <dd>Candidate long-running stations selected from klymot.com's station index for beta review, constrained to records starting no later than 1926, extending to at least 2025, and having at least 100 years in the longest run with at least nine valid months per year. The candidate set deliberately spans 2020 built-up context rather than optimizing only for record length.</dd>
               <dt>Trend fitting and confidence intervals</dt>
               <dd>Ordinary least squares on annual means (complete years only); 95% interval on the slope with an AR(1) effective-sample-size correction for year-to-year autocorrelation, following the approach in <a href="https://doi.org/10.1029/1999JD901105" target="_blank" rel="noopener">Santer et al., 2000</a>.</dd>
               <dt>The roughly-60-year-cycle question</dt>
@@ -326,18 +325,26 @@ import BetaGate from '../../components/BetaGate.astro';
 
     const KLYMOT_DATA_BASE = 'https://www.klymot.com/data';
     const COVERAGE_THRESHOLD = 0.5;
+    const BU_2020_SPRITE = {
+      url: 'https://www.klymot.com/assets/bu_2020_sprite.png',
+      cell: 32,
+      cols: 128,
+      rows: 219,
+      zoom: 2,
+    };
 
-    // Drawn mechanically from the GHCNm v4 QCU archive (July 2026): within
-    // each of six lat/lon regions, the station with the most complete years.
-    // See the "Exactly how was this list drawn?" expander. Do not hand-edit
-    // this list — rerun the rule instead.
+    // Beta candidate pool: long GHCN records spanning a wide range of 2020
+    // built-up fraction around the station. See the station methodology
+    // expander; do not treat this as the final selection rule until reviewed.
     const STATION_POOL = [
-      { id: 'USW00014758', name: 'New Haven', place: 'Connecticut, United States', region: 'North America', since: 1781, completeYears: 209 },
-      { id: 'AR000875850', name: 'Buenos Aires Observatorio', place: 'Argentina', region: 'South America', since: 1856, completeYears: 163 },
-      { id: 'NLM00006260', name: 'De Bilt', place: 'Netherlands', region: 'Europe', since: 1706, completeYears: 320 },
-      { id: 'PO000008522', name: 'Funchal', place: 'Madeira, Portugal', region: 'Africa box (Atlantic island)', since: 1867, completeYears: 144 },
-      { id: 'IN020040900', name: 'Madras / Minambakkam', place: 'Chennai, India', region: 'Asia', since: 1796, completeYears: 189 },
-      { id: 'ASN00026020', name: 'Mount Gambier Post Office', place: 'South Australia, Australia', region: 'Oceania', since: 1861, completeYears: 157 },
+      { id: 'USC00013160', name: 'Gainesville Lock', place: 'Alabama, United States', region: 'Very low BU', since: 1893, completeYears: 124, bu2020Idx: 14935, bu2020_1km: 0.141, bu2020_5km: 0.129, bu2020_20km: 0.157 },
+      { id: 'DAM00006011', name: 'Torshavn', place: 'Faroe Islands', region: 'Very low BU', since: 1867, completeYears: 154, bu2020Idx: 6857, bu2020_1km: 0.221, bu2020_5km: 0.045, bu2020_20km: 0.012 },
+      { id: 'EI000003953', name: 'Valentia Observatory', place: 'Ireland', region: 'Low BU', since: 1869, completeYears: 157, bu2020Idx: 6965, bu2020_1km: 2.517, bu2020_5km: 0.706, bu2020_20km: 0.369 },
+      { id: 'NLM00006260', name: 'De Bilt', place: 'Netherlands', region: 'Moderate BU', since: 1706, completeYears: 320, bu2020Idx: 10777, bu2020_1km: 8.749, bu2020_5km: 11.927, bu2020_20km: 10.129 },
+      { id: 'USW00014758', name: 'New Haven Tweed AP', place: 'Connecticut, United States', region: 'Moderate-high BU', since: 1781, completeYears: 176, bu2020Idx: 26697, bu2020_1km: 14.336, bu2020_5km: 9.630, bu2020_20km: 7.281 },
+      { id: 'UK000056225', name: 'Oxford', place: 'United Kingdom', region: 'High BU', since: 1815, completeYears: 210, bu2020Idx: 14595, bu2020_1km: 18.575, bu2020_5km: 8.201, bu2020_20km: 4.452 },
+      { id: 'BE000006447', name: 'Uccle', place: 'Belgium', region: 'High BU', since: 1794, completeYears: 232, bu2020Idx: 1806, bu2020_1km: 21.065, bu2020_5km: 22.502, bu2020_20km: 15.642 },
+      { id: 'AR000875850', name: 'Buenos Aires Observatorio', place: 'Argentina', region: 'Very high BU', since: 1856, completeYears: 150, bu2020Idx: 185, bu2020_1km: 44.099, bu2020_5km: 38.728, bu2020_20km: 31.691 },
     ];
 
     const DATASET_OPTIONS = [
@@ -428,6 +435,26 @@ import BetaGate from '../../components/BetaGate.astro';
 
     function stationById(id) {
       return STATION_POOL.find((s) => s.id === id) || null;
+    }
+
+    function fmtBu(v) {
+      return v == null ? '—' : `${v.toFixed(v < 10 ? 1 : 0)}%`;
+    }
+
+    function bu2020TileStyle(station) {
+      if (station.bu2020Idx == null) return '';
+      const { url, cell, cols, rows, zoom } = BU_2020_SPRITE;
+      const display = cell * zoom;
+      const col = station.bu2020Idx % cols;
+      const row = Math.floor(station.bu2020Idx / cols);
+      return [
+        `width:${display}px`,
+        `height:${display}px`,
+        `background-image:url('${url}')`,
+        `background-size:${cols * display}px ${rows * display}px`,
+        `background-position:${-(col * display)}px ${-(row * display)}px`,
+        'background-repeat:no-repeat',
+      ].join(';');
     }
 
     function getVisited() {
@@ -918,9 +945,17 @@ import BetaGate from '../../components/BetaGate.astro';
         btn.dataset.stationId = st.id;
         btn.setAttribute('aria-pressed', st.id === stationId ? 'true' : 'false');
         btn.innerHTML = `
-          <span class="sc-since">from ${st.since}</span>
-          <span class="sc-name">${st.name}, ${st.place}</span>
-          <span class="sc-caveat">${st.region} · ${st.completeYears} complete years</span>
+          <span class="sc-card-top">
+            <span class="sc-bu-map" style="${bu2020TileStyle(st)}" aria-hidden="true"></span>
+            <span class="sc-card-text">
+              <span class="sc-since">from ${st.since}</span>
+              <span class="sc-name">${st.name}, ${st.place}</span>
+              <span class="sc-caveat">${st.region} · ${st.completeYears} long-run years</span>
+            </span>
+          </span>
+          <span class="sc-bu-row" aria-label="2020 built-up land around ${st.name}">
+            <span>${fmtBu(st.bu2020_1km)} BU in 1 km</span>
+          </span>
         `;
         btn.addEventListener('click', () => chooseStation(st.id));
         grid.appendChild(btn);
@@ -942,6 +977,7 @@ import BetaGate from '../../components/BetaGate.astro';
       els.stationInfo.innerHTML =
         `<span class="station-pill">${st.id}</span>` +
         `<span class="station-dist">${st.name}, ${st.place}</span>` +
+        `<span class="station-pill">BU 2020: ${fmtBu(st.bu2020_1km)} / ${fmtBu(st.bu2020_5km)} / ${fmtBu(st.bu2020_20km)}</span>` +
         `<a class="station-klymot-link" href="${klymotUrl}" target="_blank" rel="noopener">View on klymot.com →</a>`;
     }
 
