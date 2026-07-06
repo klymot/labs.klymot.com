@@ -5,10 +5,10 @@
   "lon": 4.3583,
   "source": "Open-Meteo Historical Weather API (placeholder \u2014 gridded model/reanalysis data; real pyranometer records not freely accessible without registration for this station)",
   "source_type": "open_meteo",
-  "generated_at": "2026-06-29T13:28:01+00:00",
-  "updated": "2026-06-29",
+  "generated_at": "2026-07-06T08:14:18+00:00",
+  "updated": "2026-07-06",
   "start_date": "1951-01-01",
-  "end_date": "2026-06-28",
+  "end_date": "2026-07-05",
   "temperature_station": {
     "id": "BE000006447",
     "name": "UCCLE",
@@ -183991,64 +183991,146 @@
       "date": "2026-06-14",
       "shortwave_mj_m2": 20.53,
       "tmax_c": 18.1,
-      "tmin_c": 12.4,
-      "tavg_c": 15.2
+      "tmin_c": 10.5,
+      "tavg_c": 14.3
     },
     {
       "date": "2026-06-15",
-      "shortwave_mj_m2": 19.86
+      "shortwave_mj_m2": 19.86,
+      "tmax_c": 18.8,
+      "tmin_c": 8.9,
+      "tavg_c": 13.9
     },
     {
       "date": "2026-06-16",
-      "shortwave_mj_m2": 22.95
+      "shortwave_mj_m2": 22.95,
+      "tmax_c": 24.0,
+      "tmin_c": 15.9,
+      "tavg_c": 19.9
     },
     {
       "date": "2026-06-17",
-      "shortwave_mj_m2": 21.35
+      "shortwave_mj_m2": 21.35,
+      "tmax_c": 26.5,
+      "tmin_c": 15.8,
+      "tavg_c": 21.1
     },
     {
       "date": "2026-06-18",
-      "shortwave_mj_m2": 28.41
+      "shortwave_mj_m2": 28.41,
+      "tmax_c": 30.7,
+      "tmin_c": 16.8,
+      "tavg_c": 23.8
     },
     {
       "date": "2026-06-19",
-      "shortwave_mj_m2": 25.04
+      "shortwave_mj_m2": 25.04,
+      "tmax_c": 33.3,
+      "tmin_c": 18.6,
+      "tavg_c": 25.9
     },
     {
       "date": "2026-06-20",
-      "shortwave_mj_m2": 27.78
+      "shortwave_mj_m2": 27.78,
+      "tmax_c": 29.2,
+      "tmin_c": 19.1,
+      "tavg_c": 24.1
     },
     {
       "date": "2026-06-21",
-      "shortwave_mj_m2": 27.92
+      "shortwave_mj_m2": 27.92,
+      "tmax_c": 30.2,
+      "tmin_c": 19.1,
+      "tavg_c": 24.6
     },
     {
       "date": "2026-06-22",
-      "shortwave_mj_m2": 28.62
+      "shortwave_mj_m2": 28.62,
+      "tmax_c": 29.7,
+      "tmin_c": 20.8,
+      "tavg_c": 25.2
     },
     {
       "date": "2026-06-23",
-      "shortwave_mj_m2": 22.23
+      "shortwave_mj_m2": 22.23,
+      "tmax_c": 29.8,
+      "tmin_c": 20.2,
+      "tavg_c": 25.0
     },
     {
       "date": "2026-06-24",
-      "shortwave_mj_m2": 28.16
+      "shortwave_mj_m2": 28.16,
+      "tmax_c": 35.1,
+      "tmin_c": 20.5,
+      "tavg_c": 27.8
     },
     {
       "date": "2026-06-25",
-      "shortwave_mj_m2": 27.24
+      "shortwave_mj_m2": 27.24,
+      "tmax_c": 34.8,
+      "tmin_c": 24.3,
+      "tavg_c": 29.5
     },
     {
       "date": "2026-06-26",
-      "shortwave_mj_m2": 25.53
+      "shortwave_mj_m2": 25.53,
+      "tmax_c": 35.3,
+      "tmin_c": 24.4,
+      "tavg_c": 29.8
     },
     {
       "date": "2026-06-27",
-      "shortwave_mj_m2": 23.45
+      "shortwave_mj_m2": 23.45,
+      "tmax_c": 33.6,
+      "tmin_c": 21.7,
+      "tavg_c": 27.6
     },
     {
       "date": "2026-06-28",
-      "shortwave_mj_m2": 22.78
+      "shortwave_mj_m2": 22.78,
+      "tmax_c": 27.0,
+      "tmin_c": 18.8,
+      "tavg_c": 22.9
+    },
+    {
+      "date": "2026-06-29",
+      "shortwave_mj_m2": 28.75,
+      "tmax_c": 24.4,
+      "tmin_c": 15.4,
+      "tavg_c": 19.9
+    },
+    {
+      "date": "2026-06-30",
+      "shortwave_mj_m2": 16.1,
+      "tmax_c": 22.4,
+      "tmin_c": 14.1,
+      "tavg_c": 18.2
+    },
+    {
+      "date": "2026-07-01",
+      "shortwave_mj_m2": 26.04,
+      "tmax_c": 24.1,
+      "tmin_c": 13.2,
+      "tavg_c": 18.6
+    },
+    {
+      "date": "2026-07-02",
+      "shortwave_mj_m2": 17.04,
+      "tmax_c": 23.2,
+      "tmin_c": 15.1,
+      "tavg_c": 19.1
+    },
+    {
+      "date": "2026-07-03",
+      "shortwave_mj_m2": 28.43
+    },
+    {
+      "date": "2026-07-04",
+      "shortwave_mj_m2": 24.86
+    },
+    {
+      "date": "2026-07-05",
+      "shortwave_mj_m2": 19.14
     }
   ]
 }

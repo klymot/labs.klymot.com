@@ -5,10 +5,10 @@
   "lon": 18.0686,
   "source": "Swedish Meteorological and Hydrological Institute (SMHI) \u2014 hourly global irradiance aggregated to daily MJ/m\u00b2, station 98735 Stockholm Sol (real pyranometer measurements from 1983)",
   "source_type": "smhi",
-  "generated_at": "2026-06-29T13:28:01+00:00",
-  "updated": "2026-06-29",
+  "generated_at": "2026-07-06T08:14:18+00:00",
+  "updated": "2026-07-06",
   "start_date": "1940-01-01",
-  "end_date": "2026-06-28",
+  "end_date": "2026-07-05",
   "temperature_station": {
     "id": "SWM00002485",
     "name": "STOCKHOLM",
@@ -109442,10 +109442,194 @@
     },
     {
       "date": "2026-03-01",
-      "shortwave_mj_m2": 0.007,
+      "shortwave_mj_m2": 2.586,
       "tmax_c": 5.2,
       "tmin_c": 1.7,
       "tavg_c": 3.5
+    },
+    {
+      "date": "2026-03-02",
+      "shortwave_mj_m2": 9.023,
+      "tmax_c": 5.1,
+      "tmin_c": 0.5,
+      "tavg_c": 2.8
+    },
+    {
+      "date": "2026-03-03",
+      "shortwave_mj_m2": 6.275,
+      "tmax_c": 8.2,
+      "tmin_c": 3.4,
+      "tavg_c": 5.8
+    },
+    {
+      "date": "2026-03-04",
+      "shortwave_mj_m2": 9.53,
+      "tmax_c": 7.7,
+      "tmin_c": 2.2,
+      "tavg_c": 5.0
+    },
+    {
+      "date": "2026-03-05",
+      "shortwave_mj_m2": 9.571,
+      "tmax_c": 8.7,
+      "tmin_c": 3.1,
+      "tavg_c": 5.9
+    },
+    {
+      "date": "2026-03-06",
+      "shortwave_mj_m2": 9.641,
+      "tmax_c": 11.2,
+      "tmin_c": 1.7,
+      "tavg_c": 6.4
+    },
+    {
+      "date": "2026-03-07",
+      "shortwave_mj_m2": 2.222,
+      "tmax_c": 4.5,
+      "tmin_c": 3.2,
+      "tavg_c": 3.9
+    },
+    {
+      "date": "2026-03-08",
+      "shortwave_mj_m2": 9.663,
+      "tmax_c": 10.7,
+      "tmin_c": 1.9,
+      "tavg_c": 6.3
+    },
+    {
+      "date": "2026-03-09",
+      "shortwave_mj_m2": 9.355,
+      "tmax_c": 9.2,
+      "tmin_c": 5.0,
+      "tavg_c": 7.1
+    },
+    {
+      "date": "2026-03-10",
+      "shortwave_mj_m2": 10.111,
+      "tmax_c": 11.9,
+      "tmin_c": 3.7,
+      "tavg_c": 7.8
+    },
+    {
+      "date": "2026-03-11",
+      "shortwave_mj_m2": 3.334,
+      "tmax_c": 7.2,
+      "tmin_c": 4.6,
+      "tavg_c": 5.9
+    },
+    {
+      "date": "2026-03-12",
+      "shortwave_mj_m2": 9.249,
+      "tmax_c": 10.0,
+      "tmin_c": 6.0,
+      "tavg_c": 8.0
+    },
+    {
+      "date": "2026-03-13",
+      "shortwave_mj_m2": 7.187,
+      "tmax_c": 8.1,
+      "tmin_c": 5.2,
+      "tavg_c": 6.7
+    },
+    {
+      "date": "2026-03-14",
+      "shortwave_mj_m2": 1.549,
+      "tmax_c": 4.2,
+      "tmin_c": 2.9,
+      "tavg_c": 3.5
+    },
+    {
+      "date": "2026-03-15",
+      "shortwave_mj_m2": 2.432,
+      "tmax_c": 4.2,
+      "tmin_c": 2.1,
+      "tavg_c": 3.2
+    },
+    {
+      "date": "2026-03-16",
+      "shortwave_mj_m2": 9.088,
+      "tmax_c": 5.1,
+      "tmin_c": 1.9,
+      "tavg_c": 3.5
+    },
+    {
+      "date": "2026-03-17",
+      "shortwave_mj_m2": 8.677,
+      "tmax_c": 7.4,
+      "tmin_c": 1.5,
+      "tavg_c": 4.5
+    },
+    {
+      "date": "2026-03-18",
+      "shortwave_mj_m2": 9.883,
+      "tmax_c": 9.2,
+      "tmin_c": 1.2,
+      "tavg_c": 5.2
+    },
+    {
+      "date": "2026-03-19",
+      "shortwave_mj_m2": 7.193,
+      "tmax_c": 10.2,
+      "tmin_c": 6.2,
+      "tavg_c": 8.2
+    },
+    {
+      "date": "2026-03-20",
+      "shortwave_mj_m2": 11.906,
+      "tmax_c": 10.7,
+      "tmin_c": 2.7,
+      "tavg_c": 6.7
+    },
+    {
+      "date": "2026-03-21",
+      "shortwave_mj_m2": 12.965,
+      "tmax_c": 12.6,
+      "tmin_c": 4.0,
+      "tavg_c": 8.3
+    },
+    {
+      "date": "2026-03-22",
+      "shortwave_mj_m2": 14.084
+    },
+    {
+      "date": "2026-03-23",
+      "shortwave_mj_m2": 9.212
+    },
+    {
+      "date": "2026-03-24",
+      "shortwave_mj_m2": 6.633
+    },
+    {
+      "date": "2026-03-25",
+      "shortwave_mj_m2": 3.344
+    },
+    {
+      "date": "2026-03-26",
+      "shortwave_mj_m2": 9.149
+    },
+    {
+      "date": "2026-03-27",
+      "shortwave_mj_m2": 15.82
+    },
+    {
+      "date": "2026-03-28",
+      "shortwave_mj_m2": 6.124
+    },
+    {
+      "date": "2026-03-29",
+      "shortwave_mj_m2": 13.303
+    },
+    {
+      "date": "2026-03-30",
+      "shortwave_mj_m2": 8.653
+    },
+    {
+      "date": "2026-03-31",
+      "shortwave_mj_m2": 16.054
+    },
+    {
+      "date": "2026-04-01",
+      "shortwave_mj_m2": 0.494
     }
   ]
 }
