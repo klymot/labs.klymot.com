@@ -1669,17 +1669,20 @@ select:focus {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   cherry-picking specific
+   cherry-picking / error-bars shared chart components
+   (.lab-error-bars is carried by both Error Bars sibling labs)
    ═══════════════════════════════════════════════════════════════════ */
 
-.lab-cherry-picking .random-order-note {
+.lab-cherry-picking .random-order-note,
+.lab-error-bars .random-order-note {
   font-size: 0.72rem;
   color: var(--muted);
   font-style: italic;
   margin-block: 0 0.5rem;
 }
 
-.lab-cherry-picking .control-note {
+.lab-cherry-picking .control-note,
+.lab-error-bars .control-note {
   min-height: 1.1rem;
   font-size: 0.68rem;
   color: var(--muted);
@@ -1687,38 +1690,50 @@ select:focus {
 }
 
 /* Window-length picker: a labelled, non-blocking display control. */
-.lab-cherry-picking .window-length-row {
+.lab-cherry-picking .window-length-row,
+.lab-error-bars .window-length-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
   margin-block: 1rem;
 }
-.lab-cherry-picking .window-length-label {
+.lab-cherry-picking .window-length-label,
+.lab-error-bars .window-length-label {
   font-size: 0.8rem;
   color: var(--text-secondary);
   white-space: nowrap;
 }
-.lab-cherry-picking .window-length-row .toggle-row {
+.lab-cherry-picking .window-length-row .toggle-row,
+.lab-error-bars .window-length-row .toggle-row {
   flex: 1;
   max-width: 320px;
   min-width: 220px;
 }
 
+/* The time-of-year filter can hold up to 13 chips — let it wrap full-width. */
+.lab-error-bars .window-length-row #subsetButtons {
+  max-width: none;
+  flex-wrap: wrap;
+}
+
 /* Live readout strip under the record chart. */
-.lab-cherry-picking .window-readout {
+.lab-cherry-picking .window-readout,
+.lab-error-bars .window-readout {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 0.75rem;
   margin-top: 0.75rem;
 }
-.lab-cherry-picking .window-readout-stat {
+.lab-cherry-picking .window-readout-stat,
+.lab-error-bars .window-readout-stat {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
 }
-.lab-cherry-picking .window-readout-label {
+.lab-cherry-picking .window-readout-label,
+.lab-error-bars .window-readout-label {
   display: block;
   font-size: 0.66rem;
   letter-spacing: 0.06em;
@@ -1726,7 +1741,8 @@ select:focus {
   color: var(--muted);
   margin-bottom: 0.2rem;
 }
-.lab-cherry-picking .window-readout-value {
+.lab-cherry-picking .window-readout-value,
+.lab-error-bars .window-readout-value {
   display: block;
   font-family: var(--font-mono);
   font-size: 0.85rem;
@@ -1735,13 +1751,15 @@ select:focus {
 }
 
 /* The record chart doubles as a keyboard slider for the window. */
-.lab-cherry-picking .chart-container canvas:focus-visible {
+.lab-cherry-picking .chart-container canvas:focus-visible,
+.lab-error-bars .chart-container canvas:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
 
 /* Small colour-key chips under the histogram. */
-.lab-cherry-picking .hist-key {
+.lab-cherry-picking .hist-key,
+.lab-error-bars .hist-key {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem 1rem;
@@ -1749,12 +1767,14 @@ select:focus {
   font-size: 0.72rem;
   color: var(--text-secondary);
 }
-.lab-cherry-picking .hist-key-item {
+.lab-cherry-picking .hist-key-item,
+.lab-error-bars .hist-key-item {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
 }
-.lab-cherry-picking .hist-key-swatch {
+.lab-cherry-picking .hist-key-swatch,
+.lab-error-bars .hist-key-swatch {
   width: 12px;
   height: 12px;
   border-radius: 3px;
@@ -1762,19 +1782,23 @@ select:focus {
 }
 
 /* Data-table fallback (accessibility / "just give me the numbers"). */
-.lab-cherry-picking .data-table-wrap {
+.lab-cherry-picking .data-table-wrap,
+.lab-error-bars .data-table-wrap {
   max-height: 320px;
   overflow: auto;
   border: 1px solid var(--border);
   border-radius: 6px;
 }
-.lab-cherry-picking .data-table {
+.lab-cherry-picking .data-table,
+.lab-error-bars .data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.78rem;
 }
 .lab-cherry-picking .data-table th,
-.lab-cherry-picking .data-table td {
+.lab-error-bars .data-table th,
+.lab-cherry-picking .data-table td,
+.lab-error-bars .data-table td {
   padding: 0.25rem 0.75rem;
   text-align: right;
   border-bottom: 1px solid var(--border);
@@ -1782,7 +1806,8 @@ select:focus {
   font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
 }
-.lab-cherry-picking .data-table th {
+.lab-cherry-picking .data-table th,
+.lab-error-bars .data-table th {
   position: sticky;
   top: 0;
   background: var(--bg-secondary);

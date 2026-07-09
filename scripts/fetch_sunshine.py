@@ -26,19 +26,27 @@ import datetime as dt
 import gzip
 import io as io_module
 import json
-import math
 import sys
 import time
-import urllib.error
-import urllib.parse
 import urllib.request
-import zipfile
-from collections import defaultdict
 from pathlib import Path
 
+# Source-specific download logic is shared with the other labs' fetch
+# scripts via fetch_common (labs share fetch code, never data files).
+# haversine_km/parse_year/fetch_json are re-exported here for existing
+# callers and tests.
+from fetch_common import (  # noqa: F401 (re-exports)
+    KLYMOT_INDEX_URL,
+    fetch_dwd_solar_daily,
+    fetch_json,
+    fetch_knmi_daily_radiation,
+    fetch_open_meteo_daily,
+    fetch_smhi_daily_radiation,
+    haversine_km,
+    open_meteo_rows,
+    parse_year,
+)
 
-KLYMOT_INDEX_URL = "https://www.klymot.com/data/index.json"
-OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 GHCN_DAILY_BASE_URL = "https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station"
 
 # Catalog source: AssessingSolar/solarstations on GitHub.
@@ -150,170 +158,33 @@ DEFAULT_LOCATIONS = [
 
 # ── Real-data fetchers ──────────────────────────────────────────────────────
 
+def _as_shortwave_rows(rows: list[dict]) -> list[dict]:
+    return [{"date": r["date"], "shortwave_mj_m2": r["value"]} for r in rows]
+
+
 def fetch_dwd_solar_potsdam(start_date: str, end_date: str) -> list[dict]:
-    """DWD CDC: real pyranometer data for Potsdam, station 03987.
-
-    FG_STRAHL = daily total global (shortwave) radiation in J/cm².
-    Divide by 100 to convert to MJ/m².
-    Data available from 1947-01-01.
-    """
-    url = (
-        "https://opendata.dwd.de/climate_environment/CDC/"
-        "observations_germany/climate/daily/solar/"
-        "tageswerte_ST_03987_row.zip"
-    )
-    print("  Downloading DWD Potsdam solar ZIP...", file=sys.stderr)
-    req = urllib.request.Request(url, headers={"User-Agent": "fetch_sunshine.py"})
-    with urllib.request.urlopen(req, timeout=90) as resp:
-        zip_bytes = resp.read()
-
-    start_dt = dt.date.fromisoformat(start_date)
-    end_dt = dt.date.fromisoformat(end_date)
-    rows: list[dict] = []
-
-    with zipfile.ZipFile(io_module.BytesIO(zip_bytes)) as zf:
-        data_name = next(n for n in zf.namelist() if n.startswith("produkt_"))
-        with zf.open(data_name) as f:
-            content = f.read().decode("latin-1")
-
-    reader = csv.DictReader(io_module.StringIO(content), delimiter=";")
-    for row in reader:
-        date_str = row.get("MESS_DATUM", "").strip()
-        fg_str = row.get("FG_STRAHL", "").strip()
-        if not date_str or not fg_str or fg_str == "-999":
-            continue
-        try:
-            date = dt.datetime.strptime(date_str, "%Y%m%d").date()
-        except ValueError:
-            continue
-        if date < start_dt or date > end_dt:
-            continue
-        try:
-            mj = round(float(fg_str) / 100.0, 3)
-        except ValueError:
-            continue
-        rows.append({"date": date.isoformat(), "shortwave_mj_m2": mj})
-
-    return rows
+    """DWD CDC: real pyranometer data for Potsdam, station 03987 (from 1947)."""
+    return _as_shortwave_rows(fetch_dwd_solar_daily("03987", start_date, end_date))
 
 
 def fetch_knmi_de_bilt(start_date: str, end_date: str) -> list[dict]:
-    """KNMI daggegevens: real pyranometer data for De Bilt, station 260.
-
-    Q = daily global radiation in J/cm².
-    Divide by 100 to convert to MJ/m².
-    Data available from 1957-07-01.
-    """
-    start_str = start_date.replace("-", "")
-    end_str = end_date.replace("-", "")
-    url = (
-        f"https://daggegevens.knmi.nl/klimatologie/daggegevens"
-        f"?stns=260&vars=Q&start={start_str}&end={end_str}&type=txt"
-    )
-    print("  Fetching KNMI De Bilt radiation...", file=sys.stderr)
-    with urllib.request.urlopen(url, timeout=60) as resp:
-        content = resp.read().decode("utf-8")
-
-    rows: list[dict] = []
-    for line in content.splitlines():
-        line = line.strip()
-        if not line.startswith("260"):
-            continue
-        parts = [p.strip() for p in line.split(",")]
-        if len(parts) < 3 or not parts[2]:
-            continue
-        try:
-            date = dt.datetime.strptime(parts[1], "%Y%m%d").date()
-            mj = round(float(parts[2]) / 100.0, 3)
-        except (ValueError, IndexError):
-            continue
-        rows.append({"date": date.isoformat(), "shortwave_mj_m2": mj})
-
-    return rows
+    """KNMI daggegevens: real pyranometer data for De Bilt, station 260 (from 1957-07)."""
+    return _as_shortwave_rows(fetch_knmi_daily_radiation(260, start_date, end_date))
 
 
 def fetch_smhi_stockholm(start_date: str, end_date: str) -> list[dict]:
-    """SMHI open data: real pyranometer data for Stockholm Sol, station 98735.
-
-    Parameter 11 = Global Irradians, hourly W/m².
-    Sum hourly values × 3600 s / 1 000 000 = MJ/m²/day.
-    Data available from 1983-01-01.
-    """
-    url = (
-        "https://opendata-download-metobs.smhi.se/api/version/1.0/"
-        "parameter/11/station/98735/period/corrected-archive/data.csv"
-    )
-    print("  Fetching SMHI Stockholm hourly radiation (may take a moment)...", file=sys.stderr)
-    req = urllib.request.Request(url, headers={"User-Agent": "fetch_sunshine.py"})
-    with urllib.request.urlopen(req, timeout=120) as resp:
-        content = resp.read().decode("utf-8-sig")
-
-    lines = content.splitlines()
-    # Skip header block until the data header line
-    try:
-        data_start = next(i for i, l in enumerate(lines) if l.startswith("Datum;Tid"))
-    except StopIteration:
-        print("  Warning: SMHI data header not found", file=sys.stderr)
-        return []
-
-    start_dt = dt.date.fromisoformat(start_date)
-    end_dt = dt.date.fromisoformat(end_date)
-    daily_hourly: dict[str, list[float]] = defaultdict(list)
-
-    for line in lines[data_start + 1:]:
-        if not line.strip():
-            continue
-        parts = line.split(";")
-        if len(parts) < 3:
-            continue
-        date_str = parts[0].strip()
-        val_str = parts[2].strip()
-        if not date_str or not val_str:
-            continue
-        try:
-            date = dt.date.fromisoformat(date_str)
-        except ValueError:
-            continue
-        if date < start_dt or date > end_dt:
-            continue
-        try:
-            daily_hourly[date.isoformat()].append(float(val_str))
-        except ValueError:
-            continue
-
-    rows: list[dict] = []
-    for date_iso, hourly_vals in sorted(daily_hourly.items()):
-        # Each value is 1-hour mean W/m²; × 3600 s / 1e6 = MJ/m² per hour; sum = daily total
-        mj = round(sum(v * 3600 / 1e6 for v in hourly_vals), 3)
-        rows.append({"date": date_iso, "shortwave_mj_m2": mj})
-
-    return rows
+    """SMHI open data: real pyranometer data for Stockholm Sol, station 98735 (from 1983)."""
+    return _as_shortwave_rows(fetch_smhi_daily_radiation(98735, start_date, end_date))
 
 
 # ── Open-Meteo fallback ─────────────────────────────────────────────────────
 
 def fetch_open_meteo_shortwave(location: dict, start_date: str, end_date: str) -> list[dict]:
     """Open-Meteo Historical Weather API — gridded model data, used as placeholder."""
-    params = {
-        "latitude": location["lat"],
-        "longitude": location["lon"],
-        "start_date": start_date,
-        "end_date": end_date,
-        "daily": "shortwave_radiation_sum",
-        "timezone": "UTC",
-    }
-    url = f"{OPEN_METEO_ARCHIVE_URL}?{urllib.parse.urlencode(params)}"
-    data = fetch_json(url)
-    daily_data = data.get("daily", {})
-    dates = daily_data.get("time", [])
-    radiation = daily_data.get("shortwave_radiation_sum", [])
-
-    rows = []
-    for date_string, mj in zip(dates, radiation):
-        if mj is None or (isinstance(mj, float) and math.isnan(mj)):
-            continue
-        rows.append({"date": date_string, "shortwave_mj_m2": round(mj, 3)})
-    return rows
+    daily_block = fetch_open_meteo_daily(
+        location["lat"], location["lon"], start_date, end_date, ["shortwave_radiation_sum"],
+    )
+    return _as_shortwave_rows(open_meteo_rows(daily_block, "shortwave_radiation_sum"))
 
 
 # ── GHCN daily temperature ──────────────────────────────────────────────────
@@ -376,33 +247,6 @@ def fetch_ghcn_daily_temperature(station_id: str, start_date: str, end_date: str
 
 
 # ── Utilities ───────────────────────────────────────────────────────────────
-
-def fetch_json(url: str, timeout: int = 90, retries: int = 4) -> dict:
-    for attempt in range(retries + 1):
-        try:
-            with urllib.request.urlopen(url, timeout=timeout) as response:
-                return json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as error:
-            if error.code != 429 or attempt == retries:
-                raise
-            wait_seconds = 10 * (attempt + 1)
-            print(f"Rate limited by {urllib.parse.urlparse(url).netloc}; retrying in {wait_seconds}s", file=sys.stderr)
-            time.sleep(wait_seconds)
-
-
-def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    radius = 6371.0088
-    phi1 = math.radians(lat1)
-    phi2 = math.radians(lat2)
-    d_phi = math.radians(lat2 - lat1)
-    d_lambda = math.radians(lon2 - lon1)
-    a = math.sin(d_phi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(d_lambda / 2) ** 2
-    return 2 * radius * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-
-def parse_year(date_string: str) -> int:
-    return int(date_string[:4])
-
 
 def choose_temperature_station(location: dict, stations: list[dict], start_year: int, end_year: int) -> dict:
     fixed_id = location.get("fixed_temp_station_id")

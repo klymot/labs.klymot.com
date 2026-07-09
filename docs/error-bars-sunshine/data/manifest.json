@@ -1,0 +1,119 @@
+{
+  "generated_at": "2026-07-09T09:57:44+00:00",
+  "source": "Measured: DWD/KNMI/SMHI national archives. Modelled: ERA5-family reanalysis via Open-Meteo.",
+  "bu_context_rule": "Built-up context is that of the nearest GHCN station in klymot.com's station index, with its distance from the site recorded.",
+  "sites": [
+    {
+      "key": "POT",
+      "name": "Potsdam, Germany",
+      "source_type": "dwd",
+      "network_station": "03987",
+      "start_year": 1946,
+      "bu_context": {
+        "ghcn_station_id": "GM000003342",
+        "ghcn_station_name": "POTSDAM",
+        "distance_km": 0.26,
+        "bu_2020_idx": 7739,
+        "bu_2020_1km": 9.683,
+        "bu_2020_5km": 9.713,
+        "bu_2020_20km": 5.07
+      }
+    },
+    {
+      "key": "HOH",
+      "name": "Hohenpei\u00dfenberg, Germany",
+      "source_type": "dwd",
+      "network_station": "02290",
+      "start_year": 1953,
+      "bu_context": {
+        "ghcn_station_id": "GM000010962",
+        "ghcn_station_name": "HOHENPEISSENBERG",
+        "distance_km": 0.11,
+        "bu_2020_idx": 7748,
+        "bu_2020_1km": 4.965,
+        "bu_2020_5km": 2.289,
+        "bu_2020_20km": 2.068
+      }
+    },
+    {
+      "key": "WUR",
+      "name": "W\u00fcrzburg, Germany",
+      "source_type": "dwd",
+      "network_station": "05705",
+      "start_year": 1957,
+      "bu_context": {
+        "ghcn_station_id": "GME00102356",
+        "ghcn_station_name": "WURZBURG",
+        "distance_km": 0.15,
+        "bu_2020_idx": 8320,
+        "bu_2020_1km": 10.498,
+        "bu_2020_5km": 11.578,
+        "bu_2020_20km": 5.249
+      }
+    },
+    {
+      "key": "FIC",
+      "name": "Fichtelberg, Germany",
+      "source_type": "dwd",
+      "network_station": "01358",
+      "start_year": 1958,
+      "bu_context": {
+        "ghcn_station_id": "GME00102348",
+        "ghcn_station_name": "FICHTELBERG",
+        "distance_km": 0.16,
+        "bu_2020_idx": 8319,
+        "bu_2020_1km": 0.674,
+        "bu_2020_5km": 0.824,
+        "bu_2020_20km": 0.812
+      }
+    },
+    {
+      "key": "NOR",
+      "name": "Norderney, Germany",
+      "source_type": "dwd",
+      "network_station": "03631",
+      "start_year": 1964,
+      "bu_context": {
+        "ghcn_station_id": "GME00121102",
+        "ghcn_station_name": "NORDERNEY",
+        "distance_km": 0.18,
+        "bu_2020_idx": 8351,
+        "bu_2020_1km": 10.536,
+        "bu_2020_5km": 0.903,
+        "bu_2020_20km": 0.303
+      }
+    },
+    {
+      "key": "DBL",
+      "name": "De Bilt, Netherlands",
+      "source_type": "knmi",
+      "network_station": "260",
+      "start_year": 1957,
+      "bu_context": {
+        "ghcn_station_id": "NLM00006260",
+        "ghcn_station_name": "DE BILT 1",
+        "distance_km": 0.57,
+        "bu_2020_idx": 10777,
+        "bu_2020_1km": 8.749,
+        "bu_2020_5km": 11.927,
+        "bu_2020_20km": 10.129
+      }
+    },
+    {
+      "key": "STO",
+      "name": "Stockholm, Sweden",
+      "source_type": "smhi",
+      "network_station": "98735",
+      "start_year": 1983,
+      "bu_context": {
+        "ghcn_station_id": "SWE00138886",
+        "ghcn_station_name": "STOCKHOLM A",
+        "distance_km": 1.29,
+        "bu_2020_idx": 13657,
+        "bu_2020_1km": 32.1,
+        "bu_2020_5km": 14.798,
+        "bu_2020_20km": 9.673
+      }
+    }
+  ]
+}
