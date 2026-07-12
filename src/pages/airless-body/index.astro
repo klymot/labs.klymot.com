@@ -77,6 +77,11 @@ import BetaGate from '../../components/BetaGate.astro';
           <p>This is intentionally a "surface physics only" model — no internal heat from the Moon itself, so the result depends only on sunlight, conduction, and radiation. Nothing in it is tuned to the Moon: it is a general heat-transfer model, and "the Moon" here is one particular choice of material, size, spin, and sunlight.</p>
           <p>One more simplification: the Moon here orbits the Sun on its own, not the Earth. That means no eclipses, no earthshine, and seasons that follow a simple ~365-day year from its 1.54° tilt — rather than the real Moon's slightly shorter, Earth-coupled seasonal cycle (more under "Why does the Sun's angle in the sky matter" below).</p>
         </div>
+        <details class="expander deep-dives" id="deepDives">
+          <summary>Curious how it actually works? — ten short deep-dives</summary>
+          <div class="expander-body">
+            <p class="chart-caption">Optional. You can also just scroll on and play — these stay here if a result makes you curious later, and the rest of the page points back to them by name.</p>
+
         <details class="expander">
           <summary>How does the model actually work?</summary>
           <div class="expander-body">
@@ -171,6 +176,8 @@ import BetaGate from '../../components/BetaGate.astro';
             <p>It isn't that internal heat is assumed to be negligible — this version simply doesn't model it, on purpose. The deep boundary at the very centre carries no imposed heat flow of its own; it's given a starting temperature and then left to evolve purely by conduction from everything above it, the same rule every other box follows.</p>
             <p>That's a deliberate choice about what this particular model is testing: how much of the Moon's surface temperature is explained by sunlight, conduction, and radiation alone, with nothing else added. Whether folding in a small steady geothermal flux at depth — the kind Apollo's own heat-flow probes measured at two landing sites — would noticeably change the answer is a genuinely open, separate question. Testing it means adding a flux term to this same validated model, not assuming the answer either way in advance.</p>
             <p>One consequence worth knowing: regolith conducts so slowly that below roughly the top metre, no run of any practical length can move the temperature much in either direction. The deep interior therefore effectively keeps whatever temperature the simulation starts every box at (220 K here). That starting value is itself an assumption — it quietly stands in for everything below the sunlight's reach, including any internal heat — and it is one more reason not to over-read a close match in the comparison section, if you get one.</p>
+          </div>
+        </details>
           </div>
         </details>
       </div>
@@ -478,6 +485,9 @@ import BetaGate from '../../components/BetaGate.astro';
   </main>
 
   <style>
+    .deep-dives > .expander-body > .expander {
+      margin-left: 0.75rem;
+    }
     .chart-caption {
       font-size: 0.8rem;
       color: var(--text-secondary, #888);
@@ -1843,6 +1853,32 @@ import BetaGate from '../../components/BetaGate.astro';
       return `<p><strong>This run used:</strong></p><ul class="forewarning-checklist">${listItems}</ul><p>The curve below is the NASA-derived reference for the real Moon (see the notes above on its measurement conventions). Any difference from it may come from these modelling choices as well as the model's own limitations.</p>`;
     }
 
+    // Expander memory: which explanations a reader has opened is kept
+    // per-tab (sessionStorage), so reloading — or coming back to a box a
+    // result made them curious about — finds their reading progress intact
+    // instead of everything snapped shut. Deliberately sessionStorage, not
+    // the URL (shared links shouldn't carry reading state) and not
+    // analytics (never recorded, per the style guide). Keyed by summary
+    // text, which is stable across visits.
+    const EXPANDER_STATE_KEY = 'airless-body-expanders-open';
+    function loadExpanderState() {
+      try { return JSON.parse(sessionStorage.getItem(EXPANDER_STATE_KEY)) || {}; } catch { return {}; }
+    }
+    {
+      const openNow = loadExpanderState();
+      document.querySelectorAll('details.expander').forEach((d) => {
+        const summary = d.querySelector('summary');
+        if (!summary) return;
+        const key = summary.textContent.trim();
+        if (openNow[key]) d.open = true;
+        d.addEventListener('toggle', () => {
+          const state = loadExpanderState();
+          if (d.open) state[key] = 1; else delete state[key];
+          try { sessionStorage.setItem(EXPANDER_STATE_KEY, JSON.stringify(state)); } catch { /* storage unavailable — memory is a nicety */ }
+        });
+      });
+    }
+
     els.runSim.addEventListener('click', runSimulation);
     els.revealCompare.addEventListener('click', () => {
       hasRevealedCompare = true;
@@ -1863,6 +1899,7 @@ import BetaGate from '../../components/BetaGate.astro';
     const resetBtn = document.getElementById('resetLab');
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
+        try { sessionStorage.removeItem(EXPANDER_STATE_KEY); } catch { /* ignore */ }
         window.location.href = window.location.pathname;
       });
     }
