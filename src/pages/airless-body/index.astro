@@ -58,11 +58,11 @@ import BetaGate from '../../components/BetaGate.astro';
       <div class="page-hero">
         <span class="eyebrow" aria-hidden="true">Lab under beta testing — shared by invitation</span>
         <h1>Airless Body Thermal Model</h1>
-        <p class="hook">How much of the Moon's temperature can be explained by nothing more than sunlight, conduction, and radiation — no atmosphere, no greenhouse effect required?</p>
+        <p class="hook">How much of the Moon's temperature can be explained by nothing more than sunlight, conduction, and radiation — on a body with no atmosphere at all?</p>
         <p class="lede">A bare, rotating body heated only by direct sunlight. Set the parameters, run it, and see what time-averaged surface temperature comes out.</p>
         <ul class="learn-list">
-          <li>Why the Moon gets so hot by day and so cold by night.</li>
-          <li>How rotation speed and thermal conductivity each control that swing.</li>
+          <li>What sets the Moon's day-side and night-side temperatures.</li>
+          <li>What rotation speed and thermal conductivity each do to the day–night difference.</li>
           <li>Whether this simple physics reproduces NASA's actual measurements.</li>
         </ul>
       </div>
@@ -74,13 +74,14 @@ import BetaGate from '../../components/BetaGate.astro';
         <div class="prose">
           <h2 id="model-heading">What this is actually computing</h2>
           <p>Heat flows vertically into the ground and north-south between latitudes. East-west flow is ignored: lunar regolith conducts too poorly for neighboring longitudes to exchange much heat in a single day. One simulated column per latitude, stepped through time, reconstructs every longitude by rotational symmetry.</p>
-          <p>This is intentionally a "surface physics only" model — no internal heat from the Moon itself, so the result depends only on sunlight, conduction, and radiation.</p>
+          <p>This is intentionally a "surface physics only" model — no internal heat from the Moon itself, so the result depends only on sunlight, conduction, and radiation. Nothing in it is tuned to the Moon: it is a general heat-transfer model, and "the Moon" here is one particular choice of material, size, spin, and sunlight.</p>
+          <p>One more simplification: the Moon here orbits the Sun on its own, not the Earth. That means no eclipses, no earthshine, and seasons that follow a simple ~365-day year from its 1.54° tilt — rather than the real Moon's slightly shorter, Earth-coupled seasonal cycle (more under "Why does the Sun's angle in the sky matter" below).</p>
         </div>
         <details class="expander">
           <summary>How does the model actually work?</summary>
           <div class="expander-body">
             <p>Picture the Moon sliced like a loaf of bread, one column running straight down from the surface to the very centre. That column is chopped into a stack of boxes — thin ones near the surface, fatter ones deeper down. Each box is treated as one uniform blob: one temperature, one composition, no structure of its own.</p>
-            <p>Every box only ever talks to its immediate neighbours, the one above it and the one below. It gains or loses heat by conduction to and from those neighbours — and, only at the very top of the stack, gains heat from sunlight by day and loses heat to space as thermal radiation, day and night.</p>
+            <p>Every box only ever talks to its immediate neighbours — mainly the box above and the box below it, plus a far weaker sideways exchange with the neighbouring latitude's box at the same depth (the north–south flow mentioned above). It gains or loses heat by conduction to and from those neighbours — and, only at the very top of the stack, gains heat from sunlight by day and loses heat to space as thermal radiation, day and night.</p>
             <div class="diagram-wrap">
               <img
                 src="/airless-body/thin-slice-diagram.svg"
@@ -117,27 +118,35 @@ import BetaGate from '../../components/BetaGate.astro';
           <div class="expander-body">
             <p>Sunlight arrives as parallel rays. Straight overhead, that bundle of rays lands on the smallest possible patch of ground — maximum energy per square metre. Tilt the same bundle to a shallower angle and it spreads over a wider patch, so the same total energy gets diluted over more area. This is Lambert's cosine law: the sunlight a patch of ground actually receives scales with <code>cos(angle from directly overhead)</code> — full strength with the Sun straight up, tapering smoothly to zero right at sunrise and sunset, where the rays graze the surface edge-on.</p>
             <p>That angle isn't just "time of day" — it comes from three things combined: latitude, the Sun's declination (how far north or south of the equator it's shining, cycling with the orbit and the axial tilt), and the hour angle (how far the rotation has carried this point since local noon). Put those three together and you get how high the Sun sits in the sky, for any latitude, at any time of day, at any point in the year — and that's exactly what multiplies against the raw solar constant to give the sunlight a given box actually receives right now.</p>
-            <p>It's this smooth cosine taper, not a day/night on-off switch, that produces the gentle warm-up around sunrise and cool-down around sunset in the simulated temperature curve, rather than a sudden step.</p>
+            <p>It's this smooth cosine taper, not a day/night on-off switch, that shapes sunrise and sunset in the simulated temperature curve.</p>
+            <p>In this model the declination cycles over a ~365-day year — the year of a body orbiting the Sun at the Moon's distance — and stays on that cycle no matter what you set the rotation period to: spinning the body faster changes its day length, not its orbit. The real Moon's seasonal cycle is a little shorter (about 347 days) because its spin axis is coupled to its orbit around the <em>Earth</em>; with a tilt of only 1.54°, the difference between those two cycles is far smaller than anything else this model resolves.</p>
           </div>
         </details>
         <details class="expander">
           <summary>More on radiative heat transfer</summary>
           <div class="expander-body">
-            <p><code>εσT⁴</code> is really shorthand for the general law: net radiative exchange between two surfaces goes as the <em>difference</em> of their temperatures raised to the fourth power, <code>εσ(T_surface⁴ − T_surroundings⁴)</code>. For the Moon's surface radiating out into space, "surroundings" is the cosmic microwave background at about 2.7 K — not a literal 0 K.</p>
-            <p>That background term turns out to be negligible here: 2.7⁴ ≈ 53, versus around 65,000,000 for a 90 K night-side surface (90⁴) — roughly seven orders of magnitude smaller. Dropping it, as this model does, isn't a simplification that changes anything measurable; it's far below the precision of everything else in the calculation.</p>
+            <p>The model's radiation law is <code>εσT⁴</code> — the energy a surface radiates per square metre, where <code>ε</code> (emissivity) is how efficiently it radiates compared to a perfect emitter and <code>σ</code> is a universal constant (Stefan–Boltzmann). That is really shorthand for the general law: net radiative exchange between two surfaces goes as the <em>difference</em> of their temperatures raised to the fourth power, <code>εσ(T_surface⁴ − T_surroundings⁴)</code>. For the Moon's surface radiating out into space, "surroundings" is the cosmic microwave background at about 2.7 K — not a literal 0 K. Throughout, the model uses ε = 0.95 — a representative value for silicate regolith — with no slider: it applies identically to every run.</p>
+            <p>That background term turns out to be negligible here: 2.7⁴ ≈ 53, versus around 65,000,000 for a surface at 90 K (90⁴) — roughly a million times smaller. Dropping it, as this model does, isn't a simplification that changes anything measurable; it's far below the precision of everything else in the calculation.</p>
           </div>
         </details>
         <details class="expander">
           <summary>More on conductive heat transfer</summary>
           <div class="expander-body">
             <p>Conduction follows Fourier's law: heat flux is proportional to the local temperature gradient, <code>−k·dT/dz</code>, where <code>k</code> is thermal conductivity. By day, the hot surface conducts heat downward into the cooler regolith beneath it; by night, that stored heat conducts back up as the surface radiates and cools.</p>
-            <p>How much lag this creates depends entirely on <code>k</code>. The Moon's loose surface regolith conducts extremely poorly — its default value here, 0.0007 W/(m·K), is close to 3,000 times smaller than the "deep conductivity" value used for the more compacted material beneath it. That's why so little of the day's heat reaches even a few centimeters down before nightfall, and why the surface temperature swing between lunar day and night is so large.</p>
+            <p>How much lag this creates depends entirely on <code>k</code>. The Moon's loose surface regolith conducts extremely poorly — the layered model's surface default here, 0.0007 W/(m·K), is close to 3,000 times smaller than its deep default, which represents solid compacted rock beneath the regolith (measurements of deeper <em>regolith</em> itself give values much closer to the surface number). That's why so little of the day's heat reaches even a few centimeters down before nightfall.</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>More on heat storage (specific heat)</summary>
+          <div class="expander-body">
+            <p>Conduction sets how fast heat moves between boxes; specific heat sets how much a box's temperature changes per joule it gains or loses. For regolith, specific heat is itself strongly temperature-dependent: Apollo sample calorimetry (Hemingway et al., 1973) shows it rising from roughly 250 J/(kg·K) near 90 K to roughly 850 near 350 K — a cold box needs only about a third as much heat per kelvin as a hot one.</p>
+            <p>The model therefore re-computes each regolith box's specific heat from that box's current temperature at every step (via a published polynomial fit to those measurements), identically under both conductivity models — this isn't a choice you make, it applies to every run. In the layered model, the compacted material beneath the regolith keeps a single fixed value instead.</p>
           </div>
         </details>
         <details class="expander">
           <summary>More on the numerical scheme</summary>
           <div class="expander-body">
-            <p>Depth cells are geometrically graded (thin near the surface, where the diurnal thermal wave actually lives, coarser with depth) and switch to mass-conserving spacing near the center, ending in a single innermost cell that represents a small ball rather than a vanishing wedge — avoiding the coordinate singularity at r=0 without needing to resolve it exactly.</p>
+            <p>Depth cells are geometrically graded (thin near the surface, where the diurnal thermal wave actually lives, coarser with depth) and switch to mass-conserving spacing near the center, ending in a single innermost cell that represents a small ball rather than a vanishing wedge — avoiding the coordinate singularity at r=0 without needing to resolve it exactly. The same grid is used for every run, whatever the parameters — so when two runs differ, the difference comes from the physics you changed, never from a change of numerical resolution. (One disclosed exception: the cheese material uses a coarser surface cell matched to its much deeper day/night wave — cheese conducts so much better that resolving it on regolith's millimetre grid would make runs ~20× longer to capture detail thousands of times smaller than any cheese-vs-regolith difference. All cheese runs share that one grid too.)</p>
             <p>Reaching a periodic steady state by pure explicit time-marching can take many simulated rotation periods, especially for the real deep interior. This uses Aitken-extrapolation acceleration: run a few real periods, extrapolate each cell's asymptotic value from the trend, jump most of the way there, then run more real periods to "heal" whatever the jump got wrong — same equations and domain throughout, just a faster way of finding that same model's steady state.</p>
           </div>
         </details>
@@ -146,6 +155,7 @@ import BetaGate from '../../components/BetaGate.astro';
           <div class="expander-body">
             <p>Because the surface and the deep interior settle at wildly different speeds. Only the top few centimetres actually feel the day/night cycle within a single rotation (see "More on conductive heat transfer" above for why conduction here is so slow). Everything below that thin skin barely warms or cools on any single pass — heat trickles down only a little further each rotation, and whatever's already down there keeps conducting back up and down long after the rotation that put it there has ended.</p>
             <p>That means a box a metre down isn't just reflecting "today" — it's a running memory of many previous rotations layered on top of each other. Simulating a single rotation from a guessed starting temperature captures none of that memory. Only after enough repeated rotations does every box's day-to-day swing stop changing from one rotation to the next; that repeating pattern is a periodic steady state, and it's the only point at which the simulated temperatures actually mean anything (see "More on the numerical scheme" above for how this model reaches that state faster than by brute-force repetition alone).</p>
+            <p>Two consequences of this are visible while the simulation runs. First, run length: the simulation advances in physics steps of a fixed few simulated seconds each — set by the box sizes, which are identical for every run, not by the day length — so a rotation that contains more simulated time contains more steps, and one 708-hour lunar rotation simply holds more simulated time to work through than one 24-hour rotation. (Fast rotations are also never allowed to get crude: every rotation is resolved by at least a few thousand steps, however short its day.) A quick run is not a shortcut; each rotation just contains less simulated time. Second, the number of rotations is not fixed: the run does at least 12, then keeps adding more (up to 36) while the equator's coldest nightly temperature is still changing from one rotation to the next. The "settling in" chart below shows exactly the quantity that test watches — and if a run stops at the cap before flattening out, that chart will show it.</p>
           </div>
         </details>
         <details class="expander">
@@ -160,6 +170,7 @@ import BetaGate from '../../components/BetaGate.astro';
           <div class="expander-body">
             <p>It isn't that internal heat is assumed to be negligible — this version simply doesn't model it, on purpose. The deep boundary at the very centre carries no imposed heat flow of its own; it's given a starting temperature and then left to evolve purely by conduction from everything above it, the same rule every other box follows.</p>
             <p>That's a deliberate choice about what this particular model is testing: how much of the Moon's surface temperature is explained by sunlight, conduction, and radiation alone, with nothing else added. Whether folding in a small steady geothermal flux at depth — the kind Apollo's own heat-flow probes measured at two landing sites — would noticeably change the answer is a genuinely open, separate question. Testing it means adding a flux term to this same validated model, not assuming the answer either way in advance.</p>
+            <p>One consequence worth knowing: regolith conducts so slowly that below roughly the top metre, no run of any practical length can move the temperature much in either direction. The deep interior therefore effectively keeps whatever temperature the simulation starts every box at (220 K here). That starting value is itself an assumption — it quietly stands in for everything below the sunlight's reach, including any internal heat — and it is one more reason not to over-read a close match in the comparison section, if you get one.</p>
           </div>
         </details>
       </div>
@@ -174,15 +185,19 @@ import BetaGate from '../../components/BetaGate.astro';
         </div>
 
         <div class="model-choice" id="conductivityModelChoice">
-          <p class="model-choice-prompt">Choose one of the two conductivity models below. Their order is random so neither is presented as the default.</p>
+          <p class="model-choice-prompt">Choose one of the two conductivity models below. Their order is random so neither is presented as the default. (The third option is exactly what it looks like.)</p>
           <div class="model-choice-options" id="modelChoiceOptions">
             <button type="button" class="model-choice-btn" id="modelChoiceSimple" data-conductivity-model="simple">
               <span class="model-choice-title">Layered, fixed conductivity</span>
-              <span class="model-choice-desc">A flat conductivity value for the surface regolith, and a separate flat value for the more compacted material beneath a chosen thickness. You set both values and the thickness directly, below.</span>
+              <span class="model-choice-desc">A flat conductivity value for the surface regolith, and a separate flat value for the more compacted material beneath a chosen thickness. You set both values and the thickness directly, below; the surface default comes from a published Diviner-derived model (Hayne et al.), the deep default from representative rock values (see data sources).</span>
             </button>
             <button type="button" class="model-choice-btn" id="modelChoiceMetzger" data-conductivity-model="metzger">
               <span class="model-choice-title">Depth- and temperature-dependent conductivity</span>
               <span class="model-choice-desc">Conductivity is computed continuously from depth (via a bulk-density profile fit to Apollo core samples) and local temperature, using a published regolith conductivity relationship (Metzger et al.). No separate thickness or conductivity values to set.</span>
+            </button>
+            <button type="button" class="model-choice-btn" id="modelChoiceCheese" data-conductivity-model="cheese">
+              <span class="model-choice-title">Solid cheese (yes, really)</span>
+              <span class="model-choice-desc">Not a serious model of the Moon: the whole body becomes a uniform hard cheese (parmesan-like values from published food-engineering tables). It conducts and stores heat very differently from lunar regolith, so you can test how much the surface material alone matters. And because the Moon has no atmosphere, there is no oxygen: the cheese cannot burn.</span>
             </button>
           </div>
           <p class="model-choice-chosen" id="modelChoiceChosen" hidden></p>
@@ -190,7 +205,7 @@ import BetaGate from '../../components/BetaGate.astro';
 
         <div class="param-grid" id="paramGrid" hidden>
           <div class="param-row">
-            <label for="rotationHours">Rotation period (hours, relative to the Sun)</label>
+            <label for="rotationHours">Rotation period (hours, one noon to the next)</label>
             <div class="param-slider-col">
               <div class="param-presets">
                 <button type="button" class="mini-tool" data-preset-rotation="708">Moon-like (29.5d)</button>
@@ -205,7 +220,7 @@ import BetaGate from '../../components/BetaGate.astro';
           </div>
 
           <div class="param-row">
-            <label for="albedo">Bond albedo</label>
+            <label for="albedo">Bond albedo (fraction of sunlight reflected)</label>
             <input type="range" id="albedo" min="0.05" max="0.4" step="0.005" value="0.11" />
             <input type="number" class="param-value-input" id="albedoValue" min="0.05" max="0.4" step="0.001" value="0.11" />
           </div>
@@ -241,7 +256,7 @@ import BetaGate from '../../components/BetaGate.astro';
     <section class="lab-section" id="globe" aria-labelledby="globe-heading" hidden>
       <div class="container">
         <div class="prose">
-          <h2 id="globe-heading">Simulation convergence</h2>
+          <h2 id="globe-heading">Watch it run</h2>
           <p>The globe is reconstructed from the single simulated column — every longitude is that column's own history, time-shifted by rotation. The Sun's size is illustrative, not to scale.</p>
         </div>
         <div class="section-card" style="padding:1rem">
@@ -257,6 +272,12 @@ import BetaGate from '../../components/BetaGate.astro';
           <div style="display:flex; justify-content:center;">
             <canvas id="globeCanvas" width="640" height="360" style="max-width:100%; height:auto;"></canvas>
           </div>
+          <div class="globe-scale">
+            <span class="globe-scale-label">60 K</span>
+            <span class="globe-scale-bar" aria-hidden="true"></span>
+            <span class="globe-scale-label">400 K</span>
+          </div>
+          <p class="chart-caption globe-scale-caption">Surface temperature; the colour scale runs 60–400 K, passing through near-white at 230 K.</p>
         </div>
       </div>
     </section>
@@ -266,7 +287,7 @@ import BetaGate from '../../components/BetaGate.astro';
       <div class="container">
         <div class="prose">
           <h2 id="long-timescale-heading">Settling in: many rotations</h2>
-          <p>The coldest point reached during each rotation, for three representative latitudes — equator, mid-latitude (45°), and near-pole (80°). This is what actually moves as the deep interior settles — the daytime peak equilibrates almost immediately regardless.</p>
+          <p>The coldest point reached during each rotation, for three representative latitudes — the equator, mid-latitude (≈48°), and near-pole (≈84°) — the grid's nearest band centres to 0°, 45°, and 80°. Of everything the run computes, this is the slowest quantity to settle, which is why it is the one plotted. Two things can show in these curves: the one-way settling itself, and — mainly at higher latitudes — a slow ripple that is the body's 1.54° tilt carrying its seasons across the run, not a numerical wobble. A curve still drifting when the run ends hasn't fully settled; the equatorial curve is the one compared against NASA data below. (Temperatures here and throughout are in kelvin: 273 K is 0 °C, and one kelvin step equals one degree Celsius.)</p>
         </div>
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
@@ -284,7 +305,7 @@ import BetaGate from '../../components/BetaGate.astro';
       <div class="container">
         <div class="prose">
           <h2 id="short-timescale-heading">The diurnal cycle itself</h2>
-          <p>The same three latitudes, scrolling forward one rotation period at a time as the simulation runs.</p>
+          <p>The same three latitudes, scrolling forward one rotation period at a time as the simulation runs. The x-axis is total simulated time since the run began; the window slides forward as rotations accumulate.</p>
         </div>
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
@@ -292,6 +313,7 @@ import BetaGate from '../../components/BetaGate.astro';
               <canvas id="shortChart" style="display:block; width:100%; height:100%;"></canvas>
             </div>
             <div id="shortChartLegend"></div>
+            <p class="chart-caption">Shaded bands: warm tint marks local day; the darker, cooler tint marks local night.</p>
           </div>
         </div>
       </div>
@@ -316,14 +338,15 @@ import BetaGate from '../../components/BetaGate.astro';
         <div class="prose">
           <h2 id="compare-heading">Compare to NASA's measured lunar temperatures</h2>
           <div class="comparison-note">
-            <p><strong>Read this before drawing conclusions from the number below.</strong> This is a deliberately simplified model, also built to run smoothly on a phone in a browser tab — real effects like surface roughness, a mixed rock-and-dust surface, and heat storage below the single outermost simulated layer are left out entirely. Those omissions don't necessarily cancel out against each other, but sometimes they do — worth keeping in mind if a run lands unusually close to the measured curve below. As a rough guide, landing within about 5 K is a reasonable sign this simplified model is capturing the right physics; landing much closer than that isn't evidence of a more precise result, just as likely to be a few simplifications happening to offset one another.</p>
+            <p><strong>Read this before drawing conclusions from the number below.</strong> This is a deliberately simplified model, also built to run smoothly on a phone in a browser tab — real effects like surface roughness, a mixed rock-and-dust surface, and sunlight being absorbed (and heat radiated) over a small but finite depth of loose regolith rather than exactly at the surface are left out entirely. Those omissions don't necessarily cancel out against each other, but sometimes they do — worth keeping in mind if a run lands unusually close to the measured curve below. As a rough guide, about 5 K is the finest difference this comparison can meaningfully resolve; landing much closer than that isn't evidence of a more precise result — it is just as likely a few simplifications happening to offset one another.</p>
+            <p>Two things about the reference curve itself are also worth knowing. First, it is a fit to <em>brightness</em> temperatures — temperatures inferred from the infrared the surface emits — measured by Diviner, an infrared instrument on NASA's Lunar Reconnaissance Orbiter, while the model reports the surface's <em>kinetic</em> temperature. For a surface that radiates slightly less efficiently than a perfect emitter (as this model assumes), the two conventions differ by about 1.3% — roughly 5&nbsp;K at daytime-peak temperatures — and this comparison applies no adjustment for it. Second, the reference curve's step of a few tens of kelvins right at sunrise is a known artifact of how the published fit is constructed — its daytime and nighttime formulas meet imperfectly at that boundary — not a measured feature of the Moon.</p>
             <p>What this tool is better suited for is comparing two runs against each other, not reading either one in isolation. A few things worth trying yourself — expand each for how to set it up, not what you'll find:</p>
           </div>
         </div>
         <details class="expander">
-          <summary>Do we need the depth- and temperature-dependent conductivity model?</summary>
+          <summary>Does the conductivity model choice change the result?</summary>
           <div class="expander-body">
-            <p>Run the simulation once with each conductivity model, everything else left at the Moon's defaults, and compare both results against the curve below. Does the more detailed model land closer overall — and if so, is that during the day, the night, or both?</p>
+            <p>Run the simulation once with each conductivity model, everything else left at the Moon's defaults, and compare both results against the curve below. Does one land closer overall — and if so, is that during the day, the night, or both?</p>
           </div>
         </details>
         <details class="expander">
@@ -333,15 +356,15 @@ import BetaGate from '../../components/BetaGate.astro';
           </div>
         </details>
         <details class="expander">
-          <summary>Where does the conductivity model choice matter most?</summary>
+          <summary>Does the conductivity model choice matter more at some rotation speeds?</summary>
           <div class="expander-body">
-            <p>Compare the two conductivity models at a few different rotation periods, not just the Moon's real one. Does switching models matter more at some rotation speeds than others?</p>
+            <p>Compare the two conductivity models at a few different rotation periods, not just the Moon's real one. Does switching models matter more at some rotation speeds than at others — or not at all?</p>
           </div>
         </details>
         <details class="expander">
           <summary>What does changing the Moon's albedo do?</summary>
           <div class="expander-body">
-            <p>Leave the conductivity model and rotation period fixed, and change only the Bond albedo. Which way does the daytime peak move — and does the nighttime low move by a similar amount, a smaller one, or barely at all?</p>
+            <p>Leave the conductivity model and rotation period fixed, and change only the Bond albedo. Which way does the daytime peak move — and does the nighttime low move by more, by less, or by about the same?</p>
           </div>
         </details>
         <div class="prose">
@@ -351,26 +374,39 @@ import BetaGate from '../../components/BetaGate.astro';
 
         <div class="summary-panel" id="summaryPanel">
           <div class="summary-stat">
-            <span class="summary-label">Predicted mean surface temperature</span>
+            <span class="summary-label">Predicted mean surface temperature (equator)</span>
             <span class="summary-value" id="summaryMean">—</span>
           </div>
           <div class="summary-stat">
-            <span class="summary-label">NASA estimate (equator)</span>
+            <span class="summary-label">Predicted mean surface temperature (global, area-weighted)</span>
+            <span class="summary-value" id="summaryGlobalMean">—</span>
+          </div>
+          <div class="summary-stat">
+            <span class="summary-label">Diviner-fit mean (equator)</span>
             <span class="summary-value" id="summaryNasaMean">—</span>
           </div>
           <div class="summary-stat">
-            <span class="summary-label">Difference</span>
+            <span class="summary-label">Difference (model − NASA)</span>
             <span class="summary-value" id="summaryDiff">—</span>
           </div>
           <div class="summary-stat">
-            <span class="summary-label">Hottest surface</span>
+            <span class="summary-label">Hottest surface (equator)</span>
             <span class="summary-value" id="summaryPeak">—</span>
           </div>
           <div class="summary-stat">
-            <span class="summary-label">Coldest surface</span>
+            <span class="summary-label">Coldest surface (equator)</span>
             <span class="summary-value" id="summaryTrough">—</span>
           </div>
         </div>
+
+        <details class="expander">
+          <summary>A caution on average temperatures</summary>
+          <div class="expander-body">
+            <p>The "mean temperature" tiles above deserve care, because a surface loses heat as <code>T⁴</code> — so what balances the incoming sunlight is the average of <code>T⁴</code>, not the average of <code>T</code>. Those are very different numbers when temperatures vary a lot. A worked example: two equal patches at 100 K and 390 K have an average temperature of 245 K, but together they radiate as much as a uniform surface at about 328 K — 83 K hotter than their average. Averaging first and applying the radiation law afterwards silently discards how disproportionately the hot places radiate. The same applies over time: a spot's day–night average understates what it radiates across the cycle.</p>
+            <p>On this model the averages are at least averaging like with like: every patch of surface is the same material at the same density, so an area- and time-weighted mean of surface temperature — the convention planetary means are quoted in — is a well-defined summary statistic. But it is only that. It is not an energy-budget quantity: two runs can share a mean while radiating and storing heat quite differently, and with the temperature-dependent conductivity and specific heat used here, material at the average temperature does not conduct or store heat like the average of hot and cold material. The full curves above carry the real comparison; the single-number tiles summarize them, they don't replace them.</p>
+            <p>For planets with atmospheres the caution deepens. Quoted planetary means there average <em>air</em> temperatures, over air whose humidity, density, and composition differ from place to place — so a degree of temperature does not represent the same heat content everywhere, and even the like-with-like defense above is unavailable. For a measured, Earth-side example of how the mix of what goes into a temperature average can move the average all by itself, see <a href="/network-altitude/">Network Altitude</a> (Lab 02), which asks what signal the station network's changing altitude profile — higher stations reading colder air — would be expected to produce.</p>
+          </div>
+        </details>
 
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
@@ -378,6 +414,38 @@ import BetaGate from '../../components/BetaGate.astro';
               <canvas id="compareChart" style="display:block; width:100%; height:100%;"></canvas>
             </div>
             <div id="compareChartLegend"></div>
+            <p class="chart-caption">Shaded bands: warm tint marks local day; the darker, cooler tint marks local night.</p>
+          </div>
+        </div>
+
+        <!-- Run history: appears only once a second run completes, so a
+             reader exploring parameters doesn't have to remember earlier
+             results. Session-only by design — reloading or resetting the
+             lab clears it, matching the reset-lab convention. -->
+        <div id="runHistorySection" hidden>
+          <p class="chart-caption run-history-placeholder" id="runHistoryPlaceholder"><em>If you change a parameter and run another simulation, a table of all your runs' results will be kept here so you can compare them.</em></p>
+          <div id="runHistoryContent" hidden>
+          <div class="prose">
+            <h3>Your runs so far</h3>
+            <p class="chart-caption">Every simulation you run is added here so you can compare without remembering. Values in bold differ from the Moon defaults. Cleared if you reload or reset the lab.</p>
+          </div>
+          <div class="run-history-scroll section-card">
+            <table class="run-history-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Run settings</th>
+                  <th>Mean (equator)</th>
+                  <th>Mean (global)</th>
+                  <th>Diviner-fit mean (equator)</th>
+                  <th>Difference (model − NASA)</th>
+                  <th>Hottest (equator)</th>
+                  <th>Coldest (equator)</th>
+                </tr>
+              </thead>
+              <tbody id="runHistoryBody"></tbody>
+            </table>
+          </div>
           </div>
         </div>
       </div>
@@ -392,12 +460,14 @@ import BetaGate from '../../components/BetaGate.astro';
             <dl class="sources-list">
               <dt>Lunar equatorial surface temperatures — Vasavada et al. (2012)</dt>
               <dd>"Lunar equatorial surface temperatures and regolith properties from the Diviner Lunar Radiometer Experiment," <em>J. Geophys. Res.</em>, 117, E00H18. <a href="https://doi.org/10.1029/2011JE003987" target="_blank" rel="noopener">doi:10.1029/2011JE003987</a> — primary Diviner dataset.</dd>
-              <dt>Analytic reference curve — Hurley et al. (2014)</dt>
-              <dd>"An analytic function of lunar surface temperature for exospheric modeling," <em>Icarus</em>. <a href="https://doi.org/10.1016/j.icarus.2014.08.043" target="_blank" rel="noopener">doi:10.1016/j.icarus.2014.08.043</a> — closed-form fit to the Diviner equatorial data, used as the reference curve above.</dd>
-              <dt>Regolith/bulk thermal properties</dt>
-              <dd>Hayne, P.O., et al. (2017) Diviner-derived regolith thermophysical model; Hemingway, B.S., et al. (1973) Apollo 11 specific heat measurements; NASA Moon Fact Sheet (Bond albedo).</dd>
-              <dt>Depth- and temperature-dependent conductivity model — Metzger, Zacny &amp; Morrison</dt>
+              <dt>Analytic reference curve — Hurley et al. (2015)</dt>
+              <dd>"An analytic function of lunar surface temperature for exospheric modeling," <em>Icarus</em>, 255, 159–163 (published online 2014). <a href="https://doi.org/10.1016/j.icarus.2014.08.043" target="_blank" rel="noopener">doi:10.1016/j.icarus.2014.08.043</a> — closed-form fit to the Diviner equatorial data, used as the reference curve above.</dd>
+              <dt>Layered, fixed conductivity model — regolith/bulk thermal properties</dt>
+              <dd>Surface-regolith conductivity and density defaults from Hayne, P.O., et al. (2017), Diviner-derived regolith thermophysical model (the deep-layer default instead represents solid compacted rock, not deep regolith); Hemingway, B.S., et al. (1973) Apollo specific-heat calorimetry (used, via the Hayne et al. 2017 polynomial fit, for the temperature-dependent specific heat applied to every run); NASA Moon Fact Sheet (Bond albedo 0.11; solar constant 1361 W/m²). Emissivity is fixed at 0.95, a representative silicate-regolith value.</dd>
+              <dt>Depth- and temperature-dependent conductivity model — Metzger, Zacny &amp; Morrison (2020)</dt>
               <dd>"Thermal Extraction of Volatiles from Lunar and Asteroid Regolith in Axisymmetric Crank-Nicolson Modeling," <em>J. Aerospace Eng.</em>, 33(6). <a href="https://doi.org/10.1061/%28ASCE%29AS.1943-5525.0001165" target="_blank" rel="noopener">doi:10.1061/(ASCE)AS.1943-5525.0001165</a>, with erratum <a href="https://doi.org/10.1061/(ASCE)AS.1943-5525.0001312" target="_blank" rel="noopener">doi:10.1061/(ASCE)AS.1943-5525.0001312</a> — dry-regolith conductivity fit (their Eq. 26) used for the depth- and temperature-dependent model above.</dd>
+              <dt>Solid-cheese material (novelty option)</dt>
+              <dd>Representative published food-engineering values for a parmesan-like hard cheese (k ≈ 0.32 W/(m·K), ρ ≈ 1200 kg/m³, c ≈ 2300 J/(kg·K)); see e.g. the <em>ASHRAE Handbook — Refrigeration</em>, thermal properties of foods. Included as a learning contrast — a genuinely different material under identical sunlight — not as a lunar hypothesis.</dd>
               <dt>Bulk density vs. depth — Apollo 15-17 core/drill samples</dt>
               <dd>Carrier, W.D., Mitchell, J.K. &amp; Mahmood, A., as reproduced in the <em>Lunar Sourcebook</em> (Heiken, Vaniman &amp; French, eds., 1991), Fig. 9.15 — the hyperbolic density-depth fit used to derive porosity for the model above.</dd>
             </dl>
@@ -406,6 +476,91 @@ import BetaGate from '../../components/BetaGate.astro';
       </div>
     </section>
   </main>
+
+  <style>
+    .chart-caption {
+      font-size: 0.8rem;
+      color: var(--text-secondary, #888);
+      margin: 0.5rem 0 0;
+    }
+    .globe-scale {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .globe-scale-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary, #888);
+    }
+    .globe-scale-bar {
+      display: inline-block;
+      width: min(260px, 60%);
+      height: 10px;
+      border-radius: 5px;
+      border: 1px solid var(--border, rgba(128, 128, 128, 0.3));
+      /* Must match tempToColor()'s stops: 60 K deep blue, 150 K blue,
+         230 K near-white, 310 K red, 400 K dark red. */
+      background: linear-gradient(to right,
+        rgb(20, 40, 130) 0%,
+        rgb(60, 110, 210) 26.5%,
+        rgb(225, 230, 235) 50%,
+        rgb(220, 90, 60) 73.5%,
+        rgb(165, 20, 20) 100%);
+    }
+    .globe-scale-caption {
+      text-align: center;
+    }
+    #runHistorySection {
+      margin-top: 1.5rem;
+    }
+    .run-history-scroll {
+      margin-top: 0.75rem;
+      padding: 0.5rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .run-history-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 720px;
+      font-size: 0.85rem;
+    }
+    .run-history-table th,
+    .run-history-table td {
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border, rgba(128, 128, 128, 0.25));
+      white-space: nowrap;
+    }
+    .run-history-table th {
+      color: var(--text-secondary, #888);
+      font-weight: 600;
+    }
+    .run-history-settings {
+      white-space: normal;
+      min-width: 200px;
+    }
+    .run-history-table .run-current td {
+      background: rgba(128, 128, 128, 0.08);
+    }
+    .run-current-tag {
+      color: var(--text-secondary, #888);
+      font-size: 0.8em;
+    }
+  </style>
+
+  <style is:global>
+    /* Sticky chrome repeats over content in printed/full-page captures;
+       unstick it there (no effect on normal scrolling). */
+    @media print {
+      .site-header,
+      .sim-progress-sticky {
+        position: static !important;
+      }
+    }
+  </style>
 
   <script>
     import {
@@ -431,7 +586,12 @@ import BetaGate from '../../components/BetaGate.astro';
       bulkK: 2,
       bulkRho: 3300,
       bulkC: 800,
-      nLatBands: 16,
+      // Odd on purpose: an odd band count puts one band's centre exactly on
+      // the equator, so every "(equator)" quantity — the tiles, the settling
+      // and diurnal curves, and the curve compared against the equatorial
+      // reference fit — really is equatorial (an even count straddles the
+      // equator, silently substituting a ±6° band).
+      nLatBands: 15,
       coreCellCount: 6,
     };
 
@@ -466,14 +626,20 @@ import BetaGate from '../../components/BetaGate.astro';
       revealCompare: document.getElementById('revealCompare'),
       revealCompareHint: document.getElementById('revealCompareHint'),
       summaryMean: document.getElementById('summaryMean'),
+      summaryGlobalMean: document.getElementById('summaryGlobalMean'),
       summaryNasaMean: document.getElementById('summaryNasaMean'),
       summaryDiff: document.getElementById('summaryDiff'),
       summaryPeak: document.getElementById('summaryPeak'),
       summaryTrough: document.getElementById('summaryTrough'),
+      runHistorySection: document.getElementById('runHistorySection'),
+      runHistoryPlaceholder: document.getElementById('runHistoryPlaceholder'),
+      runHistoryContent: document.getElementById('runHistoryContent'),
+      runHistoryBody: document.getElementById('runHistoryBody'),
       conductivityModelChoice: document.getElementById('conductivityModelChoice'),
       modelChoiceOptions: document.getElementById('modelChoiceOptions'),
       modelChoiceSimple: document.getElementById('modelChoiceSimple'),
       modelChoiceMetzger: document.getElementById('modelChoiceMetzger'),
+      modelChoiceCheese: document.getElementById('modelChoiceCheese'),
       modelChoiceChosen: document.getElementById('modelChoiceChosen'),
       paramGrid: document.getElementById('paramGrid'),
       regolithKRow: document.getElementById('regolithKRow'),
@@ -577,6 +743,23 @@ import BetaGate from '../../components/BetaGate.astro';
     // re-enable — every input path below (slider drag, typed value,
     // rotation preset) funnels through this.
     let hasRunOnce = false;
+    // Once the reader has revealed the NASA comparison, later runs keep it
+    // visible (with the previous results blanked until the new run
+    // finishes) instead of re-locking it behind the reveal button — the
+    // gate exists so the first comparison lands after watching the model
+    // converge, not to make every re-run re-click it.
+    let hasRevealedCompare = false;
+
+    function clearCompareResults() {
+      ['summaryMean', 'summaryGlobalMean', 'summaryNasaMean', 'summaryDiff', 'summaryPeak', 'summaryTrough'].forEach((id) => {
+        els[id].textContent = '—';
+      });
+      els.compareForewarning.innerHTML = '<p><em>Simulation running — this comparison updates when it finishes.</em></p>';
+      const ctx = els.compareChart.getContext('2d');
+      ctx.clearRect(0, 0, els.compareChart.width, els.compareChart.height);
+      const legend = document.getElementById('compareChartLegend');
+      if (legend) legend.innerHTML = '';
+    }
     function markParamsChanged() {
       els.runSim.disabled = false;
       // Only overwrite the hint with "changed" phrasing once there's
@@ -593,7 +776,7 @@ import BetaGate from '../../components/BetaGate.astro';
     // time; switching afterward doesn't hide them again, it just adjusts
     // which rows apply (the simple model's three parameters are meaningless
     // once conductivity is derived from depth and temperature instead).
-    const modelChoiceButtons = [els.modelChoiceSimple, els.modelChoiceMetzger];
+    const modelChoiceButtons = [els.modelChoiceSimple, els.modelChoiceMetzger, els.modelChoiceCheese];
     if (Math.random() < 0.5) {
       els.modelChoiceOptions.appendChild(els.modelChoiceSimple);
       els.modelChoiceOptions.appendChild(els.modelChoiceMetzger);
@@ -601,12 +784,20 @@ import BetaGate from '../../components/BetaGate.astro';
       els.modelChoiceOptions.appendChild(els.modelChoiceMetzger);
       els.modelChoiceOptions.appendChild(els.modelChoiceSimple);
     }
+    // The cheese card always sits last: it is a clearly-labeled novelty /
+    // learning contrast, not a competing lunar hypothesis, so it stays out
+    // of the two serious models' randomized ordering rather than diluting
+    // it.
+    els.modelChoiceOptions.appendChild(els.modelChoiceCheese);
 
     function applyConductivityModelVisibility() {
-      const isMetzger = conductivityModel === 'metzger';
-      els.regolithKRow.hidden = isMetzger;
-      els.bulkKRow.hidden = isMetzger;
-      els.regolithThicknessRow.hidden = isMetzger;
+      // The layered model's three sliders are meaningless both when
+      // conductivity is derived from depth+temperature and when the whole
+      // body is cheese (whose material values are fixed by the card).
+      const hideMaterialRows = conductivityModel === 'metzger' || conductivityModel === 'cheese';
+      els.regolithKRow.hidden = hideMaterialRows;
+      els.bulkKRow.hidden = hideMaterialRows;
+      els.regolithThicknessRow.hidden = hideMaterialRows;
     }
 
     function chooseConductivityModel(model, { fromRestore = false } = {}) {
@@ -614,7 +805,7 @@ import BetaGate from '../../components/BetaGate.astro';
       modelChoiceButtons.forEach((btn) => {
         btn.classList.toggle('active', btn.getAttribute('data-conductivity-model') === model);
       });
-      const chosenBtn = model === 'metzger' ? els.modelChoiceMetzger : els.modelChoiceSimple;
+      const chosenBtn = model === 'metzger' ? els.modelChoiceMetzger : (model === 'cheese' ? els.modelChoiceCheese : els.modelChoiceSimple);
       els.modelChoiceChosen.textContent = `You chose: ${chosenBtn.querySelector('.model-choice-title').textContent}`;
       els.modelChoiceChosen.hidden = false;
       applyConductivityModelVisibility();
@@ -745,7 +936,7 @@ import BetaGate from '../../components/BetaGate.astro';
           const x1 = xMin + ((xMax - xMin) * (i + 1)) / steps;
           const localHour = xToLocalHour((x0 + x1) / 2);
           const isNight = localHour < 6 || localHour >= 18;
-          ctx.fillStyle = isNight ? 'rgba(60,80,160,0.10)' : 'rgba(255,200,80,0.08)';
+          ctx.fillStyle = isNight ? 'rgba(80,110,220,0.16)' : 'rgba(255,200,80,0.10)';
           ctx.fillRect(xToPix(x0), padT, Math.max(1, xToPix(x1) - xToPix(x0)), plotH);
         }
       }
@@ -754,15 +945,51 @@ import BetaGate from '../../components/BetaGate.astro';
       ctx.fillStyle = textColor;
       ctx.font = '11px sans-serif';
       ctx.lineWidth = 1;
-      const yTicks = 5;
-      for (let i = 0; i <= yTicks; i++) {
-        const yVal = computedYMin + ((computedYMax - computedYMin) * i) / yTicks;
-        const yPix = padT + plotH - (plotH * i) / yTicks;
+      // Y ticks at round values (1/2/5 x 10^n steps), like the x-axis —
+      // evenly dividing an arbitrary range produced labels like 68/72/75/78
+      // with uneven implied steps.
+      {
+        const targetYTicks = 6;
+        const rawYStep = (computedYMax - computedYMin) / targetYTicks || 1;
+        const yMag = Math.pow(10, Math.floor(Math.log10(rawYStep)));
+        const yStep = [1, 2, 5, 10].map((m) => m * yMag).find((st) => (computedYMax - computedYMin) / st <= targetYTicks) || 10 * yMag;
+        for (let yv = Math.ceil(computedYMin / yStep) * yStep; yv <= computedYMax + 1e-9; yv += yStep) {
+          const yPix = yToPix(yv);
+          ctx.beginPath();
+          ctx.moveTo(padL, yPix);
+          ctx.lineTo(padL + plotW, yPix);
+          ctx.stroke();
+          ctx.fillText(String(Math.round(yv * 100) / 100), 4, yPix + 4);
+        }
+      }
+      // The y-axis unit, drawn above the axis (every caller passes one; it
+      // was previously accepted and silently never rendered).
+      if (yLabel) ctx.fillText(yLabel, 4, padT - 6);
+
+      // X ticks with "nice" spacing (1/2/5 x 10^n), drawn as faint vertical
+      // gridlines with value labels — an axis title alone left the charts
+      // unreadable quantitatively (how long is night? how many rotations
+      // ran?). Local-hour axes get day-aligned ticks (0/6/12/18/24) instead
+      // of the generic nice step.
+      let xStep;
+      if (xToLocalHour && xMin === 0 && Math.abs(xMax - 24) < 1e-9) {
+        xStep = 6;
+      } else {
+        const targetXTicks = 6;
+        const rawStep = (xMax - xMin) / targetXTicks || 1;
+        const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+        xStep = [1, 2, 5, 10].map((m) => m * mag).find((step) => (xMax - xMin) / step <= targetXTicks) || 10 * mag;
+      }
+      for (let xv = Math.ceil(xMin / xStep) * xStep; xv <= xMax + 1e-9; xv += xStep) {
+        const px = xToPix(xv);
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(padL, yPix);
-        ctx.lineTo(padL + plotW, yPix);
+        ctx.moveTo(px, padT);
+        ctx.lineTo(px, padT + plotH);
         ctx.stroke();
-        ctx.fillText(yVal.toFixed(0), 4, yPix + 4);
+        const tickLabel = String(Math.round(xv * 100) / 100);
+        ctx.fillText(tickLabel, px - ctx.measureText(tickLabel).width / 2, padT + plotH + 14);
       }
 
       series.filter((s) => s.visible !== false).forEach((s) => {
@@ -783,7 +1010,7 @@ import BetaGate from '../../components/BetaGate.astro';
       });
 
       ctx.fillStyle = textColor;
-      ctx.fillText(xLabel, padL + plotW / 2 - 20, h - 6);
+      ctx.fillText(xLabel, padL + Math.max(0, (plotW - ctx.measureText(xLabel).width) / 2), h - 6);
     }
 
     // Reusable legend, matching the main site's legend-btn convention:
@@ -1098,7 +1325,7 @@ import BetaGate from '../../components/BetaGate.astro';
       return (12 + 24 * fractionOfPeriod) % 24;
     }
 
-    // ── Hurley et al. (2014) analytic lunar equatorial temperature ─────
+    // ── Hurley et al. (2015) analytic lunar equatorial temperature ─────
     function hurleyEquatorialTemp(localHour) {
       const h = ((localHour % 24) + 24) % 24;
       const psiDeg = 15 * Math.abs(h - 12);
@@ -1107,7 +1334,7 @@ import BetaGate from '../../components/BetaGate.astro';
         return 262 * Math.sqrt(Math.cos(psiRad)) + 130;
       }
       // Nightside polynomial in Sun-state longitude phi (radians): per
-      // Hurley et al. (2014) Eq. 4 and Fig. 1 caption, phi=0 at subsolar
+      // Hurley et al. (2015) Eq. 4 and Fig. 1 caption, phi=0 at subsolar
       // noon, phi=pi/2 at dusk, phi=pi at midnight, phi=3*pi/2 at dawn —
       // verified directly against the paper (fetched via NTRS) after an
       // earlier wrong guess (phi = h/24*2*pi) produced a ~445K artifact at
@@ -1141,33 +1368,76 @@ import BetaGate from '../../components/BetaGate.astro';
       els.globeSection.hidden = false;
       els.longSection.hidden = false;
       els.shortSection.hidden = false;
-      els.comparePromptSection.hidden = false;
-      els.revealCompare.disabled = true;
-      els.revealCompareHint.textContent = 'Enables once the simulation finishes.';
-      els.compareSection.hidden = true;
+      if (hasRevealedCompare) {
+        // Second-or-later run with the comparison already revealed: keep it
+        // unlocked and visible, just emptied out until this run's results
+        // replace the old ones.
+        els.comparePromptSection.hidden = true;
+        els.compareSection.hidden = false;
+        clearCompareResults();
+      } else {
+        els.comparePromptSection.hidden = false;
+        els.revealCompare.disabled = true;
+        els.revealCompareHint.textContent = 'Enables once the simulation finishes.';
+        els.compareSection.hidden = true;
+      }
       sendFeatureBeacon('labs/airless-body/02-simulation-run');
       pushStateToUrl();
       const p = readParams();
+      // Parmesan-like hard cheese, representative published food-engineering
+      // values (uniform material, no layering; constant specific heat since
+      // the regolith c(T) fit obviously doesn't apply to dairy).
+      const CHEESE = { k: 0.32, rho: 1200, c: 2300 };
+      const isCheese = p.conductivityModel === 'cheese';
       const params = {
+        materialChoice: p.conductivityModel,
         radius: MOON_DEFAULTS.radius,
         albedo: p.albedo,
         solarConstant: MOON_DEFAULTS.solarConstant,
         obliquityDeg: MOON_DEFAULTS.obliquityDeg,
         rotationPeriodSec: p.rotationHours * 3600,
-        conductivityModel: p.conductivityModel,
+        // The body orbits the Sun on its own (see the note in "What this is
+        // actually computing"): its seasonal declination cycle is one Earth
+        // year, decoupled from the rotation slider — spin sets the day
+        // length, the orbit sets the seasons.
+        orbitalPeriodSec: 365.25 * 86400,
+        // Regolith-material specific heat re-evaluated from each cell's
+        // current temperature (Hemingway et al. 1973 calorimetry via the
+        // Hayne et al. 2017 fit) — applied identically under both
+        // conductivity models, so it is not a reader-facing choice.
+        specificHeatModel: isCheese ? 'constant' : 'hemingway1973',
+        conductivityModel: isCheese ? 'simple' : p.conductivityModel,
         regolithThickness: p.regolithThickness,
-        regolithK: p.regolithK,
-        regolithRho: MOON_DEFAULTS.regolithRho,
-        regolithC: MOON_DEFAULTS.regolithC,
-        bulkK: p.bulkK,
-        bulkRho: MOON_DEFAULTS.bulkRho,
-        bulkC: MOON_DEFAULTS.bulkC,
+        regolithK: isCheese ? CHEESE.k : p.regolithK,
+        regolithRho: isCheese ? CHEESE.rho : MOON_DEFAULTS.regolithRho,
+        regolithC: isCheese ? CHEESE.c : MOON_DEFAULTS.regolithC,
+        bulkK: isCheese ? CHEESE.k : p.bulkK,
+        bulkRho: isCheese ? CHEESE.rho : MOON_DEFAULTS.bulkRho,
+        bulkC: isCheese ? CHEESE.c : MOON_DEFAULTS.bulkC,
         nLatBands: MOON_DEFAULTS.nLatBands,
         coreCellCount: MOON_DEFAULTS.coreCellCount,
+        // The spatial grid is deliberately IDENTICAL for every run: tying
+        // any grid dimension to a physics slider (e.g. scaling the surface
+        // cell with rotation period) would mean cross-run comparisons mix a
+        // physics change with a resolution change — a confound a reader has
+        // no way to separate. Instead, every rotation is resolved by at
+        // least this many physics steps in time (the stability limit still
+        // governs whenever it is stricter, which it is for slow rotations),
+        // so fast rotations are never temporally under-resolved and their
+        // runs aren't disproportionately brief.
+        minStepsPerRotation: 4000,
+        // Disclosed exception to the fixed grid (see the numerical-scheme
+        // expander): cheese conducts ~500x better than regolith, so its
+        // day/night wave reaches ~30 cm instead of ~3 cm — a surface cell
+        // matched to that skin keeps runs fast; resolving cheese on the
+        // regolith's millimetre grid would cost ~20x the steps to capture
+        // detail thousands of times smaller than any cheese-vs-regolith
+        // difference. Identical for every cheese run.
+        surfaceCellThickness: isCheese ? 0.02 : 0.001,
       };
       const model = createModel(params);
       model.setUniformTemperature(220);
-      const driver = createConvergenceDriver(model, { periodsPerHeal: 3 });
+      const driver = createConvergenceDriver(model, { periodsPerHeal: 3, dtRecomputeEvery: 4 });
       const recorder = createSurfaceHistoryRecorder(model);
 
       const latIndex = {
@@ -1175,7 +1445,24 @@ import BetaGate from '../../components/BetaGate.astro';
         mid: closestLatBand(model, 45),
         pole: closestLatBand(model, 80),
       };
-      const totalPeriods = 18;
+      // At least basePeriods rotations, extending in 3-rotation increments
+      // (up to maxPeriods) while the equator's per-rotation minimum is still
+      // moving by more than SETTLE_THRESHOLD_K across a 3-rotation span.
+      // Equator only, deliberately: with the real ~365-day seasonal cycle,
+      // high-latitude minima genuinely oscillate by kelvins indefinitely
+      // (that is physics, not lack of convergence), and the equator is the
+      // curve the NASA comparison actually uses. If it still hasn't settled
+      // at maxPeriods the run stops anyway — the settling chart shows it.
+      // 12 rotations is enough for the Aitken-accelerated equator to settle
+      // in every configuration tested; the settledness check below extends
+      // the run on evidence whenever it isn't, so a lower base costs
+      // accuracy nothing while cutting every run's wall time by a third —
+      // which matters most on hardware far slower than a dev machine.
+      const basePeriods = 12;
+      const maxPeriods = 36;
+      const SETTLE_THRESHOLD_K = 0.15;
+      let plannedPeriods = basePeriods;
+      let extendedForSettling = false;
       let periodsDone = 0;
 
       // Advance in small chunks (not whole multi-period batches) so the
@@ -1194,7 +1481,7 @@ import BetaGate from '../../components/BetaGate.astro';
         pole: { label: 'Near-pole', color: '#4a7fd6', points: [] },
       };
       function redrawLongChart() {
-        drawLineChart(els.longChart, Object.values(longSeries), { xLabel: 'Rotation period #', yLabel: 'K', xMin: 1, xMax: totalPeriods });
+        drawLineChart(els.longChart, Object.values(longSeries), { xLabel: 'Rotation period #', yLabel: 'K', xMin: 1, xMax: plannedPeriods });
       }
       createLegend(document.getElementById('longChartLegend'), Object.values(longSeries), redrawLongChart);
 
@@ -1215,7 +1502,7 @@ import BetaGate from '../../components/BetaGate.astro';
         mid: { label: 'Mid-latitude', color: '#d4a855', points: [] },
         pole: { label: 'Near-pole', color: '#4a7fd6', points: [] },
       };
-      const liveShortXMax = (totalPeriods * period) / 3600;
+      const liveShortXMax = (basePeriods * period) / 3600;
       // Bounds live in mutable variables (not baked into the legend
       // callback as constants) because the window keeps sliding forward —
       // the legend toggle needs to redraw with whatever the *current*
@@ -1283,10 +1570,23 @@ import BetaGate from '../../components/BetaGate.astro';
             longSeries[k].points.push({ x: periodsDone, y: periodMin[k] });
             periodMin[k] = Infinity;
           });
+          // Settledness check at the planned end: keep going if the
+          // equatorial nightly minimum moved more than the threshold over
+          // the last three rotations (see the comment on basePeriods).
+          if (periodsDone >= plannedPeriods && plannedPeriods < maxPeriods) {
+            const eq = longSeries.equator.points;
+            if (eq.length >= 4) {
+              const drift = Math.abs(eq[eq.length - 1].y - eq[eq.length - 4].y);
+              if (drift > SETTLE_THRESHOLD_K) {
+                plannedPeriods = Math.min(maxPeriods, periodsDone + 3);
+                extendedForSettling = true;
+              }
+            }
+          }
           redrawLongChart();
         }
-        els.runStatus.textContent = `Period ${periodsDone} of ~${totalPeriods} (simulated t=${(driver.tSec / 3600).toFixed(1)} h)…`;
-        const pct = Math.min(100, (100 * driver.tSec) / (totalPeriods * period));
+        els.runStatus.textContent = `Period ${periodsDone} of ~${plannedPeriods}${extendedForSettling ? ' (extended — equatorial night still settling)' : ''} (simulated t=${(driver.tSec / 3600).toFixed(1)} h)…`;
+        const pct = Math.min(100, (100 * driver.tSec) / (plannedPeriods * period));
         els.simProgressFill.style.width = `${pct.toFixed(1)}%`;
         // Once a couple of periods have actually completed, the observed
         // wall-clock rate is a much better time estimate than guessing
@@ -1296,12 +1596,12 @@ import BetaGate from '../../components/BetaGate.astro';
         if (periodsDone >= 2) {
           const elapsedWallSec = (performance.now() - wallClockStart) / 1000;
           const secPerPeriod = elapsedWallSec / periodsDone;
-          const remainingSec = Math.max(0, secPerPeriod * (totalPeriods - periodsDone));
+          const remainingSec = Math.max(0, secPerPeriod * (plannedPeriods - periodsDone));
           etaText = ` — ~${remainingSec < 60 ? remainingSec.toFixed(0) + 's' : (remainingSec / 60).toFixed(1) + 'm'} remaining`;
         }
-        els.simProgressLabel.textContent = `Period ${periodsDone} of ~${totalPeriods}${etaText}`;
+        els.simProgressLabel.textContent = `Period ${periodsDone} of ~${plannedPeriods}${etaText}`;
 
-        if (periodsDone < totalPeriods) {
+        if (periodsDone < plannedPeriods) {
           setTimeout(stepBatch, 0);
         } else {
           finalPeriod();
@@ -1317,6 +1617,17 @@ import BetaGate from '../../components/BetaGate.astro';
         // switch = no jump at the end), while the NASA comparison needs
         // local-hour alignment, derived from the same tSec values.
         const equatorCleanLocalHour = [];
+        // Area weights per latitude band (solid-angle fractions, summing to
+        // 1 over the sphere) for the global-mean tile: the equatorial tiles
+        // alone invite planet-level comparisons they can't support, since a
+        // planet's quoted mean temperature is a global average.
+        const latAreaFraction = [];
+        for (let i = 0; i < model.nLat; i++) {
+          const s1 = Math.sin(model.latEdges[i] * Math.PI / 180);
+          const s2 = Math.sin(model.latEdges[i + 1] * Math.PI / 180);
+          latAreaFraction.push((s2 - s1) / 2);
+        }
+        const globalMeansPerSample = [];
         let elapsed = 0, tSec = driver.tSec;
         // Physics steps at whatever the stability limit requires (can be
         // many thousands over a full period), but the charts only need a
@@ -1324,9 +1635,12 @@ import BetaGate from '../../components/BetaGate.astro';
         // pushing a point on every single physics step.
         const sampleIntervalSec = period / 240;
         let nextSampleAt = 0;
+        let cleanDt = null;
+        let cleanStepIndex = 0;
         while (elapsed < period) {
-          const dt = model.stableTimestep();
-          const thisDt = Math.min(dt, period - elapsed);
+          if (cleanDt === null || cleanStepIndex % 4 === 0) cleanDt = model.stableTimestep();
+          cleanStepIndex += 1;
+          const thisDt = Math.min(cleanDt, period - elapsed);
           model.step(thisDt, tSec);
           tSec += thisDt; elapsed += thisDt;
           recorder.record(tSec);
@@ -1337,24 +1651,31 @@ import BetaGate from '../../components/BetaGate.astro';
               shortSeries[k].points.push({ x: elapsedHours, y: model.T[latIndex[k]][0] });
             });
             equatorCleanLocalHour.push({ x: tSecToLocalHour(tSec, period), y: model.T[latIndex.equator][0] });
+            let g = 0;
+            for (let i = 0; i < model.nLat; i++) g += latAreaFraction[i] * model.T[i][0];
+            globalMeansPerSample.push(g);
           }
         }
         const headHours = tSec / 3600;
         shortXMin = headHours - periodHours;
         shortXMax = headHours;
         ['equator', 'mid', 'pole'].forEach((k) => {
-          shortSeries[k].points = shortSeries[k].points.filter((pt) => pt.x >= shortXMin);
+          // Strictly inside the window, trimming any sample on the seam
+          // itself: the final extrapolation jump lands right at the preceding
+          // period boundary, and a pre-jump point at that exact x draws a
+          // spurious kink against the clean pass's first samples.
+          shortSeries[k].points = shortSeries[k].points.filter((pt) => pt.x > shortXMin + periodHours / 480);
         });
         redrawShortChart();
 
-        // NASA comparison: this model's equator vs. Hurley et al. (2014).
+        // NASA comparison: this model's equator vs. Hurley et al. (2015).
         const modelSeries = { label: 'This model (equator)', color: '#e05050', points: equatorCleanLocalHour };
         const referencePoints = [];
         for (let h = 0; h <= 24; h += 0.25) referencePoints.push({ x: h, y: hurleyEquatorialTemp(h) });
-        const referenceSeries = { label: 'Diviner-derived reference (Hurley et al. 2014)', color: '#4a7fd6', points: referencePoints };
+        const referenceSeries = { label: 'Diviner-derived reference (Hurley et al. 2015)', color: '#4a7fd6', points: referencePoints };
         const compareSeriesList = [modelSeries, referenceSeries];
         function redrawCompareChart() {
-          drawLineChart(els.compareChart, compareSeriesList, { xLabel: 'Local hour', yLabel: 'K', xToLocalHour: (x) => x });
+          drawLineChart(els.compareChart, compareSeriesList, { xLabel: 'Local hour (0 = midnight, 12 = noon)', yLabel: 'K', xToLocalHour: (x) => x });
         }
         redrawCompareChart();
         createLegend(document.getElementById('compareChartLegend'), compareSeriesList, redrawCompareChart);
@@ -1368,18 +1689,36 @@ import BetaGate from '../../components/BetaGate.astro';
         const modelMean = modelYs.reduce((a, b) => a + b, 0) / modelYs.length;
         const modelPeak = Math.max(...modelYs);
         const modelTrough = Math.min(...modelYs);
-        const nasaYs = referencePoints.map((pt) => pt.y);
+        // Exclude the h=24 endpoint from the mean: the curve is periodic and
+        // hour 0 is already in the list, so keeping both would double-weight
+        // the coldest sample and bias the reference mean low by over a kelvin.
+        const nasaYs = referencePoints.slice(0, -1).map((pt) => pt.y);
         const nasaMean = nasaYs.reduce((a, b) => a + b, 0) / nasaYs.length;
+        const globalMean = globalMeansPerSample.reduce((a, b) => a + b, 0) / globalMeansPerSample.length;
         els.summaryMean.textContent = `${modelMean.toFixed(1)} K`;
+        els.summaryGlobalMean.textContent = `${globalMean.toFixed(1)} K`;
         els.summaryNasaMean.textContent = `${nasaMean.toFixed(1)} K`;
         const diff = modelMean - nasaMean;
         els.summaryDiff.textContent = `${diff >= 0 ? '+' : ''}${diff.toFixed(1)} K`;
         els.summaryPeak.textContent = `${modelPeak.toFixed(0)} K`;
         els.summaryTrough.textContent = `${modelTrough.toFixed(0)} K`;
 
-        els.runStatus.textContent = `Done — ${periodsDone} periods converged, plus one settled rotation sampled.`;
+        runHistory.push({
+          summary: compactRunSummary(params),
+          mean: modelMean,
+          globalMean,
+          nasaMean,
+          diff,
+          peak: modelPeak,
+          trough: modelTrough,
+        });
+        renderRunHistory();
+
+        els.runStatus.textContent = `Done — ${periodsDone} simulated rotations${extendedForSettling ? ` (extended past ${basePeriods} because the equatorial night was still settling)` : ''}, plus one final rotation sampled for the charts below.`;
         els.simProgressFill.style.width = '100%';
         els.simProgressLabel.textContent = 'Done';
+        // Don't leave a sticky "Done" bar pinned for the rest of the session.
+        setTimeout(() => { els.simProgress.hidden = true; }, 4000);
         // Stays disabled until a parameter actually changes — re-running
         // with identical inputs would just reproduce the same result.
         els.runSim.disabled = true;
@@ -1406,15 +1745,74 @@ import BetaGate from '../../components/BetaGate.astro';
       return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
+    // ── Run history ────────────────────────────────────────────────
+    // One entry per completed simulation this session; rendered as a table
+    // under the comparison once there are at least two, so parameter
+    // exploration doesn't depend on remembering earlier numbers.
+    const runHistory = [];
+
+    function compactRunSummary(params) {
+      // Same change-detection thresholds as buildForewarningHtml below;
+      // changed-from-default values are bolded so a scan of the table shows
+      // at a glance what varied between runs.
+      const b = (changed, text) => (changed ? `<strong>${text}</strong>` : text);
+      const parts = [];
+      parts.push(params.materialChoice === 'metzger' ? 'Depth+T conductivity'
+        : (params.materialChoice === 'cheese' ? 'Solid cheese' : 'Layered conductivity'));
+      const rotDays = (params.rotationPeriodSec / 86400).toFixed(1);
+      parts.push(b(Math.abs(params.rotationPeriodSec / 3600 - MOON_DEFAULTS.rotationPeriodHours) > 0.5,
+        `${rotDays} d rotation`));
+      parts.push(b(Math.abs(params.albedo - MOON_DEFAULTS.albedo) > 0.005,
+        `albedo ${params.albedo.toFixed(3).replace(/0+$/, '').replace(/\.$/, '')}`));
+      if (params.materialChoice !== 'metzger' && params.materialChoice !== 'cheese') {
+        parts.push(b(Math.abs(params.regolithK - MOON_DEFAULTS.regolithK) > 0.00005,
+          `surface k ${params.regolithK.toFixed(4)}`));
+        parts.push(b(Math.abs(params.bulkK - MOON_DEFAULTS.bulkK) > 0.05,
+          `deep k ${params.bulkK.toFixed(2)}`));
+        parts.push(b(Math.abs(params.regolithThickness - MOON_DEFAULTS.regolithThickness) > 0.05,
+          `regolith ${params.regolithThickness.toFixed(1)} m`));
+      }
+      return parts.join(' · ');
+    }
+
+    function renderRunHistory() {
+      els.runHistorySection.hidden = false;
+      if (runHistory.length < 2) {
+        // First run: just a placeholder promising the table, so the reader
+        // knows exploring further will be tracked for them.
+        els.runHistoryPlaceholder.hidden = false;
+        els.runHistoryContent.hidden = true;
+        return;
+      }
+      els.runHistoryPlaceholder.hidden = true;
+      els.runHistoryContent.hidden = false;
+      els.runHistoryBody.innerHTML = runHistory.map((r, i) => {
+        const isCurrent = i === runHistory.length - 1;
+        const tag = isCurrent ? ' <span class="run-current-tag">(current)</span>' : '';
+        return `<tr${isCurrent ? ' class="run-current"' : ''}>` +
+          `<td>${i + 1}</td>` +
+          `<td class="run-history-settings">${r.summary}${tag}</td>` +
+          `<td>${r.mean.toFixed(1)} K</td>` +
+          `<td>${r.globalMean.toFixed(1)} K</td>` +
+          `<td>${r.nasaMean.toFixed(1)} K</td>` +
+          `<td>${(r.diff >= 0 ? '+' : '')}${r.diff.toFixed(1)} K</td>` +
+          `<td>${r.peak.toFixed(0)} K</td>` +
+          `<td>${r.trough.toFixed(0)} K</td>` +
+          '</tr>';
+      }).join('');
+    }
+
     function buildForewarningHtml(params) {
       // A full checklist of every relevant setting, changed or not, read
       // right before the graph — rather than only calling out what changed
       // (the previous design), so the reader starts from a complete picture
       // of this specific run instead of having to infer what's default.
       const items = [];
-      items.push(params.conductivityModel === 'metzger'
+      items.push(params.materialChoice === 'metzger'
         ? 'Depth- and temperature-dependent conductivity model (Metzger et al.)'
-        : 'Layered, fixed conductivity model');
+        : (params.materialChoice === 'cheese'
+          ? 'Solid cheese — uniform parmesan-like material (not a Moon estimate)'
+          : 'Layered, fixed conductivity model'));
 
       const rotDays = (params.rotationPeriodSec / 86400).toFixed(1);
       const moonDays = (MOON_DEFAULTS.rotationPeriodHours / 24).toFixed(1);
@@ -1429,7 +1827,7 @@ import BetaGate from '../../components/BetaGate.astro';
       // The simple model's three parameters below don't apply once
       // conductivity is derived from depth and temperature instead, so they
       // aren't meaningful checklist entries in that mode.
-      if (params.conductivityModel !== 'metzger') {
+      if (params.materialChoice !== 'metzger' && params.materialChoice !== 'cheese') {
         items.push(Math.abs(params.regolithK - MOON_DEFAULTS.regolithK) > 0.00005
           ? `Surface conductivity changed to ${params.regolithK.toFixed(4)} W/(m·K) (Moon estimate: ${MOON_DEFAULTS.regolithK})`
           : `Surface conductivity unchanged (${MOON_DEFAULTS.regolithK} W/(m·K), the Moon estimate)`);
@@ -1442,11 +1840,12 @@ import BetaGate from '../../components/BetaGate.astro';
       }
 
       const listItems = items.map((d) => `<li>${escapeHtml(d)}</li>`).join('');
-      return `<p><strong>This run used:</strong></p><ul class="forewarning-checklist">${listItems}</ul><p>The curve below represents the real Moon. Any difference from it may come from these modelling choices as well as the model's own limitations (see above).</p>`;
+      return `<p><strong>This run used:</strong></p><ul class="forewarning-checklist">${listItems}</ul><p>The curve below is the NASA-derived reference for the real Moon (see the notes above on its measurement conventions). Any difference from it may come from these modelling choices as well as the model's own limitations.</p>`;
     }
 
     els.runSim.addEventListener('click', runSimulation);
     els.revealCompare.addEventListener('click', () => {
+      hasRevealedCompare = true;
       els.compareSection.hidden = false;
       els.comparePromptSection.hidden = true; // served its purpose — no need to leave it sitting there
       // The compare chart was drawn while this section was still hidden, so

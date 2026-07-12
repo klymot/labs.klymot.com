@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   buildDepthGrid, buildLatitudeGrid, createModel, createConvergenceDriver,
   metzgerBulkDensity, metzgerPorosity, metzgerConductivity,
+  hemingwaySpecificHeat, DEFAULT_ORBITAL_PERIOD_SEC,
 } from './airless-body-thermal-model.js';
 
 const MOON_RADIUS = 1737400; // m
@@ -242,3 +243,125 @@ function sumEnergy(model) {
   }
   return total;
 }
+
+describe('hemingwaySpecificHeat', () => {
+  it('matches the published calorimetry at spot temperatures', () => {
+    // Hemingway, Robie & Wilson (1973) Apollo sample values, via the
+    // Hayne et al. (2017) Eq. A6 polynomial: ~250 J/(kg K) near 90 K,
+    // ~770 near 300 K, ~850 near 350 K.
+    expect(hemingwaySpecificHeat(90)).toBeGreaterThan(240);
+    expect(hemingwaySpecificHeat(90)).toBeLessThan(270);
+    expect(hemingwaySpecificHeat(300)).toBeGreaterThan(750);
+    expect(hemingwaySpecificHeat(300)).toBeLessThan(790);
+    expect(hemingwaySpecificHeat(350)).toBeGreaterThan(830);
+    expect(hemingwaySpecificHeat(350)).toBeLessThan(870);
+  });
+
+  it('increases monotonically over the lunar temperature range and stays positive below it', () => {
+    let prev = hemingwaySpecificHeat(40);
+    expect(prev).toBeGreaterThan(0);
+    for (let t = 50; t <= 400; t += 10) {
+      const c = hemingwaySpecificHeat(t);
+      expect(c).toBeGreaterThan(prev);
+      prev = c;
+    }
+    expect(hemingwaySpecificHeat(1)).toBeGreaterThan(0);
+  });
+});
+
+describe('temperature-dependent specific heat mode', () => {
+  it('does not produce NaN or non-physical temperatures (simple conductivity)', () => {
+    const model = createModel(moonParams({ nLatBands: 8, coreCellCount: 4, specificHeatModel: 'hemingway1973' }));
+    model.setUniformTemperature(250);
+    for (let s = 0, t = 0; s < 2000; s++) {
+      const dt = model.stableTimestep();
+      model.step(dt, t);
+      t += dt;
+    }
+    for (let i = 0; i < model.nLat; i++) {
+      for (let j = 0; j < model.nDepth; j++) {
+        expect(Number.isFinite(model.T[i][j])).toBe(true);
+        expect(model.T[i][j]).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('does not produce NaN or non-physical temperatures (metzger conductivity)', () => {
+    const model = createModel(moonParams({
+      nLatBands: 8, coreCellCount: 4,
+      conductivityModel: 'metzger', specificHeatModel: 'hemingway1973',
+    }));
+    model.setUniformTemperature(250);
+    for (let s = 0, t = 0; s < 2000; s++) {
+      const dt = model.stableTimestep();
+      model.step(dt, t);
+      t += dt;
+    }
+    for (let i = 0; i < model.nLat; i++) {
+      for (let j = 0; j < model.nDepth; j++) {
+        expect(Number.isFinite(model.T[i][j])).toBe(true);
+        expect(model.T[i][j]).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('cold cells respond faster than under constant specific heat (smaller heat capacity at low T)', () => {
+    // At 100 K the polynomial gives ~290 J/(kg K) vs the constant 650 —
+    // the same conducted heat should move a cold cell's temperature more.
+    // Verified indirectly: the stability-limited timestep, which scales
+    // with heat capacity, must be smaller for a uniformly cold body in
+    // hemingway mode than in constant mode.
+    const cold = 100;
+    const constant = createModel(moonParams({ nLatBands: 6, coreCellCount: 4 }));
+    const hemingway = createModel(moonParams({ nLatBands: 6, coreCellCount: 4, specificHeatModel: 'hemingway1973' }));
+    constant.setUniformTemperature(cold);
+    hemingway.setUniformTemperature(cold);
+    expect(hemingway.stableTimestep()).toBeLessThan(constant.stableTimestep());
+  });
+
+  it('rejects an unknown specificHeatModel', () => {
+    expect(() => createModel(moonParams({ specificHeatModel: 'nope' }))).toThrow();
+  });
+});
+
+describe('seasonal (orbital) cycle', () => {
+  it('defaults the declination cycle to one Earth year, independent of rotation period', () => {
+    const model = createModel(moonParams({ rotationPeriodSec: 24 * 3600 }));
+    expect(model.params.orbitalPeriodSec).toBe(DEFAULT_ORBITAL_PERIOD_SEC);
+    expect(DEFAULT_ORBITAL_PERIOD_SEC).toBeCloseTo(365.25 * 86400, 6);
+  });
+
+  it('declination does not cycle with the solar day: noon flux at mid-latitude differs across the year', () => {
+    // With the old rotation-tied default the subsolar latitude wobbled once
+    // per day in phase with local noon, so noon flux repeated identically
+    // every period. With a real year it should differ between a noon near
+    // one solstice and a noon near the other, half a year apart.
+    const model = createModel(moonParams());
+    const latRad = (45 * Math.PI) / 180;
+    const quarterYear = DEFAULT_ORBITAL_PERIOD_SEC / 4;
+    const period = model.params.rotationPeriodSec;
+    // Noon instants (multiples of the rotation period) nearest a quarter and
+    // three quarters through the orbital year (max +/- declination).
+    const noonNearSolstice1 = Math.round(quarterYear / period) * period;
+    const noonNearSolstice2 = Math.round((3 * quarterYear) / period) * period;
+    const f1 = model.incidentFlux(latRad, noonNearSolstice1);
+    const f2 = model.incidentFlux(latRad, noonNearSolstice2);
+    expect(Math.abs(f1 - f2)).toBeGreaterThan(1); // W/m^2 — clearly nonzero
+  });
+});
+
+describe('minStepsPerRotation temporal floor', () => {
+  it('caps the stable timestep for fast rotations and leaves slow rotations stability-limited', () => {
+    const fast = createModel(moonParams({ rotationPeriodSec: 3600, minStepsPerRotation: 4000, nLatBands: 6, coreCellCount: 4 }));
+    fast.setUniformTemperature(250);
+    expect(fast.stableTimestep()).toBeLessThanOrEqual(3600 / 4000 + 1e-9);
+
+    const slowCapped = createModel(moonParams({ minStepsPerRotation: 4000, nLatBands: 6, coreCellCount: 4 }));
+    const slowUncapped = createModel(moonParams({ nLatBands: 6, coreCellCount: 4 }));
+    slowCapped.setUniformTemperature(250);
+    slowUncapped.setUniformTemperature(250);
+    // 29.5 d / 4000 is far above this grid's stability limit, so the cap
+    // must not change the slow rotation's timestep at all.
+    expect(slowCapped.stableTimestep()).toBeCloseTo(slowUncapped.stableTimestep(), 9);
+  });
+});

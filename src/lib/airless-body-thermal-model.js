@@ -51,6 +51,30 @@ const STEFAN_BOLTZMANN = 5.670374419e-8; // W / (m^2 K^4)
 // so it has to be recomputed every step rather than precomputed once.
 const METZGER_GRAIN_DENSITY = 3100; // kg/m^3, average lunar mineral density
 
+// Default seasonal (solar-declination) cycle length: one Earth year. This
+// model treats its body as orbiting the Sun on its own at ~1 AU (consistent
+// with the default solar constant), so the subsolar latitude oscillates over
+// the body's heliocentric year regardless of how fast it spins — spin rate
+// sets the day length, the orbit sets the seasons, and the two are
+// independent knobs. (The real Moon's seasonal cycle is slightly shorter,
+// ~346.6 days, because its spin axis precesses with its Earth-coupled orbit
+// node; at 1.54° obliquity the difference is far below anything this model
+// resolves, and modeling the Earth–Moon coupling is out of scope — see the
+// lab page's note on this simplification.)
+export const DEFAULT_ORBITAL_PERIOD_SEC = 365.25 * 86400;
+
+// Temperature-dependent specific heat of lunar regolith material, J/(kg K):
+// a degree-4 polynomial in T (Hayne et al. 2017, their Eq. A6) fit to the
+// Apollo soil/basalt/breccia calorimetry of Hemingway, Robie & Wilson
+// (1973). Rises steeply from ~250 J/(kg K) at 90 K to ~850 at 350 K — the
+// heat needed to change a box's temperature by one kelvin is itself a
+// strong function of that box's current temperature. Clamped to >= 1 so an
+// evaluation far below the fit's range stays physical.
+export function hemingwaySpecificHeat(T) {
+  const c = -3.6125 + 2.7431 * T + 2.3616e-3 * T * T - 1.234e-5 * T * T * T + 8.9093e-9 * T * T * T * T;
+  return Math.max(c, 1);
+}
+
 export function metzgerBulkDensity(depthBelowSurfaceM) {
   const zCm = depthBelowSurfaceM * 100;
   const rhoGCm3 = (1.92 * (zCm + 12.2)) / (zCm + 18); // g/cm^3
@@ -170,27 +194,45 @@ function latBandSolidAngleFraction(latLoDeg, latHiDeg) {
  * params:
  *  radius (m), albedo (0-1), solarConstant (W/m^2), obliquityDeg,
  *  rotationPeriodSec (sun-relative, i.e. the day/night cycle length),
- *  orbitalPeriodSec (sets the declination cycle; defaults to rotationPeriodSec
- *    for a tidally-locked body where they're equal, but is a separate input
- *    so a fast hypothetical rotation doesn't also compress the season cycle),
+ *  orbitalPeriodSec (sets the seasonal solar-declination cycle; defaults to
+ *    DEFAULT_ORBITAL_PERIOD_SEC, one Earth year — see the comment there.
+ *    Deliberately independent of rotationPeriodSec: spin sets the day
+ *    length, the orbit sets the seasons. NOTE: tying this to the rotation
+ *    period is never physical — that would be a body whose year equals its
+ *    solar day, with the subsolar latitude wobbling once per day in phase
+ *    with local noon),
  *  conductivityModel ('simple', default, or 'metzger' — see the module-level
  *    comment on metzgerConductivity),
+ *  specificHeatModel ('constant', default: regolith material uses the flat
+ *    regolithC value; or 'hemingway1973': regolith-material specific heat is
+ *    re-evaluated from each cell's current temperature every step via
+ *    hemingwaySpecificHeat — applied to every cell under 'metzger', whose
+ *    whole column is regolith material, and to the regolith layer only
+ *    under 'simple', whose bulk layer keeps the constant bulkC),
  *  regolithThickness (m), regolithK (W/(m K)), regolithRho (kg/m^3), regolithC (J/(kg K)),
  *    — regolithThickness/regolithK/bulkK/bulkRho unused when conductivityModel is 'metzger'
- *    (regolithC is still used, as the single specific-heat value throughout)
+ *    (regolithC is used as the regolith specific heat only when
+ *    specificHeatModel is 'constant')
  *  bulkK, bulkRho, bulkC,
  *  nLatBands, surfaceCellThickness, growthRatio, coreCellCount,
- *  emissivity (default 0.95, typical of silicate regolith)
+ *  emissivity (default 0.95, typical of silicate regolith),
+ *  minStepsPerRotation (default 0 = disabled: caps the stable timestep at
+ *    rotationPeriodSec / minStepsPerRotation, so every rotation is resolved
+ *    by at least that many steps in time no matter how short the day is —
+ *    the stability limit still governs whenever it is stricter, which it is
+ *    for slow rotations on this grid)
  */
 export function createModel(params) {
   const p = {
     emissivity: 0.95,
     conductivityModel: 'simple',
+    specificHeatModel: 'constant',
+    minStepsPerRotation: 0,
     surfaceCellThickness: 0.001,
     growthRatio: 1.6,
     coreCellCount: 12,
     nLatBands: 60,
-    orbitalPeriodSec: params.rotationPeriodSec,
+    orbitalPeriodSec: DEFAULT_ORBITAL_PERIOD_SEC,
     ...params,
   };
 
@@ -239,19 +281,51 @@ export function createModel(params) {
     }
   }
 
-  // Cell volumes and heat capacities: cellVolume[i][j], heatCapacity[i][j] (J/K).
+  // Temperature-dependent specific heat applies to regolith material: every
+  // cell under 'metzger' (whose whole column is regolith material), only the
+  // regolith layer under 'simple' (its bulk layer is consolidated rock,
+  // kept at the constant bulkC). See hemingwaySpecificHeat above.
+  const useHemingway = p.specificHeatModel === 'hemingway1973';
+  if (!useHemingway && p.specificHeatModel !== 'constant') {
+    throw new Error(`unknown specificHeatModel: ${p.specificHeatModel}`);
+  }
+  const cTDependent = new Uint8Array(nDepth);
+  if (useHemingway) {
+    for (let j = 0; j < nDepth; j++) {
+      const depthBelowSurface = p.radius - (depthRadii[j] + depthRadii[j + 1]) / 2;
+      cTDependent[j] = useMetzger || depthBelowSurface < p.regolithThickness ? 1 : 0;
+    }
+  }
+
+  // Cell volumes, masses, and constant-c heat capacities: cellVolume[i][j],
+  // cellMass[i][j], heatCapacity[i][j] (J/K). With
+  // specificHeatModel:'hemingway1973', heatCapacity is only the fallback for
+  // cells outside cTDependent — the live value comes from heatCapacityNow.
   const cellVolume = [];
+  const cellMass = [];
   const heatCapacity = [];
   for (let i = 0; i < nLat; i++) {
     cellVolume.push(new Float64Array(nDepth));
+    cellMass.push(new Float64Array(nDepth));
     heatCapacity.push(new Float64Array(nDepth));
     for (let j = 0; j < nDepth; j++) {
       const rOuter = depthRadii[j], rInner = depthRadii[j + 1];
       const fullShellVolume = (4 / 3) * Math.PI * (Math.pow(rOuter, 3) - Math.pow(rInner, 3));
       const v = fullShellVolume * latFraction[i];
       cellVolume[i][j] = v;
+      cellMass[i][j] = v * shellRho[j];
       heatCapacity[i][j] = v * shellRho[j] * shellC[j];
     }
+  }
+
+  // Current heat capacity of cell (i, j), J/K — same freshness contract as
+  // the 'metzger' conductances: evaluated against the live temperature
+  // field on every use rather than precomputed, because the heat needed to
+  // move a cold cell by one kelvin can be several times smaller than for a
+  // warm one (see hemingwaySpecificHeat).
+  function heatCapacityNow(i, j) {
+    if (!useHemingway || !cTDependent[j]) return heatCapacity[i][j];
+    return cellMass[i][j] * hemingwaySpecificHeat(T[i][j]);
   }
 
   // Radial conductances between shell j and j+1 (same latitude band), W/K per
@@ -286,10 +360,26 @@ export function createModel(params) {
     if (!useMetzger) radialConductance.push(arr);
   }
 
-  function radialConductanceNow(i, j, T) {
+  // Per-cell conductivity cache for the metzger model: metzgerConductivity's
+  // exp()/pow() evaluations dominate the per-step cost, and each cell's
+  // value is needed by up to four interfaces (above/below/north/south) plus
+  // the stability estimate — computing it once per cell per refresh instead
+  // of once per interface use cuts the dominant cost several-fold without
+  // changing a single computed value.
+  const kScratch = useMetzger ? [] : null;
+  if (useMetzger) for (let i = 0; i < nLat; i++) kScratch.push(new Float64Array(nDepth));
+
+  function refreshConductivityCache(T) {
+    for (let i = 0; i < nLat; i++) {
+      const row = kScratch[i], Ti = T[i];
+      for (let j = 0; j < nDepth; j++) row[j] = metzgerConductivity(shellPorosity[j], Ti[j]);
+    }
+  }
+
+  function radialConductanceNow(i, j) {
     const g = radialGeom[i][j];
-    const k1 = metzgerConductivity(shellPorosity[j], T[i][j]);
-    const k2 = metzgerConductivity(shellPorosity[j + 1], T[i][j + 1]);
+    const k1 = kScratch[i][j];
+    const k2 = kScratch[i][j + 1];
     const kHarmonic = g.dTotal / ((g.dr1 / 2) / k1 + (g.dr2 / 2) / k2);
     return (kHarmonic * g.faceArea) / g.dTotal;
   }
@@ -322,10 +412,10 @@ export function createModel(params) {
     if (!useMetzger) meridionalConductance.push(arr);
   }
 
-  function meridionalConductanceNow(i, j, T) {
+  function meridionalConductanceNow(i, j) {
     const g = meridionalGeom[i][j];
-    const k1 = metzgerConductivity(shellPorosity[j], T[i][j]);
-    const k2 = metzgerConductivity(shellPorosity[j], T[i + 1][j]);
+    const k1 = kScratch[i][j];
+    const k2 = kScratch[i + 1][j];
     return ((k1 + k2) / 2 * g.faceArea) / g.dist;
   }
 
@@ -353,15 +443,21 @@ export function createModel(params) {
     return Math.max(0, cosZenith) * p.solarConstant;
   }
 
+  // Preallocated once: allocating fresh dTdt rows on every one of the tens
+  // of thousands of steps per run showed up as measurable GC churn.
+  const dTdtScratch = [];
+  for (let i = 0; i < nLat; i++) dTdtScratch.push(new Float64Array(nDepth));
+
   /** One explicit forward-Euler timestep of length dt (s). Mutates T in place. */
   function step(dt, tSec) {
-    const dTdt = [];
-    for (let i = 0; i < nLat; i++) dTdt.push(new Float64Array(nDepth));
+    const dTdt = dTdtScratch;
+    for (let i = 0; i < nLat; i++) dTdt[i].fill(0);
+    if (useMetzger) refreshConductivityCache(T);
 
     // Radial conduction.
     for (let i = 0; i < nLat; i++) {
       for (let j = 0; j < nDepth - 1; j++) {
-        const g = useMetzger ? radialConductanceNow(i, j, T) : radialConductance[i][j];
+        const g = useMetzger ? radialConductanceNow(i, j) : radialConductance[i][j];
         const q = g * (T[i][j + 1] - T[i][j]); // + = into cell j from below
         dTdt[i][j] += q;
         dTdt[i][j + 1] -= q;
@@ -370,7 +466,7 @@ export function createModel(params) {
     // Meridional conduction.
     for (let i = 0; i < nLat - 1; i++) {
       for (let j = 0; j < nDepth; j++) {
-        const g = useMetzger ? meridionalConductanceNow(i, j, T) : meridionalConductance[i][j];
+        const g = useMetzger ? meridionalConductanceNow(i, j) : meridionalConductance[i][j];
         const q = g * (T[i + 1][j] - T[i][j]);
         dTdt[i][j] += q;
         dTdt[i + 1][j] -= q;
@@ -385,7 +481,7 @@ export function createModel(params) {
 
     for (let i = 0; i < nLat; i++) {
       for (let j = 0; j < nDepth; j++) {
-        T[i][j] += (dTdt[i][j] / heatCapacity[i][j]) * dt;
+        T[i][j] += (dTdt[i][j] / heatCapacityNow(i, j)) * dt;
       }
     }
   }
@@ -408,24 +504,31 @@ export function createModel(params) {
    * cover further heating before the next recompute.
    */
   function stableTimestep(safety = 0.4, referenceMaxTempMargin = 50) {
+    if (useMetzger) refreshConductivityCache(T);
     let minTau = Infinity;
     for (let i = 0; i < nLat; i++) {
       for (let j = 0; j < nDepth; j++) {
         let gSum = 0;
-        if (j > 0) gSum += useMetzger ? radialConductanceNow(i, j - 1, T) : radialConductance[i][j - 1];
-        if (j < nDepth - 1) gSum += useMetzger ? radialConductanceNow(i, j, T) : radialConductance[i][j];
-        if (i > 0) gSum += useMetzger ? meridionalConductanceNow(i - 1, j, T) : meridionalConductance[i - 1][j];
-        if (i < nLat - 1) gSum += useMetzger ? meridionalConductanceNow(i, j, T) : meridionalConductance[i][j];
+        if (j > 0) gSum += useMetzger ? radialConductanceNow(i, j - 1) : radialConductance[i][j - 1];
+        if (j < nDepth - 1) gSum += useMetzger ? radialConductanceNow(i, j) : radialConductance[i][j];
+        if (i > 0) gSum += useMetzger ? meridionalConductanceNow(i - 1, j) : meridionalConductance[i - 1][j];
+        if (i < nLat - 1) gSum += useMetzger ? meridionalConductanceNow(i, j) : meridionalConductance[i][j];
         if (j === 0) {
           const refT = T[i][0] + referenceMaxTempMargin;
           gSum += 4 * p.emissivity * STEFAN_BOLTZMANN * Math.pow(refT, 3) * outerFaceArea[i];
         }
         if (gSum <= 0) continue;
-        const tau = heatCapacity[i][j] / gSum;
+        const tau = heatCapacityNow(i, j) / gSum;
         if (tau < minTau) minTau = tau;
       }
     }
-    return minTau * safety;
+    // Temporal-resolution floor, independent of the stability limit: never
+    // let a single step cover more than 1/minStepsPerRotation of a rotation,
+    // so short-day runs stay well resolved in time (see the param doc).
+    const temporalCap = p.minStepsPerRotation > 0
+      ? p.rotationPeriodSec / p.minStepsPerRotation
+      : Infinity;
+    return Math.min(minTau * safety, temporalCap);
   }
 
   return {
@@ -565,13 +668,21 @@ export function createConvergenceDriver(model, options = {}) {
   // in caller-controlled increments small enough to yield back to the
   // browser between them for visible animation.
   let elapsedInPeriod = 0;
+  let chunkStepIndex = 0;
+  let chunkDt = null;
   function stepChunk(targetChunkSec, onStep) {
     let chunkElapsed = 0;
     let periodJustCompleted = false;
     while (chunkElapsed < targetChunkSec) {
-      const dt = model.stableTimestep();
+      // The stability limit drifts slowly (its own safety factor of 0.4 plus
+      // the 50 K temperature margin cover several steps of change), so it is
+      // re-derived every dtRecomputeEvery steps rather than every step —
+      // except immediately after an extrapolation jump, which can move
+      // surface cells by tens of kelvin at once and must invalidate it.
+      if (chunkDt === null || chunkStepIndex % dtRecomputeEvery === 0) chunkDt = model.stableTimestep();
+      chunkStepIndex += 1;
       const period = model.params.rotationPeriodSec;
-      const thisDt = Math.min(dt, period - elapsedInPeriod, targetChunkSec - chunkElapsed);
+      const thisDt = Math.min(chunkDt, period - elapsedInPeriod, targetChunkSec - chunkElapsed);
       model.step(thisDt, tSec);
       tSec += thisDt;
       chunkElapsed += thisDt;
@@ -583,7 +694,10 @@ export function createConvergenceDriver(model, options = {}) {
         periodJustCompleted = true;
         phaseSamples.push(cloneField(model.T));
         if (phaseSamples.length > 3) phaseSamples.shift();
-        if (periodsCompleted % periodsPerHeal === 0) extrapolateAndJump();
+        if (periodsCompleted % periodsPerHeal === 0) {
+          extrapolateAndJump();
+          chunkDt = null; // jump may have moved T substantially — force a fresh stability estimate
+        }
       }
     }
     return { periodsCompleted, periodJustCompleted, tSec };
@@ -595,7 +709,6 @@ export function createConvergenceDriver(model, options = {}) {
     stepChunk,
     get periodsCompleted() { return periodsCompleted; },
     get tSec() { return tSec; },
-    get dt() { return dt; },
   };
 }
 
