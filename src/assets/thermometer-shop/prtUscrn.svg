@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" role="img" aria-hidden="true">
+  <!-- Reference-network triplet: three independent slim elements wired to
+       one bus, five-minute block averaging. Original schematic drawn for
+       labs.klymot.com. -->
+  <path d="M30 46 h40 M30 70 h40 M30 94 h40" stroke-width="4"/>
+  <path d="M32 46 h9 M32 70 h9 M32 94 h9" stroke="var(--accent, #d4a855)" stroke-width="2" opacity="0.9"/>
+  <path d="M70 46 h34 M70 70 h34 M70 94 h34" stroke-width="1.5"/>
+  <path d="M104 46 c12 0 10 24 22 24 M104 70 h22 M104 94 c12 0 10 -24 22 -24" stroke-width="1.5"/>
+  <rect x="126" y="56" width="52" height="30" rx="4"/>
+  <!-- 5-min block-average steps -->
+  <path d="M133 78 h8 v-6 h8 v3 h8 v-7 h8 v4 h8" stroke="var(--accent, #d4a855)" stroke-width="2" opacity="0.85"/>
+</svg>

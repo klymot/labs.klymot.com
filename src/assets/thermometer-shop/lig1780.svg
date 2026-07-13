@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" role="img" aria-hidden="true">
+  <!-- Six's U-tube min/max thermometer: two vertical limbs joined below,
+       spirit bulb top-left, contraction chamber top-right, steel indexes
+       in each limb. Original schematic drawn for labs.klymot.com. -->
+  <ellipse cx="78" cy="26" rx="16" ry="12"/>
+  <ellipse cx="122" cy="24" rx="10" ry="9"/>
+  <path d="M72 36 v62 a14 14 0 0 0 14 14 h28 a14 14 0 0 0 14-14 V32"/>
+  <path d="M84 36 v60 a6 6 0 0 0 6 6 h20 a6 6 0 0 0 6-6 V32" stroke-width="1.2"/>
+  <!-- mercury column -->
+  <path d="M78 74 v24 a10 10 0 0 0 10 10 h24 a10 10 0 0 0 10-10 V70" stroke="var(--accent, #d4a855)" stroke-width="4" opacity="0.85"/>
+  <!-- indexes -->
+  <rect x="74" y="58" width="8" height="12" rx="2" stroke-width="1.5"/>
+  <rect x="118" y="52" width="8" height="12" rx="2" stroke-width="1.5"/>
+  <!-- scales -->
+  <g stroke-width="1" opacity="0.6">
+    <path d="M64 46 h6 M64 56 h6 M64 66 h6 M64 76 h6 M64 86 h6"/>
+    <path d="M130 42 h6 M130 52 h6 M130 62 h6 M130 72 h6 M130 82 h6"/>
+  </g>
+</svg>

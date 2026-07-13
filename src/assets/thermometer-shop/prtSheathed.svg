@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" role="img" aria-hidden="true">
+  <!-- Stout sheathed PT100 probe: heavy cylindrical sheath, hex fitting,
+       cable to connector. Original schematic drawn for labs.klymot.com. -->
+  <path d="M28 78 h74 a10 10 0 0 0 10-10 v-4 a10 10 0 0 0-10-10 h-74 a10 10 0 0 0-10 10 v4 a10 10 0 0 0 10 10 z"/>
+  <path d="M30 60 v18 M42 60 v18 M54 60 v18" stroke-width="1" opacity="0.5"/>
+  <!-- element inside tip -->
+  <path d="M30 66 h14 M30 72 h14" stroke="var(--accent, #d4a855)" stroke-width="1.5" opacity="0.85"/>
+  <!-- hex fitting -->
+  <path d="M112 56 h18 l6 10 -6 10 h-18 z"/>
+  <!-- cable -->
+  <path d="M136 66 c22 0 18 26 38 26" stroke-width="2.5"/>
+  <rect x="172" y="84" width="14" height="16" rx="3"/>
+  <path d="M175 100 v6 M181 100 v6" stroke-width="1.5"/>
+</svg>

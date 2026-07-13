@@ -1,0 +1,2024 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BetaGate from '../../components/BetaGate.astro';
+// The product cards are rendered from the same catalogue the simulation
+// runs, so the specs a reader shops from can never drift from the model.
+import { CATALOGUE, EXPOSURES, LOCATIONS, WIND_REGIMES } from '../../lib/thermometer-shop-model.js';
+// Original schematic illustrations drawn for this site (no external image
+// rights involved); inlined so they inherit the theme's colours.
+import illustLig1780 from '../../assets/thermometer-shop/lig1780.svg?raw';
+import illustLig1880 from '../../assets/thermometer-shop/lig1880.svg?raw';
+import illustLig1960 from '../../assets/thermometer-shop/lig1960.svg?raw';
+import illustPrtSheathed from '../../assets/thermometer-shop/prtSheathed.svg?raw';
+import illustPrtFast from '../../assets/thermometer-shop/prtFast.svg?raw';
+import illustPrtUscrn from '../../assets/thermometer-shop/prtUscrn.svg?raw';
+const ILLUSTRATIONS = {
+  lig1780: illustLig1780,
+  lig1880: illustLig1880,
+  lig1960: illustLig1960,
+  prtSheathed: illustPrtSheathed,
+  prtFast: illustPrtFast,
+  prtUscrn: illustPrtUscrn,
+};
+// Original wind glyphs for the regime buttons, escalating calm → hurricane.
+const svgWind = (paths) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">${paths}</svg>`;
+// Sun/cloud glyphs for the five cloud-cover buttons, 0% → 100%.
+const sunPaths =
+  '<circle cx="10" cy="9" r="3.2"/><path d="M10 2.5v2M10 13.5v2M3.5 9h2M14.5 9h2M5.4 4.4l1.4 1.4M13.2 12.2l1.4 1.4M14.6 4.4l-1.4 1.4M6.8 12.2l-1.4 1.4"/>';
+const cloudPath = (dx = 0, dy = 0, s = 1) =>
+  `<path transform="translate(${dx} ${dy}) scale(${s})" d="M9 19a3.6 3.6 0 0 1 0-7.2 4.6 4.6 0 0 1 8.9-1.3A3.2 3.2 0 1 1 20.5 19z"/>`;
+const CLOUD_ICONS = {
+  0: svgWind(`<g transform="translate(6 3)">${sunPaths}</g>`),
+  25: svgWind(`<g transform="translate(3 0)">${sunPaths}</g>${cloudPath(10, 2, 0.85)}`),
+  50: svgWind(`<g transform="translate(2 0)">${sunPaths}</g>${cloudPath(6, 1, 1)}`),
+  75: svgWind(`<g transform="translate(1 0)" opacity="0.6">${sunPaths}</g>${cloudPath(4, 1, 1.1)}`),
+  100: svgWind(`${cloudPath(1, -1, 0.8)}${cloudPath(7, 2, 1.05)}`),
+};
+const CLOUD_LEVELS = [0, 25, 50, 75, 100];
+const WIND_ICONS = {
+  calm: svgWind('<path d="M7 12h18" opacity="0.55"/>'),
+  light: svgWind('<path d="M6 15h13"/><path d="M6 10h12a2.4 2.4 0 1 0-2.4-2.4"/>'),
+  moderate: svgWind('<path d="M5 16h15a2.2 2.2 0 1 1-2.2 2.2"/><path d="M5 11h17a2.6 2.6 0 1 0-2.6-2.6"/>'),
+  strong: svgWind('<path d="M4 17h17a2.2 2.2 0 1 1-2.2 2.2"/><path d="M4 12h21a2.6 2.6 0 1 0-2.6-2.6"/><path d="M4 7h10"/>'),
+  gale: svgWind('<path d="M3 18h19a2.2 2.2 0 1 1-2.2 2.2"/><path d="M3 13h23a2.6 2.6 0 1 0-2.6-2.6"/><path d="M3 8h14a2.2 2.2 0 1 0-2.2-2.2"/>'),
+  hurricane: svgWind('<path d="M17.5 12a2.5 2.5 0 1 0-2.5 2.5 5.5 5.5 0 1 0-5.5-5.5 9 9 0 1 0 9-3.8" stroke-width="1.6"/>'),
+};
+---
+<BaseLayout title="The Thermometer Shop — beta" description="Lab under beta testing, shared by invitation — not linked from the labs index." bodyClass="lab-page lab-thermometer-shop">
+  <BetaGate passwordHash="$2b$10$e85MWv0HzdzYCB0ZcqDGeO0t/tzCoce48wDouglrwP.yNssCTaLKy" storageKey="thermometer-shop-beta-unlocked" />
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <nav class="header-nav" aria-label="Site navigation">
+        <a class="brand-link" href="https://klymot.com" aria-label="klymot home">
+          <span class="brand-logo" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="22" height="22">
+              <circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"/>
+              <ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/>
+              <circle cx="19.5" cy="10.5" r="2" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="brand-title">klymot</span>
+          <span class="brand-sub">· labs</span>
+        </a>
+        <a href="/" class="back-link" aria-label="Back to labs index">← Labs</a>
+      </nav>
+      <div class="header-actions">
+        <button class="reset-btn" id="resetLab" type="button" aria-label="Reset all choices">Reset lab</button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" type="button">◐</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="page-hero" id="introHero">
+        <span class="eyebrow" aria-hidden="true">Lab under beta testing — shared by invitation</span>
+        <h1>The Thermometer Shop</h1>
+        <p class="hook">Every daily max and min ever written into a weather ledger was read off a particular instrument, hanging in a particular shelter, on a particular schedule. Would a different thermometer have written down a different day?</p>
+        <p class="lede">Fill a cart with two to four instrument-and-shelter combinations — their specifications are real and cited, from 1780s liquid-in-glass to reference-network platinum — then run one identical simulated day through all of them and read the receipt.</p>
+        <ul class="learn-list">
+          <li>How a mechanical min/max register, a spot-sampling logger, and an averaging logger each turn a day of air into two numbers — and whether they agree.</li>
+          <li>What a shelter does to the air an instrument actually sits in.</li>
+          <li>How each item's (Tmax+Tmin)/2 midpoint compares with the 24-hour average of the same simulated air — a number no instrument on the shelf records.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── Section: What this is computing ─────────────────────────── -->
+    <section class="lab-section" id="model" aria-labelledby="model-heading">
+      <div class="container">
+        <div class="prose">
+          <h2 id="model-heading">What this is actually computing</h2>
+          <p><strong>The weather in this lab is synthetic.</strong> Unlike the other labs on this site, nothing here is a measurement: the day your thermometers experience is generated by a small physical model (sun geometry from your chosen latitude and date, cloud cover you set, seeded random turbulence), built to be plausible — not to reproduce any real place's climate. The named locations set only the sun's path and a generic seasonal baseline for that latitude.</p>
+        </div>
+        <details class="expander deep-dives">
+          <summary>Read more about the simulation</summary>
+          <div class="expander-body">
+            <p>What <em>is</em> real: the instrument and shelter behaviour. Response times, tolerances, reading resolutions, sampling schedules and screen radiation errors are taken from published values and ranges. Where a cited work documents outcomes rather than mechanisms — the wall exposure's coupling constants, the 1780s instrument's exact figures, the friction of a mechanical index — the numbers are this lab's estimates, chosen so the resulting behaviour sits inside the ranges those works document, and labelled as such where they appear. Sources are cited on each product card and at the end of the page.</p>
+            <p>One thing this lab is not: a ranking. Every instrument in the shop measures the same atmosphere differently — by design, by era, by shelter, by schedule — and running them through one identical day is a way to understand each instrument on its own terms. Whether any of the differences you find are large enough to matter, and for what, stays your call.</p>
+            <p>Why invent weather at all? Because no real site ever hung an 18th-century thermometer at a poleward wall, a screened Victorian pair, and an aspirated platinum sensor in <em>identical air</em>. A simulation is the only way to hold the day fixed and vary nothing but the instrument. It also means the simulation genuinely knows one number no instrument records — the average of the air itself over all 8,640 ten-second steps of the day — and can print it on your receipt at the end.</p>
+            <details class="expander">
+              <summary>How the simulated day is generated</summary>
+              <div class="expander-body">
+                <p>A single energy balance drives the air temperature: absorbed sunlight in; thermal radiation out at the layer's own T⁴ against a cloud-dependent sky (the Swinbank 1963 clear-sky downwelling, evaluated at the seasonal baseline and enhanced under cloud — so clear nights can cool toward a radiative equilibrium well below the day's baseline, while overcast nights barely can); and relaxation toward a latitude-based seasonal baseline standing in for the boundary-layer mixing and advection the model doesn't resolve. That relaxation weakens on calm nights — stable air decouples from the layers above, which is what lets a still, clear night dig a deep minimum that a windy night cannot. Total sunlight under your cloud fraction follows the published Kasten &amp; Czeplak (1980) relation; the direct beam uses the Meinel clear-sky airmass formula, and switches off whenever a simulated cloud is over the sun's disc — a random on/off gate whose average matches your cloud slider, so a half-cloudy sky flickers the way real broken sky does. (The gate drives the wall exposure's direct beam and damps daytime turbulence while the sun is hidden; the day's total sunshine — and the screen radiation errors scaled by it — follows the smooth cloud-fraction relation.)</p>
+                <p>On top of that sits small, fast turbulence (a mean-reverting random wiggle, stronger in daytime convection) — the tenths-of-a-degree texture real air has, the part of the signal that response times and sampling schedules act on. All randomness is seeded: the "weather number" printed on your receipt replays the identical day, so shared links reproduce exactly.</p>
+              </div>
+            </details>
+            <details class="expander">
+              <summary>What the shelters do</summary>
+              <div class="expander-body">
+                <p>An instrument never measures "the air" — it measures the air inside its shelter. Each shelter here is a lag (its own thermal response time) plus the radiation and ventilation behaviour documented for its class: the naturally-ventilated louvred screen carries an insolation-scaled daytime excess and nighttime deficit, both largest in calm and shrinking with wind; the fan-aspirated shield is designed to hold both near zero and to be indifferent to the outside wind; and the wall exposure couples the sensor to a building's hours-long thermal memory, restricts its view of the night sky, and receives whatever direct sun the wall's orientation actually admits — computed from the sun's real position at your latitude and date, not assumed. Whether a poleward-facing wall ever sees the sun depends on where and when you shop.</p>
+                <p>The wind regime you pick feeds all of this: naturally-ventilated lags stretch and radiation errors grow as the air stills, gusts make ventilation flicker, and the whole scaling is clamped to the ranges the cited intercomparisons cover — no regime extrapolates beyond them.</p>
+              </div>
+            </details>
+            <details class="expander">
+              <summary>What the instruments do</summary>
+              <div class="expander-body">
+                <p>Each instrument is a thermal lag (how long its sensing mass takes to follow the shelter air), a reading resolution (the finest step it is read to), and a registration scheme: mechanical min/max indexes that ride the liquid and need a small push to move, read and reset once daily; a logger keeping the highest and lowest instantaneous sample; or a logger keeping the highest and lowest block average.</p>
+                <p>One more thing is modelled because it is on every card: tolerance. A tolerance of ±0.3&nbsp;°C means any individual unit may read up to 0.3&nbsp;°C high or low across its scale. At checkout, each unit you buy draws its own fixed scale error at random within its tolerance — seeded separately from the weather, so re-running an order or re-rolling the weather number keeps the same physical units, and a shared link delivers the same units to whoever opens it. You know the tolerance you paid for, not the error you got. Buy two of the same item and you get two different units.</p>
+              </div>
+            </details>
+            <details class="expander">
+              <summary>What "the average of the air itself" means here</summary>
+              <div class="expander-body">
+                <p>The average of every one of the day's 8,640 ten-second air-temperature samples. Historically, (Tmax+Tmin)/2 and this integrated average have both served as definitions of "the day's temperature" — which one a record uses is a convention, and how much the two differ (and when, and which way) is one of the things this lab leaves to you. No thermometer in the shop measures the integrated average. The simulation knows it only because the simulation generated the air; that is the one honest advantage synthetic weather buys, and the receipt's final line uses it.</p>
+              </div>
+            </details>
+            <details class="expander">
+              <summary>What is deliberately left out</summary>
+              <div class="expander-body">
+                <p>Weather systems (the wind regime and cloud fraction you pick hold for the whole day — no fronts, no diurnal wind cycle); observation time of day (every register here is read and reset at local midnight, so all items cover the identical 24 hours — the time-of-observation problem in real records is its own large subject); precipitation, frost, and dew on sensors; instrument aging and drift; screen paint weathering; site moves; and the assumption that your equipment survives whatever you order — a hurricane here changes the ventilation physics, not the mounting bolts. Each of these matters in real records; none is simulated, and nothing on the receipt reflects them.</p>
+              </div>
+            </details>
+            <details class="expander">
+              <summary>About the three shelters</summary>
+              <div class="expander-body">
+                <dl class="sources-list">
+                  {EXPOSURES.map((exp) => (
+                    <>
+                      <dt>{exp.label}</dt>
+                      <dd>{exp.blurb} <em>({exp.citation})</em></dd>
+                    </>
+                  ))}
+                </dl>
+              </div>
+            </details>
+            <details class="expander">
+              <summary>Questions you might take shopping (written before we computed any answers)</summary>
+              <div class="expander-body">
+                <ul>
+                  <li>Buy two units of the same item, same shelter. Do their receipts agree? Within what?</li>
+                  <li>Run the same cart on a clear day and an overcast one. Which parts of the receipt move — Tmax, Tmin, both, neither?</li>
+                  <li>Hold the instrument fixed and vary only the shelter, then hold the shelter fixed and vary only the instrument. Which choice moved your receipt more?</li>
+                  <li>Rank your items by how close each midpoint lands to the true mean. Does the ranking follow instrument age? Shelter? Sampling schedule? Does it hold on a different day?</li>
+                  <li>Take the same cart to a different latitude, or the opposite season, or the other hemisphere — does whatever pattern you found travel?</li>
+                  <li>Re-roll the weather with everything else fixed. How much of what you concluded survives a different draw of the same sky?</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </details>
+        <div class="primary-cta-row">
+          <button type="button" class="primary-cta" id="browseBtn">Browse our catalogue</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Screen: The shop ────────────────────────────────────────── -->
+    <section class="lab-section" id="shop" aria-labelledby="shop-heading" hidden>
+      <div class="container">
+        <button type="button" class="screen-back" id="backToIntro">← About this lab (the weather is simulated; the instrument specs are real)</button>
+        <div class="prose">
+          <h2 id="shop-heading">The catalogue</h2>
+        </div>
+        <div class="shop-toolbar">
+          <p class="shop-note">Pick your instruments. Min order size 2, max 4.</p>
+          <div class="sort-dd">
+            <button type="button" class="sort-btn" id="sortBtn" aria-haspopup="listbox" aria-expanded="false">
+              <span class="sort-btn-label">Sort by:</span> Random <span aria-hidden="true" class="sort-caret">▾</span>
+            </button>
+            <ul class="sort-menu" id="sortMenu" role="listbox" aria-label="Sort products" hidden>
+              <li>
+                <button type="button" class="sort-option" role="option" aria-selected="true" id="sortRandom">Random</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="shop-grid" id="shopGrid">
+          {CATALOGUE.map((inst) => (
+            <article class="product-card" data-instrument-id={inst.id}>
+              <div class="product-head">
+                <span class="product-kind">{inst.kind}</span>
+                <span class="product-era">{inst.era}</span>
+              </div>
+              <div class="product-illust" set:html={ILLUSTRATIONS[inst.id]} />
+              <h3 class="product-name">
+                <button type="button" class="card-name-btn" aria-haspopup="dialog">{inst.name}</button>
+              </h3>
+            </article>
+          ))}
+        </div>
+
+        <!-- Product drawer: bottom sheet on mobile, right-hand drawer on
+             desktop. One dialog, populated from the catalogue on open. -->
+        <dialog id="productDrawer" class="product-drawer" aria-labelledby="drawerName">
+          <div class="drawer-inner">
+            <div class="drawer-topbar">
+              <span class="product-kind" id="drawerKind"></span>
+              <button type="button" class="drawer-close" id="drawerClose" aria-label="Close product details">✕</button>
+            </div>
+            <div class="product-illust drawer-illust" id="drawerIllust" aria-hidden="true"></div>
+            <h3 class="product-name" id="drawerName"></h3>
+            <p class="product-era drawer-era" id="drawerEra"></p>
+            <h4 class="drawer-section-title">The story</h4>
+            <p class="product-blurb" id="drawerBlurb"></p>
+            <h4 class="drawer-section-title">How it behaves</h4>
+            <dl class="spec-grid" id="drawerSpecs"></dl>
+            <p class="product-citation" id="drawerCitation"></p>
+            <div class="drawer-customise">
+              <h4 class="drawer-section-title drawer-customise-title">Customise your thermometer</h4>
+              <p class="exposure-picker-label">Choose a shelter — shown in random order, none pre-selected:</p>
+              <div class="exposure-cards" id="drawerExposures">
+                {EXPOSURES.map((exp) => (
+                  <button type="button" class="exposure-card" data-exposure-id={exp.id} aria-pressed="false">
+                    <span class="exposure-card-name">{exp.label}</span>
+                    <span class="exposure-card-desc">{exp.cardLine}</span>
+                    <span class="exposure-card-check" aria-hidden="true">✓</span>
+                  </button>
+                ))}
+              </div>
+              <button type="button" class="add-btn" id="drawerAdd" hidden>Add to cart</button>
+              <p class="add-hint" id="drawerHint"></p>
+            </div>
+          </div>
+        </dialog>
+      </div>
+    </section>
+
+    <!-- Sticky cart bar: visible through the shopping phase, retires once
+         the reader checks out and the shipping step takes over. -->
+    <div class="cart-bar" id="cartBar">
+      <div class="container cart-bar-inner">
+        <span class="cart-bar-count" id="cartBarCount">Cart is empty</span>
+        <div class="cart-bar-actions">
+          <button type="button" class="mini-tool cart-bar-edit" id="editCartBtn" aria-haspopup="dialog">Edit cart</button>
+          <button type="button" class="primary-cta cart-bar-checkout" id="checkoutBtn" disabled>Check out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cart modal: line items with remove buttons. -->
+    <dialog id="cartModal" class="cart-modal" aria-labelledby="cart-modal-heading">
+      <div class="drawer-inner">
+        <div class="drawer-topbar">
+          <h3 id="cart-modal-heading" class="cart-modal-title">Your cart</h3>
+          <button type="button" class="drawer-close" id="cartModalClose" aria-label="Close cart">✕</button>
+        </div>
+        <p class="cart-empty" id="cartEmpty">Nothing in the cart yet — add 2 to 4 items from the catalogue.</p>
+        <table class="order-table" id="cartTable" hidden>
+          <thead>
+            <tr><th scope="col">Item</th><th scope="col">Shelter</th><th scope="col" class="order-table-actions"><span class="visually-hidden">Remove</span></th></tr>
+          </thead>
+          <tbody id="cartLines"></tbody>
+        </table>
+        <p class="cart-count" id="cartCount" hidden></p>
+      </div>
+    </dialog>
+
+    <!-- ── Section: Shipping ───────────────────────────────────────── -->
+    <section class="lab-section" id="shipping" aria-labelledby="shipping-heading" hidden>
+      <div class="container">
+        <button type="button" class="screen-back" id="backToShop">← Back to the catalogue</button>
+        <div class="prose">
+          <h2 id="shipping-heading">Shipping</h2>
+          <p>Your instruments ship to a latitude and a day, not a street address — only the latitude enters the simulation, not the named city's weather. Settings start at random values on every visit; change them freely, before or after dispatch.</p>
+        </div>
+
+        <div class="section-card ship-order-card">
+          <h3 class="ship-order-title">Your order</h3>
+          <table class="order-table">
+            <thead>
+              <tr><th scope="col">Item</th><th scope="col">Shelter</th><th scope="col" class="order-table-actions"><span class="visually-hidden">Remove</span></th></tr>
+            </thead>
+            <tbody id="shipOrderBody"></tbody>
+          </table>
+          <p class="cart-count" id="shipSummary"></p>
+        </div>
+
+        <div class="param-grid day-controls">
+          <div class="param-row">
+            <label for="locationSelect">Deliver to (listed pole to pole)</label>
+            <select id="locationSelect" class="location-select">
+              {LOCATIONS.map((loc) => <option value={loc.id}>{loc.label}</option>)}
+            </select>
+          </div>
+          <div class="param-row">
+            <label for="shipMonth">Delivery date (no year — one generic, non-leap year of sun geometry)</label>
+            <!-- No authored selection: fresh visits get a randomized date
+                 from the init script, and an authored default would
+                 contradict the "start at random values" disclosure pre-JS. -->
+            <div class="ship-date-row">
+              <select id="shipMonth" class="ship-date" aria-label="Delivery month"></select>
+              <select id="shipDay" class="ship-date" aria-label="Delivery day of month"></select>
+            </div>
+          </div>
+          <div class="param-row wind-row">
+            <span class="wind-row-label" id="cloudRowLabel">Cloud cover</span>
+            <div class="wind-btns" id="cloudBtns" role="group" aria-labelledby="cloudRowLabel">
+              {CLOUD_LEVELS.map((c) => (
+                <button type="button" class="wind-btn cloud-btn" data-cloud={String(c)}>
+                  <span class="wind-icon" aria-hidden="true" set:html={CLOUD_ICONS[c]} />
+                  <span class="wind-btn-text">
+                    <span class="wind-btn-name">{c}%</span>
+                  </span>
+                  <span class="wind-check" aria-hidden="true">✓</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div class="param-row wind-row">
+            <span class="wind-row-label" id="windRowLabel">Wind (one steady regime for the whole day, with gusts)</span>
+            <div class="wind-btns" role="group" aria-labelledby="windRowLabel">
+              {WIND_REGIMES.map((w) => (
+                <button type="button" class="wind-btn" data-wind-id={w.id}>
+                  <span class="wind-icon" aria-hidden="true" set:html={WIND_ICONS[w.id]} />
+                  <span class="wind-btn-text">
+                    <span class="wind-btn-name">{w.label}</span>
+                    <span class="wind-detail">{w.detail}</span>
+                  </span>
+                  <span class="wind-check" aria-hidden="true">✓</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <details class="expander">
+          <summary>Advanced simulation controls</summary>
+          <div class="expander-body">
+            <div class="weather-row">
+              <span class="advanced-label">Weather seed</span>
+              <span class="control-readout" id="weatherSeedLabel">—</span>
+              <button type="button" class="mini-tool" id="rerollWeather">New weather, same settings</button>
+            </div>
+            <p class="chart-caption">All of the day's randomness — gusts, cloud gaps, turbulence — is generated from this number, so the same seed with the same settings replays the identical day and shared links reproduce exactly. "New weather" keeps your settings (and your exact instruments) and deals a different day of the same kind.</p>
+          </div>
+        </details>
+
+        <div class="primary-cta-row">
+          <button type="button" class="primary-cta" id="deliverBtn">Dispatch order</button>
+          <p class="primary-cta-hint" id="deliverHint">Sends your instruments out into the simulated day.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section: Track your shipment (the live chart) ───────────── -->
+    <section class="lab-section" id="tracking" aria-labelledby="tracking-heading" hidden>
+      <div class="container">
+        <button type="button" class="screen-back" id="backToShipping">← Change the delivery</button>
+        <div class="prose">
+          <h2 id="tracking-heading">Track your shipment</h2>
+          <p>Your instruments are out in the delivery day. Each trace is one item's own reading, drawn as its day unfolds — every item is sitting in the <em>same simulated air</em>.</p>
+        </div>
+        <div class="chart-bleed" style="margin-top:1.25rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-container" id="dayChartContainer" role="img" aria-label="Chart of each purchased instrument's temperature through the simulated day">
+              <canvas id="dayChart" style="display:block; width:100%; height:100%;"></canvas>
+            </div>
+            <div id="dayChartLegend"></div>
+            <p class="chart-caption">Local solar time. Shaded bands: warm tint marks daylight; the darker tint marks night. Toggle series in the legend.</p>
+          </div>
+        </div>
+
+        <details class="expander" style="margin-top:1rem">
+          <summary>Hourly readings table (data fallback for the chart)</summary>
+          <div class="expander-body">
+            <div class="receipt-table-wrap">
+              <table class="receipt-table" id="hourlyTable">
+                <thead id="hourlyHead"></thead>
+                <tbody id="hourlyBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <div class="primary-cta-row">
+          <button type="button" class="primary-cta" id="viewReceiptBtn" disabled>View your receipt</button>
+          <p class="primary-cta-hint" id="viewReceiptHint">Enables when the day finishes drawing.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section: The receipt ────────────────────────────────────── -->
+    <section class="lab-section" id="receipt" aria-labelledby="receipt-heading" hidden>
+      <div class="container">
+        <button type="button" class="screen-back" id="backToTracking">← Back to the tracking chart</button>
+        <div class="prose">
+          <h2 id="receipt-heading">Your receipt</h2>
+          <p>Each line shows what that item wrote down: its registered maximum, its registered minimum, and the midpoint (Tmax+Tmin)/2 — the quantity daily records are built from.</p>
+        </div>
+        <div class="section-card receipt-card">
+          <div class="receipt-head">
+            <span class="receipt-title">DELIVERY CONFIRMATION</span>
+            <span class="receipt-meta" id="receiptMeta"></span>
+          </div>
+          <div class="receipt-table-wrap">
+            <table class="receipt-table" aria-describedby="receipt-heading">
+              <thead>
+                <tr><th scope="col">Item</th><th scope="col">Shelter</th><th scope="col">Tmax (°C)</th><th scope="col">Tmin (°C)</th><th scope="col">Midpoint (°C)</th></tr>
+              </thead>
+              <tbody id="receiptBody"></tbody>
+              <tfoot id="receiptFoot" hidden>
+                <tr class="receipt-truth-row">
+                  <th scope="row" colspan="2">24-hour average of the air itself (all 8,640 samples)</th>
+                  <td class="receipt-truth-dash">—</td>
+                  <td class="receipt-truth-dash">—</td>
+                  <td id="receiptTrueMean"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <p class="receipt-footer" id="receiptFooter">*** THANK YOU FOR MEASURING WITH US ***</p>
+        </div>
+
+        <div class="primary-cta-row" id="truthPromptRow">
+          <button type="button" class="primary-cta" id="revealTruth">Rate your purchase</button>
+          <p class="primary-cta-hint">Compare every item with the one reading nobody sells: the air itself, which the simulation knows and no instrument records.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section: The true mean ──────────────────────────────────── -->
+    <section class="lab-section" id="truth" aria-labelledby="truth-heading" hidden>
+      <div class="container">
+        <button type="button" class="screen-back" id="backToReceipt">← Back to the receipt</button>
+        <div class="prose">
+          <h2 id="truth-heading">Rate your purchase</h2>
+          <p>The simulation knows what no instrument records: the air itself, sampled every 10 seconds. How your items compare is yours to judge — different carts, days, and skies can answer differently.</p>
+        </div>
+        <div class="section-card rating-table-card">
+          <table class="order-table air-stats-table">
+            <tbody>
+              <tr><th scope="row">24-h average of the air</th><td id="truthMean">—</td></tr>
+              <tr><th scope="row">24-h median of the air</th><td id="truthMedian">—</td></tr>
+              <tr><th scope="row">Warmest instant (10-s sample)</th><td id="truthMax">—</td></tr>
+              <tr><th scope="row">Coldest instant (10-s sample)</th><td id="truthMin">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-card rating-table-card">
+          <div class="receipt-table-wrap">
+            <table class="receipt-table" aria-label="Each item's midpoint compared with the air's true median and average">
+              <thead>
+                <tr><th scope="col">Item</th><th scope="col">Shelter</th><th scope="col">Midpoint (°C)</th><th scope="col">− air median (°C)</th><th scope="col">− air average (°C)</th></tr>
+              </thead>
+              <tbody id="ratingBody"></tbody>
+            </table>
+          </div>
+          <p class="chart-caption">Signed differences: each item's (Tmax+Tmin)/2 midpoint minus the air's own median and average.</p>
+        </div>
+        <div class="chart-bleed" style="margin-top:1.25rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-container" id="truthChartContainer" role="img" aria-label="Chart of each purchased instrument's temperature with the air itself overlaid">
+              <canvas id="truthChart" style="display:block; width:100%; height:100%;"></canvas>
+            </div>
+            <div id="truthChartLegend"></div>
+            <p class="chart-caption">The same day again — with the air itself (dashed) behind what your items read. Toggle series in the legend.</p>
+          </div>
+        </div>
+
+        <div id="runHistorySection" hidden>
+          <p class="chart-caption run-history-placeholder" id="runHistoryPlaceholder"><em>If you change your cart or the day and check out again, a table of all your orders will be kept here so you can compare them.</em></p>
+          <div id="runHistoryContent" hidden>
+            <div class="prose">
+              <h3>Your orders so far</h3>
+              <p class="chart-caption">Every checkout is added here. Cleared if you reload or reset the lab.</p>
+            </div>
+            <div class="run-history-scroll section-card">
+              <table class="run-history-table">
+                <thead>
+                  <tr><th>#</th><th>Day settings</th><th>Items (Tmax / Tmin / midpoint °C)</th><th>Air 24-h avg (°C)</th></tr>
+                </thead>
+                <tbody id="runHistoryBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Data sources ────────────────────────────────────────────── -->
+    <section class="lab-section" id="sources">
+      <div class="container">
+        <details class="expander sources-expander">
+          <summary>Data sources &amp; methodology</summary>
+          <div class="expander-body">
+            <dl class="sources-list">
+              <dt>The synthetic weather (methodology, not a data source)</dt>
+              <dd>The day itself is generated, not measured: a single-layer energy balance relaxed toward a latitude-based seasonal baseline, with seeded stochastic cloud gating and turbulence. Its magnitudes are tuned to plausible screen-level diurnal behaviour, and it is not a reconstruction of any real location or date. Radiation pieces use the two published relations below; everything else in the weather generator is this lab's own simplification, stated in "How the simulated day is generated" above.</dd>
+              <dt>Cloud transmission — Kasten &amp; Czeplak (1980)</dt>
+              <dd>"Solar and terrestrial radiation dependent on the amount and type of cloud," <em>Solar Energy</em>, 24(2), 177–189. <a href="https://doi.org/10.1016/0038-092X(80)90391-6" target="_blank" rel="noopener">doi:10.1016/0038-092X(80)90391-6</a> — global-irradiance-vs-cloud-fraction relation.</dd>
+              <dt>Clear-sky downwelling longwave — Swinbank (1963)</dt>
+              <dd>"Long-wave radiation from clear skies," <em>Q. J. Royal Meteorological Society</em>, 89(381), 339–348. <a href="https://doi.org/10.1002/qj.49708938105" target="_blank" rel="noopener">doi:10.1002/qj.49708938105</a> — the clear-sky sky-radiation formula the night-time cooling balance runs against; the cloud enhancement applied to it is this lab's simplification within the standard family of such corrections.</dd>
+              <dt>Clear-sky direct beam — Meinel &amp; Meinel (1976)</dt>
+              <dd><em>Applied Solar Energy: An Introduction</em>, Addison-Wesley — airmass attenuation formula for the direct beam striking the wall exposure.</dd>
+              <dt>Instrument response times, tolerances, and Tmax/Tmin definitions — WMO CIMO Guide</dt>
+              <dd>WMO-No. 8, <em>Guide to Instruments and Methods of Observation</em>, Vol. I, Ch. 2 (Measurement of temperature). <a href="https://library.wmo.int/idurl/4/68695" target="_blank" rel="noopener">library.wmo.int</a> — thermometer time constants, tolerances, screen behaviour, and the 1-minute-mean definition of daily extremes.</dd>
+              <dt>Historical exposures — Parker (1994)</dt>
+              <dd>"Effects of changing exposure of thermometers at land stations," <em>Int. J. Climatology</em>, 14(1), 1–31. <a href="https://doi.org/10.1002/joc.3370140102" target="_blank" rel="noopener">doi:10.1002/joc.3370140102</a> — documented behaviour of pre-screen wall/window and stand exposures; basis for the wall-exposure model's mechanisms and magnitudes.</dd>
+              <dt>Screen vs. aspirated behaviour — van der Meulen &amp; Brandsma (2008)</dt>
+              <dd>"Thermometer screen intercomparison in De Bilt (The Netherlands), Part I: Understanding the weather-dependent temperature differences," <em>Int. J. Climatology</em>, 28(3), 371–387. <a href="https://doi.org/10.1002/joc.1531" target="_blank" rel="noopener">doi:10.1002/joc.1531</a> — field magnitudes of naturally-ventilated screen radiation errors.</dd>
+              <dt>Reference-network practice — Diamond et al. (2013)</dt>
+              <dd>"U.S. Climate Reference Network after one decade of operations," <em>Bull. Amer. Meteor. Soc.</em>, 94(4), 485–498. <a href="https://doi.org/10.1175/BAMS-D-12-00170.1" target="_blank" rel="noopener">doi:10.1175/BAMS-D-12-00170.1</a> — aspirated PRT design and 5-minute averaging.</dd>
+              <dt>PRT tolerance classes — IEC 60751</dt>
+              <dd><em>Industrial platinum resistance thermometers and platinum temperature sensors</em>, IEC 60751 — Class A/AA tolerance values used on the platinum cards.</dd>
+              <dt>Product illustrations</dt>
+              <dd>Original schematic drawings made for this site — illustrative, not to scale, and not depictions of specific museum instruments.</dd>
+              <dt>Early instrument history — Middleton (1966); Austin &amp; McConnell (1980)</dt>
+              <dd>W.E.K. Middleton, <em>A History of the Thermometer and Its Use in Meteorology</em>, Johns Hopkins Press; J. Austin &amp; A. McConnell, "James Six F.R.S. — two hundred years of the Six's self-registering thermometer," <em>Notes and Records of the Royal Society</em>, 35 (1980) — Six-pattern design, era manufacture and calibration practice behind the two older liquid-in-glass cards.</dd>
+            </dl>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <style>
+    .screen-back {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      margin-bottom: 0.5rem;
+      padding: 0;
+      background: none;
+      border: none;
+      color: var(--text-secondary, #999);
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-align: left;
+    }
+    .screen-back:hover { color: var(--accent, #d4a855); }
+    @media (prefers-reduced-motion: no-preference) {
+      .screen-in { animation: screen-in 0.25s ease-out; }
+      @keyframes screen-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: none; }
+      }
+    }
+    .shop-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .shop-note { margin: 0; }
+    .sort-dd { position: relative; }
+    .sort-btn {
+      min-height: 44px;
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border, rgba(128,128,128,0.4));
+      background: transparent;
+      color: var(--text-primary, inherit);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .sort-btn-label { color: var(--text-secondary, #888); }
+    .sort-caret { color: var(--text-secondary, #888); }
+    .sort-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 4px);
+      z-index: 30;
+      margin: 0;
+      padding: 0.25rem;
+      list-style: none;
+      min-width: 150px;
+      background: var(--bg, #0a1628);
+      border: 1px solid var(--border, rgba(128,128,128,0.4));
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .sort-option {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-height: 44px;
+      padding: 0.4rem 0.75rem;
+      background: none;
+      border: none;
+      border-radius: 6px;
+      color: var(--text-primary, inherit);
+      font-size: 0.85rem;
+      text-align: left;
+      cursor: pointer;
+    }
+    .sort-option:hover { background: color-mix(in srgb, var(--accent, #d4a855) 12%, transparent); }
+    .sort-option::after { content: '✓'; margin-left: auto; color: var(--accent, #d4a855); }
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+    .product-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 1rem;
+      border: 1px solid var(--border, rgba(128,128,128,0.3));
+      border-radius: 10px;
+      background: var(--bg-elevated, rgba(128,128,128,0.05));
+    }
+    .product-illust {
+      display: flex;
+      justify-content: center;
+      color: var(--text-secondary, #9aa3b2);
+      margin: 0.15rem 0;
+    }
+    .product-illust :global(svg) {
+      width: min(180px, 70%);
+      height: auto;
+    }
+    .product-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary, #888);
+    }
+    .product-era { font-family: var(--font-mono, monospace); }
+    .product-name { margin: 0; font-size: 1.05rem; }
+    .product-card {
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.15s ease, opacity 0.15s ease;
+    }
+    .product-card:hover, .product-card:focus-within {
+      border-color: var(--accent, #d4a855);
+    }
+    /* The product name is the card's real button, stretched invisibly over
+       the whole card — no separate Add button needed, and keyboard/screen
+       readers get the product name as the control's label. */
+    .card-name-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      font: inherit;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .card-name-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+    }
+    .card-name-btn:focus-visible::after {
+      outline: 2px solid var(--accent, #d4a855);
+      outline-offset: 2px;
+      border-radius: 10px;
+    }
+    /* Hover focus: dim the cards you are not considering (hover-capable
+       pointers only — touch would leave a stale dim behind). */
+    @media (hover: hover) {
+      .shop-grid:hover .product-card:not(:hover) { opacity: 0.55; }
+      .exposure-cards:hover .exposure-card:not(:hover):not(.active) { opacity: 0.55; }
+    }
+    .product-blurb { margin: 0 0 0.4rem; font-size: 0.88rem; color: var(--text-secondary, #999); }
+    .product-specs {
+      margin: 0.25rem 0;
+      padding-left: 1.1rem;
+      font-size: 0.82rem;
+    }
+    .product-specs li { margin: 0.15rem 0; }
+    .product-citation {
+      margin: 0;
+      font-size: 0.75rem;
+      color: var(--text-secondary, #888);
+      font-style: italic;
+    }
+    .exposure-picker-label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-secondary, #888);
+      margin-bottom: 0.35rem;
+    }
+    /* Apple-configurator-style option cards: stacked full-width, name +
+       always-visible description (hover text is useless on mobile). */
+    .exposure-cards { display: flex; flex-direction: column; gap: 0.55rem; }
+    .exposure-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+      width: 100%;
+      min-height: 44px;
+      padding: 0.75rem 2.4rem 0.75rem 0.9rem;
+      text-align: left;
+      font-size: 0.9rem;
+      border-radius: 12px;
+      border: 1px solid var(--border, rgba(128,128,128,0.4));
+      background: transparent;
+      color: var(--text-primary, inherit);
+      cursor: pointer;
+      transition: opacity 0.15s ease, border-color 0.15s ease;
+    }
+    .exposure-card.active {
+      border-color: var(--accent, #d4a855);
+      background: color-mix(in srgb, var(--accent, #d4a855) 10%, transparent);
+    }
+    .exposure-card-name { font-weight: 600; }
+    .exposure-card-desc { font-size: 0.8rem; color: var(--text-secondary, #999); }
+    .exposure-card-check {
+      position: absolute;
+      top: 0.65rem;
+      right: 0.8rem;
+      width: 1.35rem;
+      height: 1.35rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--accent, #d4a855);
+      color: var(--bg, #0a1628);
+      font-size: 0.8rem;
+      font-weight: 700;
+      opacity: 0;
+      transform: scale(0.6);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    .exposure-card.active .exposure-card-check {
+      opacity: 1;
+      transform: scale(1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .exposure-card-check { transition: none; transform: none; }
+      .exposure-card, .product-card { transition: none; }
+    }
+    .add-btn {
+      min-height: 44px;
+      border-radius: 8px;
+      border: 1px solid var(--accent, #d4a855);
+      background: transparent;
+      color: var(--accent, #d4a855);
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0.5rem 0.9rem;
+    }
+    .add-btn:disabled {
+      border-color: var(--border, rgba(128,128,128,0.35));
+      color: var(--text-secondary, #888);
+      cursor: not-allowed;
+    }
+    .add-hint { margin: 0; font-size: 0.75rem; color: var(--text-secondary, #888); }
+
+    /* ── Dialogs: product drawer + cart modal ─────────────────────── */
+    .product-drawer, .cart-modal {
+      border: 1px solid var(--border, rgba(128,128,128,0.35));
+      padding: 0;
+      background: var(--bg, #0a1628);
+      color: var(--text-primary, inherit);
+      width: 100%;
+      max-width: 100%;
+      margin: auto 0 0 0;
+      max-height: 88dvh;
+      border-radius: 14px 14px 0 0;
+    }
+    .product-drawer::backdrop, .cart-modal::backdrop {
+      background: rgba(4, 10, 22, 0.55);
+    }
+    .drawer-inner { padding: 1.1rem 1.25rem 1.5rem; overflow-y: auto; max-height: inherit; display: flex; flex-direction: column; gap: 0.55rem; }
+    .drawer-topbar { display: flex; justify-content: space-between; align-items: center; }
+    .drawer-close {
+      min-height: 44px;
+      min-width: 44px;
+      border: 1px solid var(--border, rgba(128,128,128,0.4));
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-secondary, #999);
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .drawer-illust :global(svg) { width: min(220px, 60%); }
+    .drawer-era { margin: 0; font-family: var(--font-mono, monospace); font-size: 0.8rem; color: var(--text-secondary, #888); }
+    .drawer-customise {
+      margin-top: 0.5rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed var(--border, rgba(128,128,128,0.35));
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .drawer-customise h4 { margin: 0; font-size: 0.95rem; }
+    .drawer-section-title {
+      margin: 0.6rem 0 0;
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--border, rgba(128,128,128,0.3));
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-secondary, #888);
+    }
+    .drawer-customise-title { border-top: none; padding-top: 0; }
+    .spec-grid {
+      margin: 0;
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      column-gap: 1rem;
+      row-gap: 0.35rem;
+      font-size: 0.85rem;
+    }
+    .spec-grid dt { color: var(--text-secondary, #888); }
+    .spec-grid dd { margin: 0; }
+    .cart-modal-title { margin: 0; font-size: 1.05rem; }
+    @media (min-width: 760px) {
+      .product-drawer, .cart-modal {
+        margin: 0 0 0 auto;
+        height: 100dvh;
+        max-height: 100dvh;
+        width: min(430px, 92vw);
+        border-radius: 0;
+        border-top: none;
+        border-bottom: none;
+        border-right: none;
+      }
+      .cart-modal { height: auto; max-height: 100dvh; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .product-drawer[open], .cart-modal[open] { animation: drawer-in 0.22s ease-out; }
+      @keyframes drawer-in {
+        from { transform: translateY(24px); opacity: 0.6; }
+        to { transform: none; opacity: 1; }
+      }
+      @media (min-width: 760px) {
+        @keyframes drawer-in {
+          from { transform: translateX(36px); opacity: 0.6; }
+          to { transform: none; opacity: 1; }
+        }
+      }
+    }
+
+    /* ── Sticky cart bar ──────────────────────────────────────────── */
+    .cart-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 40;
+      background: var(--bg, #0a1628);
+      border-top: 1px solid var(--border, rgba(128,128,128,0.35));
+      padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    }
+    .cart-bar[hidden] { display: none; }
+    .cart-bar-inner { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+    .cart-bar-count { font-size: 0.9rem; color: var(--text-secondary, #aaa); }
+    .cart-bar-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .cart-bar-checkout { min-height: 44px; }
+    /* Keep page content clear of the fixed bar while it is shown. */
+    body.cart-bar-visible main { padding-bottom: 92px; }
+
+    /* ── Shipping controls ────────────────────────────────────────── */
+    .ship-date {
+      min-height: 44px;
+      padding: 0.4rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid var(--border, rgba(128,128,128,0.4));
+      background: var(--bg-elevated, transparent);
+      color: var(--text-primary, inherit);
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+    .ship-date-row { display: flex; gap: 0.5rem; }
+    .ship-order-line { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .wind-row-label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 0.4rem;
+    }
+    .wind-btns { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .wind-btn {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      min-height: 44px;
+      min-width: 76px;
+      padding: 0.55rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border, rgba(128,128,128,0.4));
+      background: transparent;
+      color: var(--text-primary, inherit);
+      cursor: pointer;
+    }
+    .wind-icon { display: flex; color: var(--text-secondary, #999); }
+    .wind-icon :global(svg) { width: 30px; height: 22px; }
+    .wind-btn.active .wind-icon { color: var(--accent, #d4a855); }
+    .wind-btn-text { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; text-align: center; }
+    .wind-check {
+      position: absolute;
+      top: 0.3rem;
+      right: 0.3rem;
+      width: 1.05rem;
+      height: 1.05rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--accent, #d4a855);
+      color: var(--bg, #0a1628);
+      font-size: 0.62rem;
+      font-weight: 700;
+      opacity: 0;
+      transform: scale(0.6);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    .wind-btn.active .wind-check { opacity: 1; transform: scale(1); }
+    @media (prefers-reduced-motion: reduce) {
+      .wind-check { transition: none; transform: none; }
+    }
+    .wind-btn.active {
+      border-color: var(--accent, #d4a855);
+      background: color-mix(in srgb, var(--accent, #d4a855) 14%, transparent);
+    }
+    .wind-btn-name { font-size: 0.85rem; }
+    .wind-detail { font-size: 0.72rem; color: var(--text-secondary, #888); }
+    .advanced-label { font-size: 0.9rem; }
+
+    .cart-empty { margin: 0; color: var(--text-secondary, #888); }
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+    .ship-order-card { padding: 1rem 1.25rem; margin-top: 1rem; }
+    .rating-table-card { padding: 1rem 1.25rem; margin-top: 1.25rem; }
+    .ship-order-title { margin: 0 0 0.5rem; font-size: 1rem; }
+    .cart-count { margin: 0.6rem 0 0; font-size: 0.85rem; color: var(--text-secondary, #888); }
+    .day-controls { margin-top: 1rem; }
+    .location-select {
+      min-height: 44px;
+      padding: 0.4rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid var(--border, rgba(128,128,128,0.4));
+      background: var(--bg-elevated, transparent);
+      color: var(--text-primary, inherit);
+      font-size: 0.95rem;
+    }
+    .weather-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .receipt-card {
+      padding: 1.25rem;
+      font-family: var(--font-mono, monospace);
+      background: var(--bg-elevated, rgba(128,128,128,0.04));
+    }
+    .receipt-head {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      border-bottom: 1px dashed var(--border, rgba(128,128,128,0.4));
+      padding-bottom: 0.6rem;
+      margin-bottom: 0.6rem;
+    }
+    .receipt-title { letter-spacing: 0.25em; font-size: 0.85rem; }
+    .receipt-meta { font-size: 0.78rem; color: var(--text-secondary, #888); white-space: pre-line; }
+    .receipt-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .receipt-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 520px;
+      font-size: 0.85rem;
+    }
+    .receipt-table th, .receipt-table td {
+      text-align: left;
+      padding: 0.4rem 0.6rem;
+      border-bottom: 1px solid var(--border, rgba(128,128,128,0.2));
+      white-space: nowrap;
+    }
+    .receipt-table thead th { color: var(--text-secondary, #888); }
+    .receipt-item-era { color: var(--text-secondary, #888); font-size: 0.78rem; }
+    .receipt-truth-row th, .receipt-truth-row td {
+      border-top: 2px solid var(--border, rgba(128,128,128,0.45));
+      font-weight: 600;
+    }
+    .receipt-truth-dash { color: var(--text-secondary, #888); }
+    .receipt-footer {
+      margin: 0.8rem 0 0;
+      text-align: center;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      color: var(--text-secondary, #888);
+    }
+    #runHistorySection { margin-top: 1.5rem; }
+    .run-history-scroll {
+      margin-top: 0.75rem;
+      padding: 0.5rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .run-history-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 640px;
+      font-size: 0.85rem;
+    }
+    .run-history-table th, .run-history-table td {
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border, rgba(128,128,128,0.25));
+      vertical-align: top;
+    }
+    .run-history-table th { color: var(--text-secondary, #888); font-weight: 600; }
+    .run-history-items { white-space: pre-line; font-family: var(--font-mono, monospace); font-size: 0.78rem; }
+    .chart-caption {
+      font-size: 0.8rem;
+      color: var(--text-secondary, #888);
+      margin: 0.5rem 0 0;
+    }
+  </style>
+
+  <style is:global>
+    @media print {
+      .site-header { position: static !important; }
+    }
+
+    /* Rules for elements built at runtime (order rows, receipt rows, run
+       history, trash buttons) must be global: Astro's scoped styles only
+       match elements present in the template at build time. Everything is
+       namespaced under the page's body class so nothing leaks site-wide. */
+    .lab-thermometer-shop .order-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .lab-thermometer-shop .order-table th,
+    .lab-thermometer-shop .order-table td {
+      text-align: left;
+      padding: 0.25rem 0.5rem 0.25rem 0;
+      border-bottom: 1px solid var(--border, rgba(128,128,128,0.25));
+    }
+    .lab-thermometer-shop .order-table thead th {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary, #888);
+    }
+    .lab-thermometer-shop .order-table-shelter { color: var(--text-secondary, #999); white-space: nowrap; }
+    .lab-thermometer-shop .air-stats-table th[scope='row'] {
+      font-weight: 400;
+      color: var(--text-secondary, #999);
+    }
+    .lab-thermometer-shop .air-stats-table td { font-family: var(--font-mono, monospace); }
+    .lab-thermometer-shop .order-table th.order-table-actions,
+    .lab-thermometer-shop .order-table td.order-table-actions { text-align: right; width: 44px; padding-right: 0; }
+    .lab-thermometer-shop .trash-btn {
+      /* Full 44px touch target, visually compact: the negative margin lets
+         the row stay tight while the hit area stays accessible. */
+      min-height: 44px;
+      min-width: 44px;
+      margin: -8px 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      border-radius: 8px;
+      color: var(--text-secondary, #999);
+      cursor: pointer;
+    }
+    .lab-thermometer-shop .trash-btn:hover { color: var(--danger, #d06060); }
+    .lab-thermometer-shop .receipt-table th,
+    .lab-thermometer-shop .receipt-table td {
+      text-align: left;
+      padding: 0.4rem 0.6rem;
+      border-bottom: 1px solid var(--border, rgba(128,128,128,0.2));
+      white-space: nowrap;
+    }
+    .lab-thermometer-shop .receipt-table thead th { color: var(--text-secondary, #888); }
+    .lab-thermometer-shop .receipt-item-era { color: var(--text-secondary, #888); font-size: 0.78rem; }
+    .lab-thermometer-shop .run-history-table th,
+    .lab-thermometer-shop .run-history-table td {
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border, rgba(128,128,128,0.25));
+      vertical-align: top;
+    }
+    .lab-thermometer-shop .run-history-table th { color: var(--text-secondary, #888); font-weight: 600; }
+    .lab-thermometer-shop .run-history-items { white-space: pre-line; font-family: var(--font-mono, monospace); font-size: 0.78rem; }
+  </style>
+
+  <script>
+    import {
+      runCheckout,
+      getInstrument,
+      getExposure,
+      getWindRegime,
+      LOCATIONS,
+      EXPOSURES,
+      WIND_REGIMES,
+      CATALOGUE,
+    } from '../../lib/thermometer-shop-model.js';
+    import { clamp, cssVar } from '../../lib/lab-utils.js';
+    import { sendFeatureBeacon } from '../../lib/analytics.js';
+
+    sendFeatureBeacon('labs/thermometer-shop/00-visited');
+
+    const MAX_ITEMS = 4;
+    const MIN_ITEMS = 2;
+
+    const els = {
+      shopGrid: document.getElementById('shopGrid'),
+      cartLines: document.getElementById('cartLines'),
+      cartEmpty: document.getElementById('cartEmpty'),
+      cartCount: document.getElementById('cartCount'),
+      locationSelect: document.getElementById('locationSelect'),
+      shipMonth: document.getElementById('shipMonth'),
+      shipDay: document.getElementById('shipDay'),
+      weatherSeedLabel: document.getElementById('weatherSeedLabel'),
+      rerollWeather: document.getElementById('rerollWeather'),
+      cartBar: document.getElementById('cartBar'),
+      cartBarCount: document.getElementById('cartBarCount'),
+      editCartBtn: document.getElementById('editCartBtn'),
+      checkoutBtn: document.getElementById('checkoutBtn'),
+      cartModal: document.getElementById('cartModal'),
+      cartModalClose: document.getElementById('cartModalClose'),
+      shippingSection: document.getElementById('shipping'),
+      shipSummary: document.getElementById('shipSummary'),
+      shipOrderBody: document.getElementById('shipOrderBody'),
+      cartTable: document.getElementById('cartTable'),
+      deliverBtn: document.getElementById('deliverBtn'),
+      deliverHint: document.getElementById('deliverHint'),
+      trackingSection: document.getElementById('tracking'),
+      viewReceiptBtn: document.getElementById('viewReceiptBtn'),
+      viewReceiptHint: document.getElementById('viewReceiptHint'),
+      productDrawer: document.getElementById('productDrawer'),
+      drawerKind: document.getElementById('drawerKind'),
+      drawerName: document.getElementById('drawerName'),
+      drawerEra: document.getElementById('drawerEra'),
+      drawerIllust: document.getElementById('drawerIllust'),
+      drawerBlurb: document.getElementById('drawerBlurb'),
+      drawerSpecs: document.getElementById('drawerSpecs'),
+      drawerCitation: document.getElementById('drawerCitation'),
+      drawerExposures: document.getElementById('drawerExposures'),
+      drawerAdd: document.getElementById('drawerAdd'),
+      drawerHint: document.getElementById('drawerHint'),
+      drawerClose: document.getElementById('drawerClose'),
+      receiptSection: document.getElementById('receipt'),
+      receiptMeta: document.getElementById('receiptMeta'),
+      receiptBody: document.getElementById('receiptBody'),
+      receiptFoot: document.getElementById('receiptFoot'),
+      receiptTrueMean: document.getElementById('receiptTrueMean'),
+      dayChart: document.getElementById('dayChart'),
+      dayChartLegend: document.getElementById('dayChartLegend'),
+      hourlyHead: document.getElementById('hourlyHead'),
+      hourlyBody: document.getElementById('hourlyBody'),
+      truthPromptRow: document.getElementById('truthPromptRow'),
+      revealTruth: document.getElementById('revealTruth'),
+      truthChart: document.getElementById('truthChart'),
+      truthChartLegend: document.getElementById('truthChartLegend'),
+      truthSection: document.getElementById('truth'),
+      truthMedian: document.getElementById('truthMedian'),
+      ratingBody: document.getElementById('ratingBody'),
+      truthMean: document.getElementById('truthMean'),
+      truthMax: document.getElementById('truthMax'),
+      truthMin: document.getElementById('truthMin'),
+      runHistorySection: document.getElementById('runHistorySection'),
+      runHistoryPlaceholder: document.getElementById('runHistoryPlaceholder'),
+      runHistoryContent: document.getElementById('runHistoryContent'),
+      runHistoryBody: document.getElementById('runHistoryBody'),
+    };
+
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    function dayOfYearLabel(doy) {
+      // Non-leap civil calendar, purely for display.
+      const d = new Date(Date.UTC(2001, 0, Number(doy)));
+      return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
+    }
+    // Trim trailing zeros so a 0.5 °C-resolution reading shows as "12.5",
+    // not a false-precision "12.50".
+    function fmtC(v) {
+      return String(Math.round(v * 1000) / 1000);
+    }
+    // Signed difference, always showing the sign (a "+0.00" is meaningful).
+    function fmtSigned(v) {
+      const r = Math.round(v * 100) / 100;
+      return `${r >= 0 ? '+' : '−'}${Math.abs(r).toFixed(2)}`;
+    }
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
+
+    // ── Randomised presentation (never stored in the URL) ────────────
+    // Product card order is shuffled every visit; the three shelter
+    // buttons get one shuffled order applied identically to every card.
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    shuffle([...els.shopGrid.children]).forEach((card) => els.shopGrid.appendChild(card));
+    // The "Sort by: Random" dropdown doubles as the random-order
+    // disclosure, dressed as the shop control people already know. Its one
+    // option is Random; choosing it deals the catalogue again and closes
+    // the menu.
+    {
+      const sortBtn = document.getElementById('sortBtn');
+      const sortMenu = document.getElementById('sortMenu');
+      function closeSortMenu() {
+        sortMenu.hidden = true;
+        sortBtn.setAttribute('aria-expanded', 'false');
+      }
+      sortBtn.addEventListener('click', () => {
+        const opening = sortMenu.hidden;
+        sortMenu.hidden = !opening;
+        sortBtn.setAttribute('aria-expanded', String(opening));
+      });
+      document.getElementById('sortRandom').addEventListener('click', () => {
+        shuffle([...els.shopGrid.children]).forEach((card) => els.shopGrid.appendChild(card));
+        closeSortMenu();
+        sortBtn.focus();
+      });
+      document.addEventListener('click', (e) => {
+        if (!sortMenu.hidden && !e.target.closest('.sort-dd')) closeSortMenu();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !sortMenu.hidden) {
+          closeSortMenu();
+          sortBtn.focus();
+        }
+      });
+    }
+    const exposureOrder = shuffle(EXPOSURES.map((e) => e.id));
+    exposureOrder.forEach((id) => {
+      const card = els.drawerExposures.querySelector(`[data-exposure-id="${id}"]`);
+      if (card) els.drawerExposures.appendChild(card);
+    });
+
+    // ── State ─────────────────────────────────────────────────────────
+    let cart = []; // [{instrumentId, exposureId}]
+    let hasCheckedOut = false; // reached the shipping screen at least once
+    let hasRunOnce = false; // a delivery has been simulated
+    let hasRevealedTruth = false;
+
+    // ── Screens: the SPA "pages" of the shop flow ─────────────────────
+    // One stage visible at a time (intro → shop → shipping → tracking →
+    // receipt), the way people expect a cart to move between screens.
+    // Data Sources stays outside the screen system, reachable everywhere.
+    let currentScreen = 'intro';
+    const SCREEN_GUARDS = {
+      intro: () => true,
+      shop: () => true,
+      shipping: () => cart.length >= MIN_ITEMS,
+      tracking: () => hasRunOnce,
+      receipt: () => hasRunOnce,
+      rating: () => hasRunOnce && hasRevealedTruth,
+    };
+    function refreshScreens() {
+      const hero = document.getElementById('introHero');
+      const model = document.getElementById('model');
+      const shop = document.getElementById('shop');
+      hero.hidden = currentScreen !== 'intro';
+      model.hidden = currentScreen !== 'intro';
+      shop.hidden = currentScreen !== 'shop';
+      els.shippingSection.hidden = currentScreen !== 'shipping';
+      els.trackingSection.hidden = currentScreen !== 'tracking';
+      els.receiptSection.hidden = currentScreen !== 'receipt';
+      els.truthSection.hidden = currentScreen !== 'rating';
+      const sources = document.getElementById('sources');
+      sources.hidden = currentScreen !== 'intro';
+      // The cart bar follows the cart, not the screen: it appears with the
+      // first item and stays through back-navigation on the browsing
+      // screens, retiring on the post-checkout screens.
+      const barVisible =
+        cart.length >= 1 && (currentScreen === 'intro' || currentScreen === 'shop');
+      els.cartBar.hidden = !barVisible;
+      document.body.classList.toggle('cart-bar-visible', barVisible);
+    }
+    function showScreen(id, { scroll = true, push = true } = {}) {
+      if (!SCREEN_GUARDS[id] || !SCREEN_GUARDS[id]()) return;
+      currentScreen = id;
+      refreshScreens();
+      // Re-trigger the entry animation on the now-visible stage.
+      document.querySelectorAll('.lab-section:not([hidden]), #introHero:not([hidden])').forEach((el) => {
+        el.classList.remove('screen-in');
+        void el.offsetWidth;
+        el.classList.add('screen-in');
+      });
+      // Canvases render at 0×0 while their screen is hidden — redraw all
+      // charts now that visibility has changed.
+      chartRedraws.forEach((fn) => fn());
+      if (scroll) window.scrollTo({ top: 0, behavior: scrollBehavior });
+      if (push) pushStateToUrl();
+    }
+    let lastOrder = null; // { day, results, settings }
+    const runHistory = [];
+    // Every live chart registers its redraw here; resize and theme changes
+    // re-invoke them all.
+    const chartRedraws = [];
+    window.addEventListener('resize', () => chartRedraws.forEach((fn) => fn()));
+
+    // ── URL state (versioned) ─────────────────────────────────────────
+    const URL_STATE_VERSION = '1';
+    function readStateFromUrl() {
+      const hash = location.hash.slice(1);
+      if (!hash) return null;
+      const params = new URLSearchParams(hash);
+      if (params.get('v') !== URL_STATE_VERSION) return null;
+      return {
+        items: params.get('items'),
+        loc: params.get('loc'),
+        doy: params.get('doy'),
+        cloud: params.get('cl'),
+        wind: params.get('wd'),
+        seed: params.get('wx'),
+        unitSeed: params.get('mfg'),
+        sec: params.get('sec'),
+      };
+    }
+    function pushStateToUrl() {
+      const params = new URLSearchParams();
+      params.set('v', URL_STATE_VERSION);
+      if (cart.length) params.set('items', cart.map((i) => `${i.instrumentId}.${i.exposureId}`).join('~'));
+      params.set('loc', els.locationSelect.value);
+      params.set('doy', String(dayOfYear));
+      params.set('cl', String(cloudPct));
+      params.set('wd', windId);
+      params.set('wx', String(weatherSeed));
+      params.set('mfg', String(unitSeed));
+      params.set('sec', currentScreen);
+      const hash = '#' + params.toString();
+      if (location.hash !== hash) history.replaceState(null, '', hash);
+    }
+
+    // ── Delivery controls ─────────────────────────────────────────────
+    let weatherSeed = 1 + Math.floor(Math.random() * 999999999);
+    // The manufacturing seed is separate from the weather seed on purpose:
+    // "New weather, same settings" must not silently hand the reader
+    // newly-manufactured units, or sky variability and unit variability
+    // would be indistinguishable. Fixed per visit, carried in the URL.
+    let unitSeed = 1 + Math.floor(Math.random() * 999999999);
+    let windId = 'moderate';
+    let cloudPct = 50; // one of 0/25/50/75/100
+    // Day-of-year is the model input; the yearless month/day selects are
+    // its face (a generic non-leap calendar: 365 days).
+    let dayOfYear = 180;
+
+    const MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const MONTH_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const MONTH_START = MONTH_DAYS.reduce((acc, d, i) => { acc.push((acc[i - 1] ?? 1) + (i ? MONTH_DAYS[i - 1] : 0)); return acc; }, []);
+    function doyToMonthDay(doy) {
+      let m = 0;
+      while (m < 11 && doy >= MONTH_START[m + 1]) m++;
+      return { month: m, dayOfMonth: doy - MONTH_START[m] + 1 };
+    }
+    function monthDayToDoy(month, dayOfMonth) {
+      return MONTH_START[month] + dayOfMonth - 1;
+    }
+    MONTH_FULL.forEach((name, i) => {
+      els.shipMonth.insertAdjacentHTML('beforeend', `<option value="${i}">${name}</option>`);
+    });
+    function syncDayOptions(month, selectedDay) {
+      els.shipDay.innerHTML = '';
+      for (let d = 1; d <= MONTH_DAYS[month]; d++) {
+        els.shipDay.insertAdjacentHTML('beforeend', `<option value="${d}">${d}</option>`);
+      }
+      els.shipDay.value = String(Math.min(selectedDay, MONTH_DAYS[month]));
+    }
+
+    function refreshControlReadouts() {
+      const { month, dayOfMonth } = doyToMonthDay(dayOfYear);
+      els.shipMonth.value = String(month);
+      syncDayOptions(month, dayOfMonth);
+      els.weatherSeedLabel.textContent = `#${weatherSeed}`;
+      document.querySelectorAll('[data-wind-id]').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-wind-id') === windId);
+      });
+      document.querySelectorAll('[data-cloud]').forEach((btn) => {
+        btn.classList.toggle('active', Number(btn.getAttribute('data-cloud')) === cloudPct);
+      });
+    }
+
+    // Two phases share this: during shopping it drives the sticky bar;
+    // after checkout it drives the Deliver button.
+    function markOrderChanged() {
+      const enough = cart.length >= MIN_ITEMS;
+      els.checkoutBtn.disabled = !enough;
+      els.cartBarCount.textContent =
+        cart.length === 0
+          ? 'Cart is empty — 2 to 4 items to check out'
+          : `${cart.length} of ${MAX_ITEMS} items${enough ? '' : ` — add ${MIN_ITEMS - cart.length} more`}`;
+      els.shipSummary.textContent = `${cart.length} item${cart.length === 1 ? '' : 's'} in this order.`;
+      els.deliverBtn.disabled = !enough;
+      if (!enough) {
+        els.deliverHint.textContent = `At least ${MIN_ITEMS} items are needed — go back to the catalogue to add more.`;
+      } else if (hasRunOnce) {
+        els.deliverHint.textContent = 'Order or delivery details changed — dispatch again to run the new day.';
+        els.deliverBtn.disabled = false;
+      } else {
+        els.deliverHint.textContent = 'Sends your instruments out into the simulated day.';
+      }
+      // Cart-bar visibility depends on the cart count.
+      if (typeof refreshScreens === 'function') refreshScreens();
+    }
+
+    const restored = readStateFromUrl();
+    if (restored) {
+      if (restored.loc && LOCATIONS.some((l) => l.id === restored.loc)) els.locationSelect.value = restored.loc;
+      if (restored.doy) dayOfYear = clamp(Math.round(Number(restored.doy)) || 180, 1, 365);
+      // Older links may carry any 0–100 value; snap to the nearest button.
+      if (restored.cloud !== null) cloudPct = clamp(Math.round(Number(restored.cloud) / 25) * 25, 0, 100);
+      if (restored.wind && getWindRegime(restored.wind)) windId = restored.wind;
+      if (restored.seed && Number(restored.seed) > 0) weatherSeed = Math.floor(Number(restored.seed));
+      if (restored.unitSeed && Number(restored.unitSeed) > 0) unitSeed = Math.floor(Number(restored.unitSeed));
+      if (restored.items) {
+        restored.items.split('~').slice(0, MAX_ITEMS).forEach((pair) => {
+          const [instrumentId, exposureId] = pair.split('.');
+          if (getInstrument(instrumentId) && getExposure(exposureId)) cart.push({ instrumentId, exposureId });
+        });
+      }
+    } else {
+      // Fresh visit: the delivery controls start at random values (stated
+      // on the page), so no location, season, sky, or wind is the default.
+      els.locationSelect.value = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)].id;
+      dayOfYear = 1 + Math.floor(Math.random() * 365);
+      cloudPct = 25 * Math.floor(Math.random() * 5);
+      windId = WIND_REGIMES[Math.floor(Math.random() * WIND_REGIMES.length)].id;
+    }
+
+    function onShipDateChange() {
+      const month = clamp(Number(els.shipMonth.value) || 0, 0, 11);
+      const dayOfMonth = clamp(Number(els.shipDay.value) || 1, 1, MONTH_DAYS[month]);
+      dayOfYear = clamp(monthDayToDoy(month, dayOfMonth), 1, 365);
+      refreshControlReadouts();
+      pushStateToUrl();
+      markOrderChanged();
+    }
+    els.shipMonth.addEventListener('change', onShipDateChange);
+    els.shipDay.addEventListener('change', onShipDateChange);
+    els.locationSelect.addEventListener('input', () => {
+      refreshControlReadouts();
+      pushStateToUrl();
+      markOrderChanged();
+    });
+    document.querySelectorAll('[data-wind-id]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        windId = btn.getAttribute('data-wind-id');
+        refreshControlReadouts();
+        pushStateToUrl();
+        markOrderChanged();
+      });
+    });
+    document.querySelectorAll('[data-cloud]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        cloudPct = Number(btn.getAttribute('data-cloud'));
+        refreshControlReadouts();
+        pushStateToUrl();
+        markOrderChanged();
+      });
+    });
+    els.rerollWeather.addEventListener('click', () => {
+      weatherSeed = 1 + Math.floor(Math.random() * 999999999);
+      refreshControlReadouts();
+      pushStateToUrl();
+      markOrderChanged();
+    });
+
+    // ── Product drawer ────────────────────────────────────────────────
+    let drawerInstrumentId = null;
+    let drawerExposureId = null;
+
+    function openDrawer(card) {
+      if (els.productDrawer.open) return;
+      const inst = getInstrument(card.getAttribute('data-instrument-id'));
+      if (!inst) return;
+      drawerInstrumentId = inst.id;
+      drawerExposureId = null;
+      els.drawerKind.textContent = inst.kind;
+      els.drawerName.textContent = inst.name;
+      els.drawerEra.textContent = inst.era;
+      els.drawerBlurb.textContent = inst.blurb;
+      els.drawerSpecs.replaceChildren(
+        ...inst.specs.flatMap((s) => {
+          const dt = document.createElement('dt');
+          dt.textContent = s.label;
+          const dd = document.createElement('dd');
+          dd.textContent = s.value;
+          return [dt, dd];
+        })
+      );
+      els.drawerCitation.textContent = `Specs: ${inst.citation}`;
+      const svg = card.querySelector('.product-illust svg');
+      els.drawerIllust.replaceChildren(svg ? svg.cloneNode(true) : '');
+      els.drawerExposures.querySelectorAll('.exposure-card').forEach((b) => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      const full = cart.length >= MAX_ITEMS;
+      // Add to cart stays hidden (not merely disabled) until a shelter is
+      // chosen — the choice is what completes the product.
+      els.drawerAdd.hidden = true;
+      els.drawerAdd.disabled = false;
+      els.drawerHint.textContent = full ? 'Cart is full (4 items) — remove something first.' : '';
+      els.productDrawer.showModal();
+    }
+
+    document.querySelectorAll('.product-card').forEach((card) => {
+      card.addEventListener('click', () => openDrawer(card));
+    });
+    els.drawerExposures.querySelectorAll('.exposure-card').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        drawerExposureId = btn.getAttribute('data-exposure-id');
+        els.drawerExposures.querySelectorAll('.exposure-card').forEach((b) => {
+          b.classList.toggle('active', b === btn);
+          b.setAttribute('aria-pressed', String(b === btn));
+        });
+        if (cart.length < MAX_ITEMS) {
+          els.drawerAdd.hidden = false;
+          els.drawerHint.textContent = '';
+        }
+      });
+    });
+    els.drawerAdd.addEventListener('click', () => {
+      if (!drawerInstrumentId || !drawerExposureId || cart.length >= MAX_ITEMS) return;
+      cart.push({ instrumentId: drawerInstrumentId, exposureId: drawerExposureId });
+      renderCart();
+      pushStateToUrl();
+      markOrderChanged();
+      els.drawerHint.textContent = '✓ Added to cart.';
+      els.drawerAdd.disabled = true;
+      setTimeout(() => els.productDrawer.close(), 600);
+    });
+    els.drawerClose.addEventListener('click', () => els.productDrawer.close());
+    els.productDrawer.addEventListener('click', (e) => {
+      if (e.target === els.productDrawer) els.productDrawer.close();
+    });
+
+    // ── Cart modal ────────────────────────────────────────────────────
+    function openCartModal() {
+      renderCart();
+      els.cartModal.showModal();
+    }
+    els.editCartBtn.addEventListener('click', openCartModal);
+    els.cartModalClose.addEventListener('click', () => els.cartModal.close());
+    els.cartModal.addEventListener('click', (e) => {
+      if (e.target === els.cartModal) els.cartModal.close();
+    });
+
+    const TRASH_SVG =
+      '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3.5 6h17M9.5 6V4.5h5V6M18.5 6l-1 14.5h-11L5.5 6M10 10.5v6.5M14 10.5v6.5"/></svg>';
+
+    // One order, two tables (the cart modal and the dispatch screen's order
+    // card) — both rendered from the same rows: item, shelter, trash.
+    function buildOrderRows(tbody) {
+      tbody.innerHTML = '';
+      cart.forEach((item, idx) => {
+        const inst = getInstrument(item.instrumentId);
+        const exp = getExposure(item.exposureId);
+        const tr = document.createElement('tr');
+        const tdItem = document.createElement('td');
+        tdItem.textContent = inst.name;
+        const tdExp = document.createElement('td');
+        tdExp.className = 'order-table-shelter';
+        tdExp.textContent = exp.short;
+        const tdAct = document.createElement('td');
+        tdAct.className = 'order-table-actions';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'trash-btn';
+        remove.setAttribute('aria-label', `Remove ${inst.name} (${exp.label}) from the order`);
+        remove.innerHTML = TRASH_SVG;
+        remove.addEventListener('click', () => {
+          cart.splice(idx, 1);
+          renderCart();
+          pushStateToUrl();
+          markOrderChanged();
+        });
+        tdAct.appendChild(remove);
+        tr.append(tdItem, tdExp, tdAct);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderCart() {
+      buildOrderRows(els.cartLines);
+      buildOrderRows(els.shipOrderBody);
+      els.cartEmpty.hidden = cart.length > 0;
+      els.cartTable.hidden = cart.length === 0;
+      els.cartCount.hidden = cart.length === 0;
+      els.cartCount.textContent = `${cart.length} of ${MAX_ITEMS} items — ${cart.length < MIN_ITEMS ? `add ${MIN_ITEMS - cart.length} more to check out` : 'ready to check out'}.`;
+    }
+
+    // ── Chart ─────────────────────────────────────────────────────────
+    const SERIES_COLORS = ['#d4a855', '#5b8dd9', '#66b28a', '#c96f9d'];
+
+    // maxHour clips how far into the day the series are drawn — the
+    // checkout animation sweeps it 0→24 so the traces draw themselves
+    // across the day like pens; axes and day/night shading render in full
+    // from the first frame.
+    function drawDayChart(canvas, series, day, maxHour = 24) {
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const padL = 46, padR = 14, padT = 16, padB = 36;
+      const plotW = w - padL - padR, plotH = h - padT - padB;
+
+      let yMinF = Infinity, yMaxF = -Infinity;
+      series.filter((s) => s.visible !== false).forEach((s) => {
+        for (let i = 0; i < s.values.length; i++) {
+          if (s.values[i] < yMinF) yMinF = s.values[i];
+          if (s.values[i] > yMaxF) yMaxF = s.values[i];
+        }
+      });
+      if (!isFinite(yMinF)) return;
+      const yPad = Math.max(0.5, (yMaxF - yMinF) * 0.08);
+      const yMin = yMinF - yPad, yMax = yMaxF + yPad;
+      const xMin = 0, xMax = 24;
+      const n = day.timeHours.length;
+
+      const textColor = cssVar('--text-secondary') || '#888';
+      const gridColor = cssVar('--border') || 'rgba(128,128,128,0.2)';
+      const xToPix = (x) => padL + ((x - xMin) / (xMax - xMin)) * plotW;
+      const yToPix = (y) => padT + plotH - ((y - yMin) / (yMax - yMin)) * plotH;
+
+      // Day/night shading from the day's actual sun elevation.
+      const shadeSteps = 96;
+      for (let i = 0; i < shadeSteps; i++) {
+        const hMid = ((i + 0.5) / shadeSteps) * 24;
+        const idx = Math.min(n - 1, Math.round((hMid / 24) * n));
+        const isNight = day.sunElevDeg[idx] <= 0;
+        ctx.fillStyle = isNight ? 'rgba(80,110,220,0.16)' : 'rgba(255,200,80,0.10)';
+        ctx.fillRect(xToPix((i / shadeSteps) * 24), padT, plotW / shadeSteps + 1, plotH);
+      }
+
+      ctx.font = '11px sans-serif';
+      ctx.lineWidth = 1;
+      // Y grid at nice steps.
+      const targetTicks = 6;
+      const rawStep = (yMax - yMin) / targetTicks || 1;
+      const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+      const yStep = [1, 2, 5, 10].map((m) => m * mag).find((st) => (yMax - yMin) / st <= targetTicks) || 10 * mag;
+      for (let yv = Math.ceil(yMin / yStep) * yStep; yv <= yMax + 1e-9; yv += yStep) {
+        const yPix = yToPix(yv);
+        ctx.strokeStyle = gridColor;
+        ctx.beginPath(); ctx.moveTo(padL, yPix); ctx.lineTo(padL + plotW, yPix); ctx.stroke();
+        ctx.fillStyle = textColor;
+        ctx.fillText(String(Math.round(yv * 100) / 100), 4, yPix + 4);
+      }
+      ctx.fillText('°C', 4, padT - 4);
+      for (let xv = 0; xv <= 24; xv += 6) {
+        const px = xToPix(xv);
+        ctx.strokeStyle = gridColor;
+        ctx.beginPath(); ctx.moveTo(px, padT); ctx.lineTo(px, padT + plotH); ctx.stroke();
+        ctx.fillStyle = textColor;
+        const lbl = String(xv);
+        ctx.fillText(lbl, px - ctx.measureText(lbl).width / 2, padT + plotH + 14);
+      }
+
+      // Series: decimate to ~2 points per pixel for draw speed.
+      const stride = Math.max(1, Math.floor(n / (plotW * 2)));
+      series.filter((s) => s.visible !== false).forEach((s) => {
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = s.dash ? 1.5 : 2;
+        ctx.setLineDash(s.dash ? [5, 4] : []);
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i < n; i += stride) {
+          if (day.timeHours[i] > maxHour) break;
+          const px = xToPix(day.timeHours[i]);
+          const py = yToPix(s.values[i]);
+          if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      ctx.fillStyle = textColor;
+      const xTitle = 'Local solar time (hours)';
+      ctx.fillText(xTitle, padL + Math.max(0, (plotW - ctx.measureText(xTitle).width) / 2), h - 6);
+    }
+
+    function createLegend(containerEl, seriesList, onToggle) {
+      const offBorder = cssVar('--border') || 'rgba(255,255,255,0.28)';
+      containerEl.innerHTML = '';
+      containerEl.classList.add('chart-legend');
+      seriesList.forEach((s) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'legend-btn';
+        btn.textContent = s.label;
+        function applyStyle() {
+          btn.style.borderColor = s.visible !== false ? s.color : offBorder;
+          btn.classList.toggle('series-off', s.visible === false);
+        }
+        applyStyle();
+        btn.addEventListener('click', () => {
+          s.visible = s.visible === false;
+          applyStyle();
+          onToggle();
+        });
+        containerEl.appendChild(btn);
+      });
+    }
+
+    // ── Receipt rendering ─────────────────────────────────────────────
+    function itemShortLabel(item) {
+      const inst = getInstrument(item.instrumentId);
+      const exp = getExposure(item.exposureId);
+      return `${inst.name} · ${exp.short}`;
+    }
+
+    function renderReceipt(order) {
+      const loc = LOCATIONS.find((l) => l.id === order.settings.locId);
+      const wind = getWindRegime(order.settings.windId);
+      els.receiptMeta.textContent =
+        `Delivered to: ${loc.label}\nDay ${order.settings.doy} (${dayOfYearLabel(order.settings.doy)}) · cloud ${order.settings.cloud}% · ${wind.label.toLowerCase()} · weather #${order.settings.seed}`;
+      els.receiptBody.innerHTML = '';
+      order.results.forEach((r, i) => {
+        const inst = getInstrument(r.instrumentId);
+        const exp = getExposure(r.exposureId);
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          `<td>${inst.name} <span class="receipt-item-era">(${inst.era})</span></td>` +
+          `<td>${exp.short}</td>` +
+          `<td>${fmtC(r.recordedTmaxC)}</td>` +
+          `<td>${fmtC(r.recordedTminC)}</td>` +
+          `<td>${fmtC(r.midpointC)}</td>`;
+        tr.querySelector('td').style.borderLeft = `3px solid ${SERIES_COLORS[i]}`;
+        els.receiptBody.appendChild(tr);
+      });
+      if (hasRevealedTruth) {
+        els.receiptFoot.hidden = false;
+        els.receiptTrueMean.textContent = order.day.trueMeanC.toFixed(2);
+      } else {
+        els.receiptFoot.hidden = true;
+      }
+    }
+
+    function renderHourlyTable(order) {
+      const cols = order.results.map((r) => itemShortLabel(r));
+      const withAir = hasRevealedTruth;
+      els.hourlyHead.innerHTML =
+        '<tr><th scope="col">Hour</th>' +
+        cols.map((c) => `<th scope="col">${c}</th>`).join('') +
+        (withAir ? '<th scope="col">The air itself</th>' : '') +
+        '</tr>';
+      els.hourlyBody.innerHTML = '';
+      const n = order.day.timeHours.length;
+      for (let hr = 0; hr < 24; hr++) {
+        const idx = Math.min(n - 1, Math.round((hr / 24) * n));
+        const cells = order.results.map((r) => `<td>${r.instrSeries[idx].toFixed(2)}</td>`).join('');
+        const airCell = withAir ? `<td>${order.day.airC[idx].toFixed(2)}</td>` : '';
+        els.hourlyBody.insertAdjacentHTML('beforeend', `<tr><th scope="row">${String(hr).padStart(2, '0')}:00</th>${cells}${airCell}</tr>`);
+      }
+    }
+
+    // The traces draw themselves across the day over a few seconds each
+    // time a chart (re)renders — instant for readers who prefer reduced
+    // motion. Each chart keeps its own sweep state so the tracking chart
+    // and the rate-your-purchase chart animate independently.
+    const CHART_SWEEP_MS = 3200;
+    function createAnimatedChart(canvas, legendEl) {
+      let series = [];
+      let day = null;
+      let maxHour = 24;
+      let frame = null;
+      const redraw = () => {
+        if (day) drawDayChart(canvas, series, day, maxHour);
+      };
+      chartRedraws.push(redraw);
+      return {
+        render(newSeries, newDay, { animate = true, onDone = null } = {}) {
+          // Preserve the reader's legend toggles across re-renders.
+          newSeries.forEach((s, i) => {
+            if (series[i] && series[i].label === s.label) s.visible = series[i].visible;
+          });
+          series = newSeries;
+          day = newDay;
+          createLegend(legendEl, series, redraw);
+          if (frame) cancelAnimationFrame(frame);
+          if (!animate || prefersReducedMotion) {
+            maxHour = 24;
+            redraw();
+            if (onDone) onDone();
+            return;
+          }
+          const startedAt = performance.now();
+          maxHour = 0;
+          const step = (now) => {
+            maxHour = Math.min(24, ((now - startedAt) / CHART_SWEEP_MS) * 24);
+            redraw();
+            if (maxHour < 24) {
+              frame = requestAnimationFrame(step);
+            } else {
+              frame = null;
+              if (onDone) onDone();
+            }
+          };
+          frame = requestAnimationFrame(step);
+        },
+      };
+    }
+    const trackingChart = createAnimatedChart(els.dayChart, els.dayChartLegend);
+    const truthChart = createAnimatedChart(els.truthChart, els.truthChartLegend);
+
+    function itemSeries(order) {
+      return order.results.map((r, i) => ({
+        label: itemShortLabel(r),
+        color: SERIES_COLORS[i],
+        values: r.instrSeries,
+      }));
+    }
+    function renderChart(order) {
+      // The receipt gates on the tracking sweep finishing: the traces are
+      // the shipment in transit, the receipt is what arrives at the end.
+      els.viewReceiptBtn.disabled = true;
+      els.viewReceiptHint.textContent = 'Enables when the day finishes drawing.';
+      trackingChart.render(itemSeries(order), order.day, {
+        onDone: () => {
+          els.viewReceiptBtn.disabled = false;
+          els.viewReceiptHint.textContent = "The written record: what each item's registers actually kept from that day.";
+        },
+      });
+    }
+    function renderTruthChart(order, { animate = true } = {}) {
+      truthChart.render(
+        [
+          ...itemSeries(order),
+          {
+            label: 'The air itself',
+            color: cssVar('--text-primary') || '#ccc',
+            values: order.day.airC,
+            dash: true,
+          },
+        ],
+        order.day,
+        { animate }
+      );
+    }
+    window.addEventListener('klymot:theme-toggled', () => chartRedraws.forEach((fn) => fn()));
+
+    // The rating screen's numbers: air tiles plus the per-item comparison
+    // of each midpoint against the air's true median and true average.
+    function renderRating(order) {
+      els.truthMean.textContent = `${order.day.trueMeanC.toFixed(2)} °C`;
+      els.truthMedian.textContent = `${order.day.trueMedianC.toFixed(2)} °C`;
+      els.truthMax.textContent = `${order.day.trueMaxC.toFixed(2)} °C`;
+      els.truthMin.textContent = `${order.day.trueMinC.toFixed(2)} °C`;
+      els.ratingBody.innerHTML = '';
+      order.results.forEach((r, i) => {
+        const inst = getInstrument(r.instrumentId);
+        const exp = getExposure(r.exposureId);
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          `<td>${inst.name}</td>` +
+          `<td class="order-table-shelter">${exp.short}</td>` +
+          `<td>${fmtC(r.midpointC)}</td>` +
+          `<td>${fmtSigned(r.midpointC - order.day.trueMedianC)}</td>` +
+          `<td>${fmtSigned(r.midpointC - order.day.trueMeanC)}</td>`;
+        tr.querySelector('td').style.borderLeft = `3px solid ${SERIES_COLORS[i]}`;
+        els.ratingBody.appendChild(tr);
+      });
+      // The rating chart is a reference view, not a reveal — no sweep.
+      renderTruthChart(order, { animate: false });
+    }
+
+    function renderRunHistory() {
+      els.runHistorySection.hidden = runHistory.length === 0;
+      if (runHistory.length < 2) {
+        els.runHistoryPlaceholder.hidden = runHistory.length === 0;
+        els.runHistoryContent.hidden = true;
+        return;
+      }
+      els.runHistoryPlaceholder.hidden = true;
+      els.runHistoryContent.hidden = false;
+      els.runHistoryBody.innerHTML = '';
+      runHistory.forEach((run, i) => {
+        const loc = LOCATIONS.find((l) => l.id === run.settings.locId);
+        const itemsText = run.results
+          .map((r) => `${itemShortLabel(r)}: ${fmtC(r.recordedTmaxC)} / ${fmtC(r.recordedTminC)} / ${fmtC(r.midpointC)}`)
+          .join('\n');
+        const truth = run.truthKnown ? run.trueMeanC.toFixed(2) : '—';
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          `<td>${i + 1}</td>` +
+          `<td>${loc.label}, day ${run.settings.doy}, cloud ${run.settings.cloud}%, ${getWindRegime(run.settings.windId).label.toLowerCase()}, weather #${run.settings.seed}</td>` +
+          `<td class="run-history-items">${itemsText}</td>` +
+          `<td>${truth}</td>`;
+        els.runHistoryBody.appendChild(tr);
+      });
+    }
+
+    // ── Screen navigation buttons ─────────────────────────────────────
+    document.getElementById('browseBtn').addEventListener('click', () => showScreen('shop'));
+    document.getElementById('backToIntro').addEventListener('click', () => showScreen('intro'));
+    document.getElementById('backToShop').addEventListener('click', () => showScreen('shop'));
+    document.getElementById('backToShipping').addEventListener('click', () => showScreen('shipping'));
+    document.getElementById('backToTracking').addEventListener('click', () => showScreen('tracking'));
+    document.getElementById('backToReceipt').addEventListener('click', () => showScreen('receipt'));
+
+    els.checkoutBtn.addEventListener('click', () => {
+      if (cart.length < MIN_ITEMS) return;
+      if (!hasCheckedOut) {
+        hasCheckedOut = true;
+        sendFeatureBeacon('labs/thermometer-shop/01-checked-out');
+      }
+      markOrderChanged();
+      showScreen('shipping');
+    });
+
+    // ── Deliver: run the day ──────────────────────────────────────────
+    els.deliverBtn.addEventListener('click', () => {
+      if (cart.length < MIN_ITEMS) return;
+      const settings = {
+        locId: els.locationSelect.value,
+        doy: dayOfYear,
+        cloud: cloudPct,
+        windId,
+        seed: weatherSeed,
+      };
+      const loc = LOCATIONS.find((l) => l.id === settings.locId);
+      const { day, results } = runCheckout({
+        latDeg: loc.latDeg,
+        dayOfYear: settings.doy,
+        cloudFraction: settings.cloud / 100,
+        seed: settings.seed,
+        unitSeed,
+        windId,
+        items: cart,
+      });
+      lastOrder = { day, results, settings };
+      runHistory.push({
+        settings,
+        results,
+        trueMeanC: day.trueMeanC,
+        truthKnown: hasRevealedTruth,
+      });
+      // Once the truth line has been revealed once, later orders keep it —
+      // the gate exists so the first look at the receipt happens before
+      // the true mean is on it, not to make every re-run re-click.
+      if (hasRevealedTruth) {
+        runHistory.forEach((r) => { r.truthKnown = true; });
+        renderRating(lastOrder);
+      }
+      renderReceipt(lastOrder);
+      renderHourlyTable(lastOrder);
+      renderChart(lastOrder);
+      renderRunHistory();
+      hasRunOnce = true;
+      els.deliverBtn.disabled = true;
+      els.deliverHint.textContent = 'Dispatched — change the order or delivery details to run another day.';
+      sendFeatureBeacon('labs/thermometer-shop/02-delivered');
+      // The live chart is the shipment tracking screen; the receipt is the
+      // next screen, reached by its own button so the eye follows the
+      // traces drawing first.
+      showScreen('tracking');
+    });
+
+    els.viewReceiptBtn.addEventListener('click', () => showScreen('receipt'));
+
+    // ── Rate your purchase: its own screen ────────────────────────────
+    els.revealTruth.addEventListener('click', () => {
+      if (!lastOrder) return;
+      const firstReveal = !hasRevealedTruth;
+      hasRevealedTruth = true;
+      runHistory.forEach((r) => { r.truthKnown = true; });
+      renderRating(lastOrder);
+      renderReceipt(lastOrder);
+      renderHourlyTable(lastOrder);
+      renderRunHistory();
+      if (firstReveal) sendFeatureBeacon('labs/thermometer-shop/03-true-mean-revealed');
+      showScreen('rating');
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────
+    renderCart();
+    refreshControlReadouts();
+    markOrderChanged();
+    // Restore the screen from a shared link, clamped to what the restored
+    // state can actually reach: tracking/receipt need a run this session,
+    // so they downgrade to shipping.
+    if (restored && restored.sec) {
+      let target = restored.sec;
+      if ((target === 'tracking' || target === 'receipt' || target === 'rating') && !hasRunOnce) target = 'shipping';
+      if (target === 'shipping' && cart.length < MIN_ITEMS) target = 'shop';
+      if (!(target in SCREEN_GUARDS)) target = 'intro';
+      if (target === 'shipping') hasCheckedOut = true;
+      currentScreen = target;
+    }
+    refreshScreens();
+    pushStateToUrl();
+
+    // Reset lab: all state lives in the URL hash; drop it and reload.
+    const resetBtn = document.getElementById('resetLab');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        window.location.href = window.location.pathname;
+      });
+    }
+  </script>
+</BaseLayout>

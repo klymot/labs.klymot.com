@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" role="img" aria-hidden="true">
+  <!-- Slim fast-response element on a thin stem, wired to a logger
+       reporting one-minute means. Original schematic for labs.klymot.com. -->
+  <path d="M34 70 h44" stroke-width="4"/>
+  <path d="M36 70 h10" stroke="var(--accent, #d4a855)" stroke-width="2" opacity="0.9"/>
+  <path d="M78 70 h30" stroke-width="1.5"/>
+  <path d="M108 70 c16 0 12 14 26 14" stroke-width="1.5"/>
+  <!-- logger box with mean-bars readout -->
+  <rect x="134" y="70" width="44" height="32" rx="4"/>
+  <path d="M142 94 v-8 M150 94 v-12 M158 94 v-6 M166 94 v-10" stroke="var(--accent, #d4a855)" stroke-width="2.5" opacity="0.85"/>
+  <path d="M142 76 h24" stroke-width="1" opacity="0.6"/>
+</svg>

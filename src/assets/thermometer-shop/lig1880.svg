@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" role="img" aria-hidden="true">
+  <!-- Observatory pair on a mounting board: mercury maximum mounted
+       near-horizontal above, spirit minimum with dumbbell index below.
+       Original schematic drawn for labs.klymot.com. -->
+  <rect x="18" y="22" width="164" height="96" rx="6" stroke-width="1.2" opacity="0.5"/>
+  <!-- maximum: bulb left, slight tilt -->
+  <ellipse cx="44" cy="52" rx="10" ry="8"/>
+  <path d="M54 52 h104" stroke-width="3"/>
+  <path d="M54 50 h64" stroke="var(--accent, #d4a855)" stroke-width="3" opacity="0.85"/>
+  <g stroke-width="1" opacity="0.6"><path d="M70 44 v5 M90 44 v5 M110 44 v5 M130 44 v5 M150 44 v5"/></g>
+  <!-- minimum: bulb left, dumbbell index inside bore -->
+  <ellipse cx="44" cy="90" rx="10" ry="8"/>
+  <path d="M54 90 h104" stroke-width="3"/>
+  <circle cx="96" cy="90" r="3" stroke-width="1.5"/>
+  <circle cx="108" cy="90" r="3" stroke-width="1.5"/>
+  <path d="M99 90 h6" stroke-width="1.5"/>
+  <g stroke-width="1" opacity="0.6"><path d="M70 97 v5 M90 97 v5 M110 97 v5 M130 97 v5 M150 97 v5"/></g>
+</svg>
