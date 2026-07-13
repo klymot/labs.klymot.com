@@ -5,10 +5,10 @@
   "lon": 5.1783,
   "source": "Royal Netherlands Meteorological Institute (KNMI) \u2014 daily global radiation Q, station De Bilt 260 (real pyranometer measurements from 1957)",
   "source_type": "knmi",
-  "generated_at": "2026-07-06T08:14:18+00:00",
-  "updated": "2026-07-06",
+  "generated_at": "2026-07-13T06:47:34+00:00",
+  "updated": "2026-07-13",
   "start_date": "1957-01-01",
-  "end_date": "2026-07-05",
+  "end_date": "2026-07-12",
   "temperature_station": {
     "id": "NLM00006260",
     "name": "DE BILT 1",
@@ -176366,6 +176366,34 @@
     {
       "date": "2026-07-04",
       "shortwave_mj_m2": 20.92
+    },
+    {
+      "date": "2026-07-05",
+      "shortwave_mj_m2": 13.53
+    },
+    {
+      "date": "2026-07-06",
+      "shortwave_mj_m2": 25.7
+    },
+    {
+      "date": "2026-07-07",
+      "shortwave_mj_m2": 24.22
+    },
+    {
+      "date": "2026-07-08",
+      "shortwave_mj_m2": 7.22
+    },
+    {
+      "date": "2026-07-09",
+      "shortwave_mj_m2": 25.12
+    },
+    {
+      "date": "2026-07-10",
+      "shortwave_mj_m2": 28.9
+    },
+    {
+      "date": "2026-07-11",
+      "shortwave_mj_m2": 26.39
     }
   ]
 }

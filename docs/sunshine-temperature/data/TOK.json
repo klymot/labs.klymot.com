@@ -5,10 +5,10 @@
   "lon": 139.767,
   "source": "Open-Meteo Historical Weather API (placeholder \u2014 gridded model/reanalysis data; real pyranometer records not freely accessible without registration for this station)",
   "source_type": "open_meteo",
-  "generated_at": "2026-07-06T08:14:18+00:00",
-  "updated": "2026-07-06",
+  "generated_at": "2026-07-13T06:47:34+00:00",
+  "updated": "2026-07-13",
   "start_date": "1940-01-01",
-  "end_date": "2026-07-05",
+  "end_date": "2026-07-12",
   "temperature_station": {
     "id": "JA000047662",
     "name": "TOKYO",
@@ -191282,6 +191282,34 @@
     {
       "date": "2026-07-05",
       "shortwave_mj_m2": 20.49
+    },
+    {
+      "date": "2026-07-06",
+      "shortwave_mj_m2": 11.01
+    },
+    {
+      "date": "2026-07-07",
+      "shortwave_mj_m2": 15.0
+    },
+    {
+      "date": "2026-07-08",
+      "shortwave_mj_m2": 25.04
+    },
+    {
+      "date": "2026-07-09",
+      "shortwave_mj_m2": 26.15
+    },
+    {
+      "date": "2026-07-10",
+      "shortwave_mj_m2": 27.44
+    },
+    {
+      "date": "2026-07-11",
+      "shortwave_mj_m2": 25.13
+    },
+    {
+      "date": "2026-07-12",
+      "shortwave_mj_m2": 12.18
     }
   ]
 }
