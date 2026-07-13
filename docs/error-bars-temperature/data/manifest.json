@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-07-09T08:33:47+00:00",
+  "generated_at": "2026-07-13T16:31:20+00:00",
   "source": "Measured: NOAA GHCNm v4 monthly series fetched by the page from klymot.com's data mirror. Modelled: ERA5-family reanalysis via Open-Meteo, aggregated to the GHCNm monthly-mean definition.",
-  "pool_rule": "Long-record GHCN stations spanning a wide range of 2020 built-up context, matching the Cherry-Picking Machine's beta pool.",
+  "pool_rule": "Error Bars \u2014 Temperature station pool only: long-record GHCN stations spanning a wide range of 2020 built-up context, each with at least ~1000 monthly GHCN values from 1940 onward on both QCU and QCF for a full ERA5 comparison window. Not shared with any other lab.",
   "stations": [
     {
-      "id": "USC00013160",
-      "name": "Gainesville Lock",
-      "place": "Alabama, United States",
+      "id": "UK000003026",
+      "name": "Stornoway Airport",
+      "place": "Scotland, United Kingdom",
       "region": "Very low BU",
-      "since": 1893,
-      "bu_2020_idx": 14935,
-      "bu_2020_1km": 0.141,
-      "bu_2020_5km": 0.129,
-      "bu_2020_20km": 0.157
+      "since": 1873,
+      "bu_2020_idx": 14567,
+      "bu_2020_1km": 0.0,
+      "bu_2020_5km": 0.081,
+      "bu_2020_20km": 0.166
     },
     {
       "id": "DAM00006011",
@@ -37,10 +37,43 @@
       "bu_2020_20km": 0.369
     },
     {
+      "id": "USW00013733",
+      "name": "Lynchburg Rgnl AP",
+      "place": "Virginia, United States",
+      "region": "Low BU",
+      "since": 1871,
+      "bu_2020_idx": 26499,
+      "bu_2020_1km": 2.019,
+      "bu_2020_5km": 6.102,
+      "bu_2020_20km": 4.199
+    },
+    {
+      "id": "USW00014914",
+      "name": "Fargo Hector Intl AP",
+      "place": "North Dakota, United States",
+      "region": "Low BU",
+      "since": 1881,
+      "bu_2020_idx": 26779,
+      "bu_2020_1km": 2.736,
+      "bu_2020_5km": 6.032,
+      "bu_2020_20km": 5.205
+    },
+    {
+      "id": "GM000010962",
+      "name": "Hohenpeissenberg",
+      "place": "Bavaria, Germany",
+      "region": "Moderate BU",
+      "since": 1781,
+      "bu_2020_idx": 7748,
+      "bu_2020_1km": 4.965,
+      "bu_2020_5km": 2.289,
+      "bu_2020_20km": 2.068
+    },
+    {
       "id": "NLM00006260",
       "name": "De Bilt",
       "place": "Netherlands",
-      "region": "Moderate BU",
+      "region": "Moderate-high BU",
       "since": 1706,
       "bu_2020_idx": 10777,
       "bu_2020_1km": 8.749,
@@ -48,26 +81,15 @@
       "bu_2020_20km": 10.129
     },
     {
-      "id": "USW00014758",
-      "name": "New Haven Tweed AP",
-      "place": "Connecticut, United States",
+      "id": "AU000005010",
+      "name": "Kremsm\u00fcnster",
+      "place": "Austria",
       "region": "Moderate-high BU",
-      "since": 1781,
-      "bu_2020_idx": 26697,
-      "bu_2020_1km": 14.336,
-      "bu_2020_5km": 9.63,
-      "bu_2020_20km": 7.281
-    },
-    {
-      "id": "UK000056225",
-      "name": "Oxford",
-      "place": "United Kingdom",
-      "region": "High BU",
-      "since": 1815,
-      "bu_2020_idx": 14595,
-      "bu_2020_1km": 18.575,
-      "bu_2020_5km": 8.201,
-      "bu_2020_20km": 4.452
+      "since": 1767,
+      "bu_2020_idx": 1622,
+      "bu_2020_1km": 12.635,
+      "bu_2020_5km": 2.775,
+      "bu_2020_20km": 2.611
     },
     {
       "id": "BE000006447",
@@ -81,15 +103,37 @@
       "bu_2020_20km": 15.642
     },
     {
-      "id": "AR000875850",
-      "name": "Buenos Aires Observatorio",
-      "place": "Argentina",
+      "id": "HUM00012843",
+      "name": "Budapest Pestszentl\u00f6rinc",
+      "place": "Hungary",
+      "region": "High BU",
+      "since": 1780,
+      "bu_2020_idx": 8619,
+      "bu_2020_1km": 22.803,
+      "bu_2020_5km": 18.291,
+      "bu_2020_20km": 15.929
+    },
+    {
+      "id": "PO000008535",
+      "name": "Lisbon Geophysical",
+      "place": "Portugal",
       "region": "Very high BU",
-      "since": 1856,
-      "bu_2020_idx": 185,
-      "bu_2020_1km": 44.099,
-      "bu_2020_5km": 38.728,
-      "bu_2020_20km": 31.691
+      "since": 1854,
+      "bu_2020_idx": 11487,
+      "bu_2020_1km": 37.106,
+      "bu_2020_5km": 15.178,
+      "bu_2020_20km": 11.713
+    },
+    {
+      "id": "HR000142360",
+      "name": "Zagreb Gric",
+      "place": "Croatia",
+      "region": "Very high BU",
+      "since": 1861,
+      "bu_2020_idx": 8588,
+      "bu_2020_1km": 31.703,
+      "bu_2020_5km": 19.695,
+      "bu_2020_20km": 9.543
     }
   ]
 }

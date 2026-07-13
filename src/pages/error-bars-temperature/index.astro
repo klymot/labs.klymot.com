@@ -90,7 +90,7 @@ import BetaGate from '../../components/BetaGate.astro';
         <details class="expander">
           <summary>How were these stations chosen?</summary>
           <div class="expander-body">
-            <p>The lab uses long-running stations with substantial historical records that collectively span a broad range of surrounding built-up land. They are presented in a random order to avoid suggesting that any one station is the "right" place to start.</p>
+            <p>Long-running stations spanning a broad range of surrounding built-up land. Maximising overlap with the ERA5 record was a priority: each has at least roughly a thousand monthly GHCN values from 1940 onward on both the unadjusted and adjusted record versions, with only small scattered gaps. They are presented in a random order to avoid suggesting that any one station is the "right" place to start.</p>
           </div>
         </details>
         <p class="random-order-note">Stations are shown in a random order to avoid nudging your choice.</p>
@@ -393,7 +393,7 @@ import BetaGate from '../../components/BetaGate.astro';
               <dt>Reanalysis temperature — ERA5 via Open-Meteo</dt>
               <dd>ERA5 is produced by the European Centre for Medium-Range Weather Forecasts: <a href="https://doi.org/10.1002/qj.3803" target="_blank" rel="noopener">Hersbach et al., 2020</a>. Daily 2 m maximum and minimum temperature at each station's coordinates are fetched from the <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo Historical Weather API</a> and aggregated to monthly means of (Tmax+Tmin)/2 — the GHCNm definition — keeping months with at least 90% of days present.</dd>
               <dt>Station pool</dt>
-              <dd>Candidate long-running stations selected from klymot.com's station index for beta review, deliberately spanning a wide range of 2020 built-up context around the station rather than optimizing only for record length. The comparison window is 1940 onward, where ERA5 begins.</dd>
+              <dd>Long-running GHCN stations from klymot.com's station index, spanning a wide range of 2020 built-up context. Each has at least ~1000 monthly values from 1940 onward on both QCU and QCF so the full ERA5 comparison window is usable, with only small scattered gaps.</dd>
               <dt>Built-up context — GHSL</dt>
               <dd>Built-up land fractions and imagery around each station are from the Global Human Settlement Layer's built-up surface data for 2020, as published on klymot.com's station explorer. <a href="https://human-settlement.emergency.copernicus.eu/" target="_blank" rel="noopener">European Commission JRC GHSL</a>.</dd>
               <dt>Bands and the transfer test</dt>

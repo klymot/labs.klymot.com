@@ -2,7 +2,7 @@
 """Fetch modelled monthly temperature for the Error Bars — Temperature lab.
 
 The lab compares GHCNm station records (fetched by the page at runtime from
-klymot.com's data mirror, like the Cherry-Picking Machine does) against the
+klymot.com's data mirror) against the
 ERA5-family reanalysis estimate for the same coordinates. This script fetches
 the reanalysis side: daily 2 m maximum/minimum temperature from the Open-Meteo
 Historical Weather API for each pool station's coordinates, aggregated to
@@ -44,19 +44,21 @@ MODELLED_UNIT = (
     "Open-Meteo, aggregated to match the GHCNm monthly-mean definition"
 )
 
-# Long-record pool spanning a wide range of 2020 built-up context around the
-# station — the same pool rule the Cherry-Picking Machine's beta uses (its
-# candidate rule is still pending review; rerun that selection rather than
-# hand-editing here). Display names/places match its cards.
+# Span a wide range of 2020 built-up context; each has at least ~1000 GHCN
+# monthly values from 1940 onward on both QCU and QCF, with only small gaps.
 STATIONS = [
-    {"id": "USC00013160", "name": "Gainesville Lock", "place": "Alabama, United States", "region": "Very low BU"},
+    {"id": "UK000003026", "name": "Stornoway Airport", "place": "Scotland, United Kingdom", "region": "Very low BU"},
     {"id": "DAM00006011", "name": "Torshavn", "place": "Faroe Islands", "region": "Very low BU"},
     {"id": "EI000003953", "name": "Valentia Observatory", "place": "Ireland", "region": "Low BU"},
-    {"id": "NLM00006260", "name": "De Bilt", "place": "Netherlands", "region": "Moderate BU"},
-    {"id": "USW00014758", "name": "New Haven Tweed AP", "place": "Connecticut, United States", "region": "Moderate-high BU"},
-    {"id": "UK000056225", "name": "Oxford", "place": "United Kingdom", "region": "High BU"},
+    {"id": "USW00013733", "name": "Lynchburg Rgnl AP", "place": "Virginia, United States", "region": "Low BU"},
+    {"id": "USW00014914", "name": "Fargo Hector Intl AP", "place": "North Dakota, United States", "region": "Low BU"},
+    {"id": "GM000010962", "name": "Hohenpeissenberg", "place": "Bavaria, Germany", "region": "Moderate BU"},
+    {"id": "NLM00006260", "name": "De Bilt", "place": "Netherlands", "region": "Moderate-high BU"},
+    {"id": "AU000005010", "name": "Kremsmünster", "place": "Austria", "region": "Moderate-high BU"},
     {"id": "BE000006447", "name": "Uccle", "place": "Belgium", "region": "High BU"},
-    {"id": "AR000875850", "name": "Buenos Aires Observatorio", "place": "Argentina", "region": "Very high BU"},
+    {"id": "HUM00012843", "name": "Budapest Pestszentlörinc", "place": "Hungary", "region": "High BU"},
+    {"id": "PO000008535", "name": "Lisbon Geophysical", "place": "Portugal", "region": "Very high BU"},
+    {"id": "HR000142360", "name": "Zagreb Gric", "place": "Croatia", "region": "Very high BU"},
 ]
 
 
@@ -196,7 +198,8 @@ def main() -> int:
         ),
         "pool_rule": (
             "Long-record GHCN stations spanning a wide range of 2020 built-up "
-            "context, matching the Cherry-Picking Machine's beta pool."
+            "context, each with at least ~1000 monthly GHCN values from 1940 "
+            "onward on both QCU and QCF for a full ERA5 comparison window."
         ),
         "stations": manifest_stations,
     }
