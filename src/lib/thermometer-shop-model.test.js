@@ -19,6 +19,8 @@ import {
   LOCATIONS,
   STEPS_PER_DAY,
   DT_SECONDS,
+  AIR_STEPS_PER_DAY,
+  AIR_DT_SECONDS,
 } from './thermometer-shop-model.js';
 
 describe('seeded RNG', () => {
@@ -142,11 +144,34 @@ describe('simulateDay', () => {
 
   it('returns one full day of samples with true stats ordered', () => {
     const d = simulateDay(base);
-    expect(d.airC.length).toBe(STEPS_PER_DAY);
+    expect(d.airC.length).toBe(AIR_STEPS_PER_DAY);
+    expect(d.airChainC.length).toBe(STEPS_PER_DAY);
     expect(d.trueMinC).toBeLessThan(d.trueMeanC);
     expect(d.trueMeanC).toBeLessThan(d.trueMaxC);
     expect(d.trueMedianC).toBeGreaterThan(d.trueMinC);
     expect(d.trueMedianC).toBeLessThan(d.trueMaxC);
+  });
+
+  it('keeps the two grids consistent: chain series is the 10-s means of the 1-s air, extremes come from it', () => {
+    const d = simulateDay(base);
+    const ratio = Math.round(DT_SECONDS / AIR_DT_SECONDS);
+    let maxDiff = 0;
+    let chainMax = -Infinity;
+    let chainMin = Infinity;
+    for (let b = 0; b < d.airChainC.length; b++) {
+      let s = 0;
+      for (let j = b * ratio; j < (b + 1) * ratio; j++) s += d.airC[j];
+      maxDiff = Math.max(maxDiff, Math.abs(s / ratio - d.airChainC[b]));
+      chainMax = Math.max(chainMax, d.airChainC[b]);
+      chainMin = Math.min(chainMin, d.airChainC[b]);
+    }
+    expect(maxDiff).toBeLessThan(1e-9);
+    expect(d.trueMaxC).toBeCloseTo(chainMax, 12);
+    expect(d.trueMinC).toBeCloseTo(chainMin, 12);
+    // The warmest 1-s blip runs hotter than the warmest 10-s mean.
+    let airMax = -Infinity;
+    for (let j = 0; j < d.airC.length; j++) airMax = Math.max(airMax, d.airC[j]);
+    expect(airMax).toBeGreaterThanOrEqual(d.trueMaxC);
   });
 
   it('produces a plausible clear-sky midlatitude diurnal range', () => {
@@ -216,9 +241,9 @@ describe('exposures and instruments', () => {
     const stev = runCartItem(day, inst, getExposure('stevenson'), 'b');
     let rmsAsp = 0;
     let rmsStev = 0;
-    for (let i = 0; i < day.airC.length; i++) {
-      rmsAsp += (asp.instrSeries[i] - day.airC[i]) ** 2;
-      rmsStev += (stev.instrSeries[i] - day.airC[i]) ** 2;
+    for (let i = 0; i < day.airChainC.length; i++) {
+      rmsAsp += (asp.instrSeries[i] - day.airChainC[i]) ** 2;
+      rmsStev += (stev.instrSeries[i] - day.airChainC[i]) ** 2;
     }
     expect(Math.sqrt(rmsAsp)).toBeLessThan(Math.sqrt(rmsStev));
   });
@@ -246,6 +271,58 @@ describe('exposures and instruments', () => {
     const rSticky = runCartItem(day, sticky, exp, 'same');
     expect(rSticky.recordedTmaxC).toBeLessThanOrEqual(rFree.recordedTmaxC + 1e-9);
     expect(rSticky.recordedTminC).toBeGreaterThanOrEqual(rFree.recordedTminC - 1e-9);
+  });
+
+  it('states what each record contains: register marks for LiG, readings + daily mean for electronic', () => {
+    const exp = getExposure('stevenson');
+    const lig = runCartItem(day, exact(getInstrument('lig1880')), exp, 'shape-lig');
+    expect(lig.registerMarks).not.toBeNull();
+    expect(lig.readings).toBeNull();
+    expect(lig.recordedMeanC).toBeNull();
+    // The marks are the registered extremes, placed inside the day.
+    expect(lig.registerMarks.max.valueC).toBeGreaterThan(lig.registerMarks.min.valueC);
+    expect(lig.registerMarks.max.timeH).toBeGreaterThanOrEqual(0);
+    expect(lig.registerMarks.max.timeH).toBeLessThan(24);
+
+    const spot = runCartItem(day, exact(getInstrument('prtSheathed')), exp, 'shape-spot');
+    expect(spot.registerMarks).toBeNull();
+    expect(spot.readings.values.length).toBe((24 * 3600) / 60); // one per 60 s
+    const uscrn = runCartItem(day, exact(getInstrument('prtUscrn')), exp, 'shape-avg');
+    expect(uscrn.readings.values.length).toBe((24 * 3600) / 300); // one per 5-min block
+    // Reported values land on the logger's recording grid (0.1 °C here).
+    const real = runCartItem(day, getInstrument('prtUscrn'), exp, 'shape-res');
+    real.readings.values.forEach((v) => {
+      expect(Math.abs(v / 0.1 - Math.round(v / 0.1))).toBeLessThan(1e-6);
+    });
+    // Block means are stamped at the end of the block they summarize.
+    expect(uscrn.readings.timeHours[0]).toBeCloseTo(300 / 3600 - DT_SECONDS / 3600, 6);
+    // The loggable daily mean sits inside the recorded extremes and near
+    // the full-resolution series mean.
+    expect(uscrn.recordedMeanC).toBeGreaterThan(uscrn.recordedTminC);
+    expect(uscrn.recordedMeanC).toBeLessThan(uscrn.recordedTmaxC);
+    let m = 0;
+    for (let i = 0; i < uscrn.instrSeries.length; i++) m += uscrn.instrSeries[i];
+    m /= uscrn.instrSeries.length;
+    expect(Math.abs(uscrn.recordedMeanC - m)).toBeLessThan(0.05);
+  });
+
+  it('the running register series only ratchets and ends at the final marks', () => {
+    const lig = runCartItem(day, exact(getInstrument('lig1780')), getExposure('stevenson'), 'reg-series');
+    const rs = lig.registerSeries;
+    const n = rs.maxVal.length;
+    expect(n).toBe(STEPS_PER_DAY);
+    expect(rs.maxVal[n - 1]).toBe(lig.registerMarks.max.valueC);
+    expect(rs.minVal[n - 1]).toBe(lig.registerMarks.min.valueC);
+    expect(rs.maxTimeH[n - 1]).toBe(lig.registerMarks.max.timeH);
+    expect(rs.minTimeH[n - 1]).toBe(lig.registerMarks.min.timeH);
+    let ratchets = true;
+    for (let i = 1; i < n; i++) {
+      if (rs.maxVal[i] < rs.maxVal[i - 1] || rs.minVal[i] > rs.minVal[i - 1]) ratchets = false;
+    }
+    expect(ratchets).toBe(true);
+    // Electronic items have no register to watch.
+    const spot = runCartItem(day, exact(getInstrument('prtFast')), getExposure('aspirated'), 'reg-none');
+    expect(spot.registerSeries).toBeNull();
   });
 
   it('a slower sensor smooths turbulence: its series has lower variance about its own mean', () => {
@@ -311,8 +388,8 @@ describe('wind regimes', () => {
       const inst = { ...getInstrument('prtFast'), toleranceC: 0, resolutionC: 0.001 };
       const r = runCartItem(day, inst, getExposure(exposureId), 'w');
       let s = 0;
-      for (let i = 0; i < day.airC.length; i++) s += (r.instrSeries[i] - day.airC[i]) ** 2;
-      return Math.sqrt(s / day.airC.length);
+      for (let i = 0; i < day.airChainC.length; i++) s += (r.instrSeries[i] - day.airChainC[i]) ** 2;
+      return Math.sqrt(s / day.airChainC.length);
     }
     const base = { latDeg: 45, dayOfYear: 172, cloudFraction: 0.1, seed: 8 };
     const calm = simulateDay({ ...base, windMps: 0.4, gustFrac: 0.3 });

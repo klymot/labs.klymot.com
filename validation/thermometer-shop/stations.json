@@ -1,0 +1,24 @@
+{
+  "comment": "USCRN sub-hourly validation stations for the thermometer-shop synthetic weather. Chosen near sea level (the lab's synthetic baseline has no altitude), on two coasts for two cloud regimes: Pacific marine stratiform vs Atlantic convective cumulus. slug matches the USCRN subhourly01 filename; tzMeridian is the station's standard-time meridian (LST in the files is standard time year-round).",
+  "year": 2024,
+  "stations": [
+    {
+      "id": "coosbay",
+      "label": "Coos Bay, OR (12 m, Pacific)",
+      "slug": "OR_Coos_Bay_8_SW",
+      "latDeg": 43.27,
+      "lonDeg": -124.31,
+      "tzMeridian": -120,
+      "elevationM": 12
+    },
+    {
+      "id": "titusville",
+      "label": "Titusville, FL (3 m, Atlantic)",
+      "slug": "FL_Titusville_7_E",
+      "latDeg": 28.61,
+      "lonDeg": -80.69,
+      "tzMeridian": -75,
+      "elevationM": 3
+    }
+  ]
+}

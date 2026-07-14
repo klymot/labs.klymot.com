@@ -147,11 +147,23 @@ export function seasonalBaselineC(latDeg, dayOfYear) {
 }
 
 // ── The simulated day ────────────────────────────────────────────────────
-// Time step: 10 s. Two spin-up days are run first so the kept (third) day
-// starts from a settled state; every array returned covers that one kept
-// day, midnight to midnight local solar time.
-export const DT_SECONDS = 10;
+// Two grids. The AIR is generated (and stored) second by second — that is
+// the truth the receipt's integrated average and the zoomed-in chart line
+// come from. The instrument chain (exposures, sensors, registers) runs on
+// 10-second block means of that air: every sensor in the shop has a time
+// constant of 20 s or more, so nothing it could record lives below the
+// 10-s grid, and storing per-second series for every cart item would cost
+// megabytes for detail no instrument resolves. The day's TRUE extremes are
+// likewise quoted as the warmest/coldest 10-second mean, not a 1-second
+// blip — quoting a one-second flicker as "the day's warmest moment" would
+// be false precision. Two spin-up days are run first so the kept (third)
+// day starts from a settled state; every array returned covers that one
+// kept day, midnight to midnight local solar time.
+export const AIR_DT_SECONDS = 1;
+export const AIR_STEPS_PER_DAY = Math.round((24 * 3600) / AIR_DT_SECONDS);
+export const DT_SECONDS = 10; // the instrument-chain grid
 export const STEPS_PER_DAY = Math.round((24 * 3600) / DT_SECONDS);
+const CHAIN_RATIO = Math.round(DT_SECONDS / AIR_DT_SECONDS);
 const SPINUP_DAYS = 2;
 
 const SOLAR_CONSTANT = 1361; // W/m², same value the airless-body lab uses
@@ -219,19 +231,25 @@ export function simulateDay({ latDeg, dayOfYear, cloudFraction, seed, windMps = 
   // where shelter differences bite hardest in the field intercomparisons.
   const calmExcess = clampNum(Math.pow(windCalmness, 0.7) - 1, 0, 2);
 
-  // Cloud gate: two-state telegraph process, mean occupancy = cloudFraction,
-  // decorrelation ~12 min. Under c=0 the sun is never covered; under c=1
-  // always. Broken-sky settings switch — which is exactly what makes
-  // partly-cloudy afternoons jittery.
-  const GATE_TAU = 12 * 60; // s
+  // Cloud gate: two-state telegraph process, mean occupancy = cloudFraction.
+  // Under c=0 the sun is never covered; under c=1 always. Broken-sky
+  // settings switch — which is exactly what makes partly-cloudy afternoons
+  // jittery. The decorrelation time scales inversely with wind (clouds
+  // stream past faster in a gale than in a calm), clamped to plausible
+  // cumulus-passage timescales.
+  const GATE_TAU = clampNum(12 * 60 * Math.pow(windCalmness, 0.5), 3 * 60, 30 * 60); // s
   let gateCovered = rng() < cloudFraction;
 
   // OU turbulence on the air temperature itself: decorrelation ~4 min,
   // amplitude growing with instantaneous insolation (daytime convective
-  // gustiness) from a small nighttime floor.
+  // gustiness) from a small nighttime floor. Its amplitude is tuned
+  // TOGETHER with the cloud gate: the gate carries the broken-sky part of
+  // the daytime flicker, the OU the residual convective part — checked
+  // against USCRN 5-minute records at two near-sea-level stations (clear /
+  // broken / overcast days classified from measured solar radiation).
   const OU_TAU = 4 * 60; // s
   const OU_SIGMA_NIGHT = 0.06; // °C standard deviation floor
-  const OU_SIGMA_DAY = 0.38 * sigmaFactor; // °C additional at full overhead sun
+  const OU_SIGMA_DAY = 0.3 * sigmaFactor; // °C additional at full overhead sun
   let ou = 0;
 
   // Gust texture: a second OU process modulating the wind around its mean
@@ -240,96 +258,119 @@ export function simulateDay({ latDeg, dayOfYear, cloudFraction, seed, windMps = 
   const GUST_TAU = 90; // s
   let ouWind = 0;
 
-  const totalSteps = STEPS_PER_DAY * (SPINUP_DAYS + 1);
-  const keepFrom = STEPS_PER_DAY * SPINUP_DAYS;
+  const totalSteps = AIR_STEPS_PER_DAY * (SPINUP_DAYS + 1);
+  const keepFrom = AIR_STEPS_PER_DAY * SPINUP_DAYS;
 
+  // Per-second: only the air itself. Everything else is kept on the 10-s
+  // chain grid (means over each block; sun angles sampled at block start).
+  const airC = new Float64Array(AIR_STEPS_PER_DAY);
   const timeHours = new Float64Array(STEPS_PER_DAY);
-  const airC = new Float64Array(STEPS_PER_DAY);
+  const airChainC = new Float64Array(STEPS_PER_DAY); // 10-s means of airC
   const ghi = new Float64Array(STEPS_PER_DAY); // global horizontal irradiance
   const dni = new Float64Array(STEPS_PER_DAY); // direct normal irradiance
   const sunElevDeg = new Float64Array(STEPS_PER_DAY);
   const sunAzDeg = new Float64Array(STEPS_PER_DAY);
-  const windSeries = new Float64Array(STEPS_PER_DAY); // instantaneous m/s
+  const windSeries = new Float64Array(STEPS_PER_DAY); // m/s, 10-s means
 
   let T = baseline;
   const cTrans = cloudTransmission(cloudFraction);
+  const pSwitch = 1 - Math.exp(-AIR_DT_SECONDS / GATE_TAU);
 
+  let sun = solarPosition(latDeg, dayOfYear, 0);
   for (let i = 0; i < totalSteps; i++) {
-    const solarHour = ((i % STEPS_PER_DAY) * DT_SECONDS) / 3600;
-    const sun = solarPosition(latDeg, dayOfYear, solarHour);
+    const solarHour = ((i % AIR_STEPS_PER_DAY) * AIR_DT_SECONDS) / 3600;
+    // The sun moves ~0.04° per chain step — recomputing its position every
+    // second would be pure waste.
+    if (i % CHAIN_RATIO === 0) sun = solarPosition(latDeg, dayOfYear, solarHour);
     const sinE = Math.max(0, sun.sinElev);
 
     // Evolve the cloud gate (exact exponential switching probabilities so
     // occupancy stays at cloudFraction regardless of dt).
-    const pSwitch = 1 - Math.exp(-DT_SECONDS / GATE_TAU);
     if (rng() < pSwitch) gateCovered = rng() < cloudFraction;
 
-    // Irradiance decomposition. Total follows Kasten–Czeplak on the smooth
-    // cloud fraction; the direct beam additionally gates on whether the sun
-    // disc is covered right now, and its clear-sky strength uses the Meinel
-    // airmass attenuation — without it, low-sun beam (exactly what strikes
-    // a poleward wall on high-latitude mornings) would be badly overstated.
+    // Irradiance decomposition. The direct beam (Meinel clear-sky airmass
+    // attenuation — without it, low-sun beam would be badly overstated)
+    // switches with the cloud gate: full strength when the sun's disc is
+    // clear, zero when covered. The diffuse part is always present, sized
+    // so the gate-averaged total reproduces the Kasten–Czeplak cloud
+    // relation exactly: diffuse = K&C mean − (1−c)·direct. So a clear sky
+    // gives the clear-sky global, full overcast the K&C floor, and broken
+    // sky FLICKERS between diffuse-only and diffuse+beam — momentarily
+    // exceeding the clear-sky global when the sun is out, which real
+    // broken-cloud pyranometer records also do (cloud-edge brightening).
     const clearGhi = SOLAR_CONSTANT * CLEAR_SKY_TRANSMISSION * sinE;
-    const totalGhi = clearGhi * cTrans;
-    let currentDni = 0;
-    if (!gateCovered && sinE > 0) {
+    const meanGhi = clearGhi * cTrans;
+    let dniClear = 0;
+    if (sinE > 0) {
       const airmass = 1 / Math.max(sinE, 0.02);
-      currentDni = SOLAR_CONSTANT * Math.pow(0.7, Math.pow(airmass, 0.678));
+      dniClear = SOLAR_CONSTANT * Math.pow(0.7, Math.pow(airmass, 0.678));
     }
+    const diffuseGhi = Math.max(0, meanGhi - (1 - cloudFraction) * dniClear * sinE);
+    const currentDni = gateCovered ? 0 : dniClear;
+    const totalGhi = diffuseGhi + currentDni * sinE;
 
-    // Energy balance step.
+    // Energy balance step. The stable-night decoupling keys off the smooth
+    // (gate-averaged) irradiance: boundary-layer convection does not shut
+    // down for the few minutes a cloud covers the sun.
     const lwLoss = EMISSIVITY * SIGMA * Math.pow(T + 273.15, 4) - lDown;
     const maxGhiNow = SOLAR_CONSTANT * CLEAR_SKY_TRANSMISSION;
-    const nightness = 1 - Math.min(1, totalGhi / (0.1 * maxGhiNow));
+    const nightness = 1 - Math.min(1, meanGhi / (0.1 * maxGhiNow));
     const tauNow = TAU_RESTORE * (1 + 2.2 * nightness * calmExcess);
     const dTdt =
       (SW_ABSORPTION * totalGhi - lwLoss) / C_EFF - (T - baseline) / tauNow;
-    T += dTdt * DT_SECONDS;
+    T += dTdt * AIR_DT_SECONDS;
 
     // OU turbulence (added on output, evolved here).
     const sigma = OU_SIGMA_NIGHT + OU_SIGMA_DAY * sinE * (gateCovered ? 0.55 : 1);
-    ou += (-ou / OU_TAU) * DT_SECONDS + sigma * Math.sqrt((2 * DT_SECONDS) / OU_TAU) * gaussian(rng);
+    ou += (-ou / OU_TAU) * AIR_DT_SECONDS + sigma * Math.sqrt((2 * AIR_DT_SECONDS) / OU_TAU) * gaussian(rng);
 
     // Gust process (relative wind fluctuation, floored so wind never quite
     // dies even in a "gusty calm").
-    ouWind += (-ouWind / GUST_TAU) * DT_SECONDS + gustFrac * Math.sqrt((2 * DT_SECONDS) / GUST_TAU) * gaussian(rng);
+    ouWind += (-ouWind / GUST_TAU) * AIR_DT_SECONDS + gustFrac * Math.sqrt((2 * AIR_DT_SECONDS) / GUST_TAU) * gaussian(rng);
 
     if (i >= keepFrom) {
       const j = i - keepFrom;
-      timeHours[j] = solarHour;
       airC[j] = T + ou;
-      ghi[j] = totalGhi;
-      dni[j] = currentDni;
-      sunElevDeg[j] = sun.elevationDeg;
-      sunAzDeg[j] = sun.azimuthDeg;
-      windSeries[j] = windMps * Math.max(0.15, 1 + ouWind);
+      const b = (j / CHAIN_RATIO) | 0;
+      airChainC[b] += (T + ou) / CHAIN_RATIO;
+      ghi[b] += totalGhi / CHAIN_RATIO;
+      dni[b] += currentDni / CHAIN_RATIO;
+      windSeries[b] += (windMps * Math.max(0.15, 1 + ouWind)) / CHAIN_RATIO;
+      if (j % CHAIN_RATIO === 0) {
+        timeHours[b] = solarHour;
+        sunElevDeg[b] = sun.elevationDeg;
+        sunAzDeg[b] = sun.azimuthDeg;
+      }
     }
   }
 
   let sum = 0;
+  for (let j = 0; j < AIR_STEPS_PER_DAY; j++) sum += airC[j];
+  // TRUE extremes: the warmest/coldest 10-second mean (the chain series),
+  // not the warmest 1-second blip — see the grid note above.
   let trueMaxC = -Infinity;
   let trueMinC = Infinity;
-  for (let j = 0; j < STEPS_PER_DAY; j++) {
-    sum += airC[j];
-    if (airC[j] > trueMaxC) trueMaxC = airC[j];
-    if (airC[j] < trueMinC) trueMinC = airC[j];
+  for (let b = 0; b < STEPS_PER_DAY; b++) {
+    if (airChainC[b] > trueMaxC) trueMaxC = airChainC[b];
+    if (airChainC[b] < trueMinC) trueMinC = airChainC[b];
   }
-  // True median of the day's samples — the other defensible one-number
+  // True median of the day's 1-s samples — the other defensible one-number
   // summary of "the day's temperature", alongside the integrated mean.
   const sorted = Float64Array.from(airC).sort();
-  const trueMedianC = (sorted[STEPS_PER_DAY / 2 - 1] + sorted[STEPS_PER_DAY / 2]) / 2;
+  const trueMedianC = (sorted[AIR_STEPS_PER_DAY / 2 - 1] + sorted[AIR_STEPS_PER_DAY / 2]) / 2;
 
   return {
     latDeg,
     windMps,
     timeHours,
     airC,
+    airChainC,
     ghi,
     dni,
     sunElevDeg,
     sunAzDeg,
     windSeries,
-    trueMeanC: sum / STEPS_PER_DAY,
+    trueMeanC: sum / AIR_STEPS_PER_DAY,
     trueMedianC,
     trueMaxC,
     trueMinC,
@@ -337,8 +378,9 @@ export function simulateDay({ latDeg, dayOfYear, cloudFraction, seed, windMps = 
 }
 
 // ── Exposures ────────────────────────────────────────────────────────────
-// Each exposure turns the true air series into the air the instrument
-// actually sits in. All three are first-order low-pass responses (their own
+// Each exposure turns the true air series (its 10-s chain means — see the
+// grid note above simulateDay) into the air the instrument actually sits
+// in. All three are first-order low-pass responses (their own
 // thermal lag) plus the radiation/ventilation errors documented for that
 // exposure class. A fixed moderate breeze is assumed throughout — wind is
 // not a control in this lab, and the card copy says which assumption is
@@ -428,7 +470,7 @@ export function wallAzimuthFactor(latDeg, sunAzDeg) {
 // the wall's hours-long memory would start amnesiac at midnight and leak a
 // spurious transient into wall-exposure Tmin.
 function exposureSeries(day, exposure) {
-  const n = day.airC.length;
+  const n = day.airChainC.length;
   const out = new Float64Array(n);
   const maxGhi = SOLAR_CONSTANT * CLEAR_SKY_TRANSMISSION;
 
@@ -444,8 +486,8 @@ function exposureSeries(day, exposure) {
     // Wall temperature: first-order response to (air + absorbed solar gain
     // + restricted-sky nighttime warmth). Direct beam on the vertical
     // poleward wall: DNI · cos(elev) · wallAzimuthFactor, when positive.
-    let wall = day.airC[0];
-    let pocket = day.airC[0];
+    let wall = day.airChainC[0];
+    let pocket = day.airChainC[0];
     const aWall = 1 - Math.exp(-DT_SECONDS / exposure.wallTauSeconds);
     for (let pass = 0; pass < 2; pass++) {
       for (let i = 0; i < n; i++) {
@@ -465,12 +507,12 @@ function exposureSeries(day, exposure) {
         const nightWarmC =
           exposure.nightSkyRestrictionC * clampNum(Math.pow(calm, 0.3), 0.6, 1.5) *
           (1 - Math.min(1, day.ghi[i] / (0.15 * maxGhi)));
-        const wallTarget = day.airC[i] + solarGainC + nightWarmC;
+        const wallTarget = day.airChainC[i] + solarGainC + nightWarmC;
         wall += aWall * (wallTarget - wall);
         const pocketTau = clampNum(exposure.tauSeconds * Math.pow(calm, 0.4), 90, 1200);
         const aPocket = 1 - Math.exp(-DT_SECONDS / pocketTau);
         const envTarget =
-          (1 - exposure.wallCoupling) * day.airC[i] + exposure.wallCoupling * wall;
+          (1 - exposure.wallCoupling) * day.airChainC[i] + exposure.wallCoupling * wall;
         pocket += aPocket * (envTarget - pocket);
         if (pass === 1) out[i] = pocket;
       }
@@ -482,7 +524,7 @@ function exposureSeries(day, exposure) {
   // aspirated shield's fan fixes its ventilation; the Stevenson screen's
   // lag and radiation errors follow the instantaneous wind.
   const windSensitive = exposure.id !== 'aspirated';
-  let env = day.airC[0];
+  let env = day.airChainC[0];
   for (let pass = 0; pass < 2; pass++) {
     for (let i = 0; i < n; i++) {
       const calm = windSensitive ? WIND_REF_MPS / windAt(i) : 1;
@@ -495,7 +537,7 @@ function exposureSeries(day, exposure) {
       const radErr =
         (exposure.dayRadiationErrorC * radFactor) * sunLoad +
         (exposure.nightRadiationErrorC * radFactor) * (1 - Math.min(1, day.ghi[i] / (0.15 * maxGhi)));
-      env += a * (day.airC[i] + radErr - env);
+      env += a * (day.airChainC[i] + radErr - env);
       if (pass === 1) out[i] = env;
     }
   }
@@ -701,33 +743,86 @@ export function runCartItem(day, instrument, exposure, itemKey) {
   const itemRng = mulberry32(hashString(itemKey));
   const calOffsetC = (itemRng() * 2 - 1) * instrument.toleranceC;
 
+  // Beyond the extremes, each registration mode now also states WHAT the
+  // record contains — because the chart and rating table must not pretend
+  // every instrument yields the same kind of data:
+  // - registerMarks (LiG only): where on the day the max/min indexes ended
+  //   up — the ONLY two numbers a register keeps from the whole day.
+  // - registerSeries (LiG only): the running state of those indexes at
+  //   every step — what you would see if you peeked at the instrument at
+  //   that moment. The page animates the marks riding the column with it.
+  // - readings (electronic only): every value the logger reports (spot
+  //   samples, or block means stamped at the END of the block they
+  //   summarize), quantized to the instrument's recording resolution —
+  //   what actually lands in the log file. Kept in sensor space (no
+  //   calibration offset) so the dots plot against the trace; the offset
+  //   appears only in the written record, same as the register reads.
+  // - recordedMeanC (electronic only): the daily average computable from
+  //   the logged values — a register cannot produce this, so it is null
+  //   for LiG and the page shows "N/A".
   let rawMax;
   let rawMin;
+  let registerMarks = null;
+  let registerSeries = null;
+  let readings = null;
+  let recordedMeanC = null;
   if (instrument.registration === 'ligRegister') {
     // Mechanical indexes with stiction: the register only moves when the
     // column pushes it by more than the friction threshold.
+    const maxVal = new Float64Array(n);
+    const maxTimeH = new Float64Array(n);
+    const minVal = new Float64Array(n);
+    const minTimeH = new Float64Array(n);
     let regMax = instrSeries[0];
     let regMin = instrSeries[0];
-    for (let i = 1; i < n; i++) {
-      if (instrSeries[i] > regMax + instrument.stictionC) regMax = instrSeries[i];
-      if (instrSeries[i] < regMin - instrument.stictionC) regMin = instrSeries[i];
+    let regMaxIdx = 0;
+    let regMinIdx = 0;
+    for (let i = 0; i < n; i++) {
+      if (instrSeries[i] > regMax + instrument.stictionC) {
+        regMax = instrSeries[i];
+        regMaxIdx = i;
+      }
+      if (instrSeries[i] < regMin - instrument.stictionC) {
+        regMin = instrSeries[i];
+        regMinIdx = i;
+      }
+      maxVal[i] = regMax;
+      maxTimeH[i] = day.timeHours[regMaxIdx];
+      minVal[i] = regMin;
+      minTimeH[i] = day.timeHours[regMinIdx];
     }
     rawMax = regMax;
     rawMin = regMin;
+    registerSeries = { maxVal, maxTimeH, minVal, minTimeH };
+    registerMarks = {
+      max: { timeH: day.timeHours[regMaxIdx], valueC: regMax },
+      min: { timeH: day.timeHours[regMinIdx], valueC: regMin },
+    };
   } else if (instrument.registration === 'spot') {
     const stride = Math.round(instrument.sampleSeconds / DT_SECONDS);
+    const times = [];
+    const values = [];
     rawMax = -Infinity;
     rawMin = Infinity;
+    let sum = 0;
     for (let i = 0; i < n; i += stride) {
+      times.push(day.timeHours[i]);
+      values.push(roundToResolution(instrSeries[i], instrument.resolutionC));
+      sum += instrSeries[i];
       if (instrSeries[i] > rawMax) rawMax = instrSeries[i];
       if (instrSeries[i] < rawMin) rawMin = instrSeries[i];
     }
+    readings = { timeHours: times, values };
+    recordedMeanC = sum / values.length;
   } else {
     // 'average': block means of sampleSeconds samples over averageSeconds.
     const sampleStride = Math.round(instrument.sampleSeconds / DT_SECONDS);
     const blockSteps = Math.round(instrument.averageSeconds / DT_SECONDS);
+    const times = [];
+    const values = [];
     rawMax = -Infinity;
     rawMin = Infinity;
+    let sum = 0;
     for (let b = 0; b + blockSteps <= n; b += blockSteps) {
       let s = 0;
       let count = 0;
@@ -736,9 +831,14 @@ export function runCartItem(day, instrument, exposure, itemKey) {
         count++;
       }
       const mean = s / count;
+      times.push(day.timeHours[b + blockSteps - 1]);
+      values.push(roundToResolution(mean, instrument.resolutionC));
+      sum += mean;
       if (mean > rawMax) rawMax = mean;
       if (mean < rawMin) rawMin = mean;
     }
+    readings = { timeHours: times, values };
+    recordedMeanC = sum / values.length;
   }
 
   const recordedTmaxC = roundToResolution(rawMax + calOffsetC, instrument.resolutionC);
@@ -748,12 +848,19 @@ export function runCartItem(day, instrument, exposure, itemKey) {
     instrumentId: instrument.id,
     exposureId: exposure.id,
     instrSeries,
+    registerMarks,
+    registerSeries,
+    readings,
     // Never displayed on the receipt — you know the tolerance you bought,
     // not the error you got. Kept for the tests.
     calOffsetC,
     recordedTmaxC,
     recordedTminC,
     midpointC: (recordedTmaxC + recordedTminC) / 2,
+    recordedMeanC:
+      recordedMeanC === null
+        ? null
+        : roundToResolution(recordedMeanC + calOffsetC, instrument.resolutionC),
   };
 }
 

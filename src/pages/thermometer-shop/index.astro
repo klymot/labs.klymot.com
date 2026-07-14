@@ -86,7 +86,7 @@ const WIND_ICONS = {
         <ul class="learn-list">
           <li>How a mechanical min/max register, a spot-sampling logger, and an averaging logger each turn a day of air into two numbers — and whether they agree.</li>
           <li>What a shelter does to the air an instrument actually sits in.</li>
-          <li>How each item's (Tmax+Tmin)/2 midpoint compares with the 24-hour average of the same simulated air — a number no instrument on the shelf records.</li>
+          <li>How each item's meteorological average — the (Tmax+Tmin)/2 midpoint — compares with the 24-hour average of the same simulated air — a number no instrument on the shelf records.</li>
         </ul>
       </div>
     </div>
@@ -103,11 +103,11 @@ const WIND_ICONS = {
           <div class="expander-body">
             <p>What <em>is</em> real: the instrument and shelter behaviour. Response times, tolerances, reading resolutions, sampling schedules and screen radiation errors are taken from published values and ranges. Where a cited work documents outcomes rather than mechanisms — the wall exposure's coupling constants, the 1780s instrument's exact figures, the friction of a mechanical index — the numbers are this lab's estimates, chosen so the resulting behaviour sits inside the ranges those works document, and labelled as such where they appear. Sources are cited on each product card and at the end of the page.</p>
             <p>One thing this lab is not: a ranking. Every instrument in the shop measures the same atmosphere differently — by design, by era, by shelter, by schedule — and running them through one identical day is a way to understand each instrument on its own terms. Whether any of the differences you find are large enough to matter, and for what, stays your call.</p>
-            <p>Why invent weather at all? Because no real site ever hung an 18th-century thermometer at a poleward wall, a screened Victorian pair, and an aspirated platinum sensor in <em>identical air</em>. A simulation is the only way to hold the day fixed and vary nothing but the instrument. It also means the simulation genuinely knows one number no instrument records — the average of the air itself over all 8,640 ten-second steps of the day — and can print it on your receipt at the end.</p>
+            <p>Why invent weather at all? Because no real site ever hung an 18th-century thermometer at a poleward wall, a screened Victorian pair, and an aspirated platinum sensor in <em>identical air</em>. A simulation is the only way to hold the day fixed and vary nothing but the instrument. It also means the simulation genuinely knows one number no instrument records — the average of the air itself over all 86,400 one-second steps of the day — and can print it on your receipt at the end.</p>
             <details class="expander">
               <summary>How the simulated day is generated</summary>
               <div class="expander-body">
-                <p>A single energy balance drives the air temperature: absorbed sunlight in; thermal radiation out at the layer's own T⁴ against a cloud-dependent sky (the Swinbank 1963 clear-sky downwelling, evaluated at the seasonal baseline and enhanced under cloud — so clear nights can cool toward a radiative equilibrium well below the day's baseline, while overcast nights barely can); and relaxation toward a latitude-based seasonal baseline standing in for the boundary-layer mixing and advection the model doesn't resolve. That relaxation weakens on calm nights — stable air decouples from the layers above, which is what lets a still, clear night dig a deep minimum that a windy night cannot. Total sunlight under your cloud fraction follows the published Kasten &amp; Czeplak (1980) relation; the direct beam uses the Meinel clear-sky airmass formula, and switches off whenever a simulated cloud is over the sun's disc — a random on/off gate whose average matches your cloud slider, so a half-cloudy sky flickers the way real broken sky does. (The gate drives the wall exposure's direct beam and damps daytime turbulence while the sun is hidden; the day's total sunshine — and the screen radiation errors scaled by it — follows the smooth cloud-fraction relation.)</p>
+                <p>A single energy balance drives the air temperature: absorbed sunlight in; thermal radiation out at the layer's own T⁴ against a cloud-dependent sky (the Swinbank 1963 clear-sky downwelling, evaluated at the seasonal baseline and enhanced under cloud — so clear nights can cool toward a radiative equilibrium well below the day's baseline, while overcast nights barely can); and relaxation toward a latitude-based seasonal baseline standing in for the boundary-layer mixing and advection the model doesn't resolve. That relaxation weakens on calm nights — stable air decouples from the layers above, which is what lets a still, clear night dig a deep minimum that a windy night cannot. Sunlight is split into an always-present diffuse part and a direct beam (the Meinel clear-sky airmass formula) that switches off whenever a simulated cloud is over the sun's disc — a random on/off gate whose average matches your cloud slider, passing faster in wind. The diffuse part is sized so the gate-averaged total reproduces the published Kasten &amp; Czeplak (1980) cloud relation; instant by instant, though, a half-cloudy sky flickers the way real broken sky does, and every flicker reaches the air itself: each cloud gap is a small heating spike the thermometers then chase, each covering a dip. The same gated sunshine drives the wall exposure's direct beam, the screens' radiation errors, and the damping of daytime turbulence while the sun is hidden.</p>
                 <p>On top of that sits small, fast turbulence (a mean-reverting random wiggle, stronger in daytime convection) — the tenths-of-a-degree texture real air has, the part of the signal that response times and sampling schedules act on. All randomness is seeded: the "weather number" printed on your receipt replays the identical day, so shared links reproduce exactly.</p>
               </div>
             </details>
@@ -128,7 +128,7 @@ const WIND_ICONS = {
             <details class="expander">
               <summary>What "the average of the air itself" means here</summary>
               <div class="expander-body">
-                <p>The average of every one of the day's 8,640 ten-second air-temperature samples. Historically, (Tmax+Tmin)/2 and this integrated average have both served as definitions of "the day's temperature" — which one a record uses is a convention, and how much the two differ (and when, and which way) is one of the things this lab leaves to you. No thermometer in the shop measures the integrated average. The simulation knows it only because the simulation generated the air; that is the one honest advantage synthetic weather buys, and the receipt's final line uses it.</p>
+                <p>The average of every one of the day's 86,400 one-second air-temperature samples. Historically, (Tmax+Tmin)/2 and this integrated average have both served as definitions of "the day's temperature" — which one a record uses is a convention, and how much the two differ (and when, and which way) is one of the things this lab leaves to you. No thermometer in the shop measures the integrated average. The simulation knows it only because the simulation generated the air; that is the one honest advantage synthetic weather buys, and the receipt's final line uses it.</p>
               </div>
             </details>
             <details class="expander">
@@ -157,7 +157,7 @@ const WIND_ICONS = {
                   <li>Buy two units of the same item, same shelter. Do their receipts agree? Within what?</li>
                   <li>Run the same cart on a clear day and an overcast one. Which parts of the receipt move — Tmax, Tmin, both, neither?</li>
                   <li>Hold the instrument fixed and vary only the shelter, then hold the shelter fixed and vary only the instrument. Which choice moved your receipt more?</li>
-                  <li>Rank your items by how close each midpoint lands to the true mean. Does the ranking follow instrument age? Shelter? Sampling schedule? Does it hold on a different day?</li>
+                  <li>Rank your items by how close each met average lands to the true mean. Does the ranking follow instrument age? Shelter? Sampling schedule? Does it hold on a different day?</li>
                   <li>Take the same cart to a different latitude, or the opposite season, or the other hemisphere — does whatever pattern you found travel?</li>
                   <li>Re-roll the weather with everything else fixed. How much of what you concluded survives a different draw of the same sky?</li>
                 </ul>
@@ -365,15 +365,22 @@ const WIND_ICONS = {
         <button type="button" class="screen-back" id="backToShipping">← Change the delivery</button>
         <div class="prose">
           <h2 id="tracking-heading">Track your shipment</h2>
-          <p>Your instruments are out in the delivery day. Each trace is one item's own reading, drawn as its day unfolds — every item is sitting in the <em>same simulated air</em>.</p>
+          <p>Your instruments are out in the delivery day. Each series is one item's own reading, drawn as its day unfolds — every item is sitting in the <em>same simulated air</em>, but they don't all bring back the same kind of data.</p>
         </div>
         <div class="chart-bleed" style="margin-top:1.25rem">
           <div class="section-card" style="padding:1rem">
+            <div class="chart-toolbar chart-zoom-tools" id="dayChartTools" aria-label="Chart zoom controls">
+              <span class="toolbar-label">Zoom</span>
+              <button type="button" class="mini-tool" data-zoom="in" aria-label="Zoom in">+</button>
+              <button type="button" class="mini-tool" data-zoom="out" aria-label="Zoom out">−</button>
+              <button type="button" class="mini-tool" data-zoom="reset">Reset</button>
+              <span class="toolbar-label chart-zoom-hint">drag to pan · double-click, pinch or ctrl-scroll to zoom</span>
+            </div>
             <div class="chart-container" id="dayChartContainer" role="img" aria-label="Chart of each purchased instrument's temperature through the simulated day">
               <canvas id="dayChart" style="display:block; width:100%; height:100%;"></canvas>
             </div>
             <div id="dayChartLegend"></div>
-            <p class="chart-caption">Local solar time. Shaded bands: warm tint marks daylight; the darker tint marks night. Toggle series in the legend.</p>
+            <p class="chart-caption">Local solar time. Shaded bands: warm tint marks daylight; the darker tint marks night. Toggle series in the legend. Liquid-in-glass items draw as a continuous line — a column you could watch all day — with rings riding it for the max and min indexes, sticking at each new extreme; the rings' final resting places are the ONLY two numbers that survive to the record. Electronic items draw as dots, one per value the logger reports; zoom in and the reporting interval becomes visible.</p>
           </div>
         </div>
 
@@ -402,7 +409,7 @@ const WIND_ICONS = {
         <button type="button" class="screen-back" id="backToTracking">← Back to the tracking chart</button>
         <div class="prose">
           <h2 id="receipt-heading">Your receipt</h2>
-          <p>Each line shows what that item wrote down: its registered maximum, its registered minimum, and the midpoint (Tmax+Tmin)/2 — the quantity daily records are built from.</p>
+          <p>Each line shows what that item wrote down: its registered maximum, its registered minimum, and the meteorological average (Tmax+Tmin)/2 — the quantity daily records are built from. Electronic loggers can also total their readings into a true daily average; a mechanical register keeps two numbers and nothing else, so that column shows a dash.</p>
         </div>
         <div class="section-card receipt-card">
           <div class="receipt-head">
@@ -412,12 +419,13 @@ const WIND_ICONS = {
           <div class="receipt-table-wrap">
             <table class="receipt-table" aria-describedby="receipt-heading">
               <thead>
-                <tr><th scope="col">Item</th><th scope="col">Shelter</th><th scope="col">Tmax (°C)</th><th scope="col">Tmin (°C)</th><th scope="col">Midpoint (°C)</th></tr>
+                <tr><th scope="col">Item</th><th scope="col">Shelter</th><th scope="col">Tmax (°C)</th><th scope="col">Tmin (°C)</th><th scope="col">Met avg (°C)</th><th scope="col">True avg (°C)</th></tr>
               </thead>
               <tbody id="receiptBody"></tbody>
               <tfoot id="receiptFoot" hidden>
                 <tr class="receipt-truth-row">
-                  <th scope="row" colspan="2">24-hour average of the air itself (all 8,640 samples)</th>
+                  <th scope="row" colspan="2">24-hour average of the air itself (all 86,400 samples)</th>
+                  <td class="receipt-truth-dash">—</td>
                   <td class="receipt-truth-dash">—</td>
                   <td class="receipt-truth-dash">—</td>
                   <td id="receiptTrueMean"></td>
@@ -441,37 +449,48 @@ const WIND_ICONS = {
         <button type="button" class="screen-back" id="backToReceipt">← Back to the receipt</button>
         <div class="prose">
           <h2 id="truth-heading">Rate your purchase</h2>
-          <p>The simulation knows what no instrument records: the air itself, sampled every 10 seconds. How your items compare is yours to judge — different carts, days, and skies can answer differently.</p>
+          <p>The simulation knows what no instrument records: the air itself, generated second by second (its extremes quoted as 10-second averages — a one-second blip is finer than even the reference chain resolves). How your items compare is yours to judge — different carts, days, and skies can answer differently.</p>
         </div>
         <div class="section-card rating-table-card">
           <table class="order-table air-stats-table">
             <tbody>
               <tr><th scope="row">24-h average of the air</th><td id="truthMean">—</td></tr>
               <tr><th scope="row">24-h median of the air</th><td id="truthMedian">—</td></tr>
-              <tr><th scope="row">Warmest instant (10-s sample)</th><td id="truthMax">—</td></tr>
-              <tr><th scope="row">Coldest instant (10-s sample)</th><td id="truthMin">—</td></tr>
+              <tr><th scope="row">Warmest moment (10-s average)</th><td id="truthMax">—</td></tr>
+              <tr><th scope="row">Coldest moment (10-s average)</th><td id="truthMin">—</td></tr>
             </tbody>
           </table>
         </div>
 
         <div class="section-card rating-table-card">
+          <div class="metric-toggle" id="ratingMetricToggle" role="group" aria-label="Choose which recorded statistic to compare">
+            <button type="button" data-metric="max">Tmax</button>
+            <button type="button" data-metric="min">Tmin</button>
+            <button type="button" data-metric="midpoint" class="active">Met average</button>
+            <button type="button" data-metric="mean">True average</button>
+          </div>
           <div class="receipt-table-wrap">
-            <table class="receipt-table" aria-label="Each item's midpoint compared with the air's true median and average">
-              <thead>
-                <tr><th scope="col">Item</th><th scope="col">Shelter</th><th scope="col">Midpoint (°C)</th><th scope="col">− air median (°C)</th><th scope="col">− air average (°C)</th></tr>
-              </thead>
+            <table class="receipt-table" aria-label="Each item's chosen recorded statistic compared with the air itself">
+              <thead id="ratingHead"></thead>
               <tbody id="ratingBody"></tbody>
             </table>
           </div>
-          <p class="chart-caption">Signed differences: each item's (Tmax+Tmin)/2 midpoint minus the air's own median and average.</p>
+          <p class="chart-caption" id="ratingCaption"></p>
         </div>
         <div class="chart-bleed" style="margin-top:1.25rem">
           <div class="section-card" style="padding:1rem">
+            <div class="chart-toolbar chart-zoom-tools" id="truthChartTools" aria-label="Chart zoom controls">
+              <span class="toolbar-label">Zoom</span>
+              <button type="button" class="mini-tool" data-zoom="in" aria-label="Zoom in">+</button>
+              <button type="button" class="mini-tool" data-zoom="out" aria-label="Zoom out">−</button>
+              <button type="button" class="mini-tool" data-zoom="reset">Reset</button>
+              <span class="toolbar-label chart-zoom-hint">drag to pan · double-click, pinch or ctrl-scroll to zoom</span>
+            </div>
             <div class="chart-container" id="truthChartContainer" role="img" aria-label="Chart of each purchased instrument's temperature with the air itself overlaid">
               <canvas id="truthChart" style="display:block; width:100%; height:100%;"></canvas>
             </div>
             <div id="truthChartLegend"></div>
-            <p class="chart-caption">The same day again — with the air itself (dashed) behind what your items read. Toggle series in the legend.</p>
+            <p class="chart-caption">The same day again — with the air itself as the solid line beneath everything your items read. Rings mark the only two values a liquid-in-glass register keeps; dots are the values an electronic logger reports. Toggle series in the legend.</p>
           </div>
         </div>
 
@@ -485,7 +504,7 @@ const WIND_ICONS = {
             <div class="run-history-scroll section-card">
               <table class="run-history-table">
                 <thead>
-                  <tr><th>#</th><th>Day settings</th><th>Items (Tmax / Tmin / midpoint °C)</th><th>Air 24-h avg (°C)</th></tr>
+                  <tr><th>#</th><th>Day settings</th><th>Items (Tmax / Tmin / met avg °C)</th><th>Air 24-h avg (°C)</th></tr>
                 </thead>
                 <tbody id="runHistoryBody"></tbody>
               </table>
@@ -503,13 +522,13 @@ const WIND_ICONS = {
           <div class="expander-body">
             <dl class="sources-list">
               <dt>The synthetic weather (methodology, not a data source)</dt>
-              <dd>The day itself is generated, not measured: a single-layer energy balance relaxed toward a latitude-based seasonal baseline, with seeded stochastic cloud gating and turbulence. Its magnitudes are tuned to plausible screen-level diurnal behaviour, and it is not a reconstruction of any real location or date. Radiation pieces use the two published relations below; everything else in the weather generator is this lab's own simplification, stated in "How the simulated day is generated" above.</dd>
+              <dd>The day itself is generated, not measured: a single-layer energy balance relaxed toward a latitude-based seasonal baseline, with seeded stochastic cloud gating and turbulence. Its magnitudes are tuned to plausible screen-level diurnal behaviour, and it is not a reconstruction of any real location or date. Radiation pieces use the two published relations below; everything else in the weather generator is this lab's own simplification, stated in "How the simulated day is generated" above. The day's short-term texture (the size of its 5-minute wiggles on clear, broken, and overcast days) was sanity-checked against US Climate Reference Network 5-minute records from two near-sea-level stations — one Pacific, one Atlantic — with the observed days classified by their measured solar radiation; the model's flicker sits within the observed day-to-day spread for both, though real broken-cloud spikes run sharper than the model's at the convective-cumulus site and softer at the marine-cloud one, a cloud-type distinction one cloud slider cannot express.</dd>
               <dt>Cloud transmission — Kasten &amp; Czeplak (1980)</dt>
-              <dd>"Solar and terrestrial radiation dependent on the amount and type of cloud," <em>Solar Energy</em>, 24(2), 177–189. <a href="https://doi.org/10.1016/0038-092X(80)90391-6" target="_blank" rel="noopener">doi:10.1016/0038-092X(80)90391-6</a> — global-irradiance-vs-cloud-fraction relation.</dd>
+              <dd>"Solar and terrestrial radiation dependent on the amount and type of cloud," <em>Solar Energy</em>, 24(2), 177–189. <a href="https://doi.org/10.1016/0038-092X(80)90391-6" target="_blank" rel="noopener">doi:10.1016/0038-092X(80)90391-6</a> — global-irradiance-vs-cloud-fraction relation; here it fixes the gate-averaged total, with the stochastic gate supplying the instant-by-instant broken-cloud flicker around it.</dd>
               <dt>Clear-sky downwelling longwave — Swinbank (1963)</dt>
               <dd>"Long-wave radiation from clear skies," <em>Q. J. Royal Meteorological Society</em>, 89(381), 339–348. <a href="https://doi.org/10.1002/qj.49708938105" target="_blank" rel="noopener">doi:10.1002/qj.49708938105</a> — the clear-sky sky-radiation formula the night-time cooling balance runs against; the cloud enhancement applied to it is this lab's simplification within the standard family of such corrections.</dd>
               <dt>Clear-sky direct beam — Meinel &amp; Meinel (1976)</dt>
-              <dd><em>Applied Solar Energy: An Introduction</em>, Addison-Wesley — airmass attenuation formula for the direct beam striking the wall exposure.</dd>
+              <dd><em>Applied Solar Energy: An Introduction</em>, Addison-Wesley — airmass attenuation formula for the direct beam (the gated component of the sunlight, and what strikes the wall exposure).</dd>
               <dt>Instrument response times, tolerances, and Tmax/Tmin definitions — WMO CIMO Guide</dt>
               <dd>WMO-No. 8, <em>Guide to Instruments and Methods of Observation</em>, Vol. I, Ch. 2 (Measurement of temperature). <a href="https://library.wmo.int/idurl/4/68695" target="_blank" rel="noopener">library.wmo.int</a> — thermometer time constants, tolerances, screen behaviour, and the 1-minute-mean definition of daily extremes.</dd>
               <dt>Historical exposures — Parker (1994)</dt>
@@ -1006,6 +1025,33 @@ const WIND_ICONS = {
       letter-spacing: 0.12em;
       color: var(--text-secondary, #888);
     }
+    .chart-zoom-tools { margin-bottom: 0.6rem; }
+    .chart-zoom-tools .mini-tool { min-width: 1.7rem; height: 1.7rem; }
+    .chart-zoom-hint { text-transform: none; letter-spacing: 0.02em; font-weight: 500; }
+    .metric-toggle {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+    .metric-toggle button {
+      background: var(--btn-bg, transparent);
+      color: var(--text-secondary, #888);
+      border: 1px solid var(--border, rgba(128,128,128,0.3));
+      border-radius: 999px;
+      padding: 0.3rem 0.85rem;
+      font-family: var(--font-sans, sans-serif);
+      font-size: 0.8rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .metric-toggle button:hover { color: var(--text, inherit); border-color: var(--border-strong, rgba(128,128,128,0.5)); }
+    .metric-toggle button.active {
+      color: var(--text, inherit);
+      border-color: var(--accent, #d4a855);
+      font-weight: 600;
+    }
+    .rating-na { color: var(--text-secondary, #888); font-style: italic; }
     #runHistorySection { margin-top: 1.5rem; }
     .run-history-scroll {
       margin-top: 0.75rem;
@@ -1177,6 +1223,9 @@ const WIND_ICONS = {
       truthSection: document.getElementById('truth'),
       truthMedian: document.getElementById('truthMedian'),
       ratingBody: document.getElementById('ratingBody'),
+      ratingHead: document.getElementById('ratingHead'),
+      ratingCaption: document.getElementById('ratingCaption'),
+      ratingMetricToggle: document.getElementById('ratingMetricToggle'),
       truthMean: document.getElementById('truthMean'),
       truthMax: document.getElementById('truthMax'),
       truthMin: document.getElementById('truthMin'),
@@ -1616,7 +1665,15 @@ const WIND_ICONS = {
     // checkout animation sweeps it 0→24 so the traces draw themselves
     // across the day like pens; axes and day/night shading render in full
     // from the first frame.
-    function drawDayChart(canvas, series, day, maxHour = 24) {
+    // Series shapes the chart understands — because not every instrument
+    // yields the same kind of data, and the chart must not pretend it does:
+    // - { values }: a continuous trace (the air; a liquid-in-glass column).
+    // - { values, marks }: a trace plus ringed markers at the register's
+    //   final max/min — the only two values that survive to the record.
+    // - { points }: dot-only — each dot is one value the electronic logger
+    //   reports; zooming in resolves the reporting interval.
+    const CHART_PAD = { l: 46, r: 14, t: 16, b: 36 };
+    function drawDayChart(canvas, series, day, maxHour = 24, view = { x0: 0, x1: 24 }) {
       const dpr = window.devicePixelRatio || 1;
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
@@ -1625,35 +1682,58 @@ const WIND_ICONS = {
       const ctx = canvas.getContext('2d');
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
-      const padL = 46, padR = 14, padT = 16, padB = 36;
+      const padL = CHART_PAD.l, padR = CHART_PAD.r, padT = CHART_PAD.t, padB = CHART_PAD.b;
       const plotW = w - padL - padR, plotH = h - padT - padB;
 
+      const xMin = view.x0, xMax = view.x1;
+      const xSpan = xMax - xMin;
+      // Series carry their own sample counts (the air is stored per second,
+      // instrument series per 10 s), so all index math is per-series: a
+      // series of length sn spans the day uniformly, sample i at hour
+      // i * 24 / sn.
+      const idxRange = (sn) => [
+        Math.max(0, Math.floor((xMin / 24) * sn) - 1),
+        Math.min(sn - 1, Math.ceil((xMax / 24) * sn) + 1),
+      ];
+
+      // Y-range fits what is visible: the zoom window and toggled series.
       let yMinF = Infinity, yMaxF = -Infinity;
+      const consider = (v) => {
+        if (v < yMinF) yMinF = v;
+        if (v > yMaxF) yMaxF = v;
+      };
       series.filter((s) => s.visible !== false).forEach((s) => {
-        for (let i = 0; i < s.values.length; i++) {
-          if (s.values[i] < yMinF) yMinF = s.values[i];
-          if (s.values[i] > yMaxF) yMaxF = s.values[i];
+        if (s.values) {
+          const [i0, i1] = idxRange(s.values.length);
+          for (let i = i0; i <= i1; i++) consider(s.values[i]);
+        }
+        if (s.points) {
+          for (let i = 0; i < s.points.timeHours.length; i++) {
+            const t = s.points.timeHours[i];
+            if (t >= xMin && t <= xMax) consider(s.points.values[i]);
+          }
         }
       });
       if (!isFinite(yMinF)) return;
-      const yPad = Math.max(0.5, (yMaxF - yMinF) * 0.08);
+      const yPad = Math.max(0.3, (yMaxF - yMinF) * 0.08);
       const yMin = yMinF - yPad, yMax = yMaxF + yPad;
-      const xMin = 0, xMax = 24;
-      const n = day.timeHours.length;
 
       const textColor = cssVar('--text-secondary') || '#888';
       const gridColor = cssVar('--border') || 'rgba(128,128,128,0.2)';
-      const xToPix = (x) => padL + ((x - xMin) / (xMax - xMin)) * plotW;
+      const bgColor = cssVar('--bg-secondary') || '#1a1a1a';
+      const xToPix = (x) => padL + ((x - xMin) / xSpan) * plotW;
       const yToPix = (y) => padT + plotH - ((y - yMin) / (yMax - yMin)) * plotH;
 
       // Day/night shading from the day's actual sun elevation.
       const shadeSteps = 96;
       for (let i = 0; i < shadeSteps; i++) {
-        const hMid = ((i + 0.5) / shadeSteps) * 24;
-        const idx = Math.min(n - 1, Math.round((hMid / 24) * n));
+        const h0 = xMin + (i / shadeSteps) * xSpan;
+        const hMid = h0 + (0.5 / shadeSteps) * xSpan;
+        const sunN = day.sunElevDeg.length;
+        const idx = Math.min(sunN - 1, Math.max(0, Math.round((hMid / 24) * sunN)));
         const isNight = day.sunElevDeg[idx] <= 0;
         ctx.fillStyle = isNight ? 'rgba(80,110,220,0.16)' : 'rgba(255,200,80,0.10)';
-        ctx.fillRect(xToPix((i / shadeSteps) * 24), padT, plotW / shadeSteps + 1, plotH);
+        ctx.fillRect(xToPix(h0), padT, plotW / shadeSteps + 1, plotH);
       }
 
       ctx.font = '11px sans-serif';
@@ -1671,32 +1751,103 @@ const WIND_ICONS = {
         ctx.fillText(String(Math.round(yv * 100) / 100), 4, yPix + 4);
       }
       ctx.fillText('°C', 4, padT - 4);
-      for (let xv = 0; xv <= 24; xv += 6) {
+      // X grid: step chosen for the zoom level; minutes shown when zoomed.
+      const xStep = [0.25, 0.5, 1, 2, 3, 6].find((st) => xSpan / st <= 8) || 6;
+      const fmtHour = (xv) => {
+        const hh = Math.floor(xv + 1e-9);
+        const mm = Math.round((xv - hh) * 60);
+        return xStep < 1 ? `${hh}:${String(mm).padStart(2, '0')}` : String(hh);
+      };
+      for (let xv = Math.ceil(xMin / xStep) * xStep; xv <= xMax + 1e-9; xv += xStep) {
         const px = xToPix(xv);
         ctx.strokeStyle = gridColor;
         ctx.beginPath(); ctx.moveTo(px, padT); ctx.lineTo(px, padT + plotH); ctx.stroke();
         ctx.fillStyle = textColor;
-        const lbl = String(xv);
+        const lbl = fmtHour(xv);
         ctx.fillText(lbl, px - ctx.measureText(lbl).width / 2, padT + plotH + 14);
       }
 
-      // Series: decimate to ~2 points per pixel for draw speed.
-      const stride = Math.max(1, Math.floor(n / (plotW * 2)));
-      series.filter((s) => s.visible !== false).forEach((s) => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(padL, padT, plotW, plotH);
+      ctx.clip();
+      // Lines: decimate to ~2 points per pixel for draw speed.
+      const lineSeries = series
+        .filter((s) => s.visible !== false && s.values)
+        .sort((a, b) => (a.under ? 0 : 1) - (b.under ? 0 : 1));
+      lineSeries.forEach((s) => {
+        const sn = s.values.length;
+        const hoursPer = 24 / sn;
+        const [i0, i1] = idxRange(sn);
+        const stride = Math.max(1, Math.floor((i1 - i0) / (plotW * 2)));
         ctx.strokeStyle = s.color;
-        ctx.lineWidth = s.dash ? 1.5 : 2;
+        ctx.lineWidth = s.dash ? 1.5 : s.under ? 1.5 : 2;
         ctx.setLineDash(s.dash ? [5, 4] : []);
         ctx.beginPath();
         let started = false;
-        for (let i = 0; i < n; i += stride) {
-          if (day.timeHours[i] > maxHour) break;
-          const px = xToPix(day.timeHours[i]);
+        for (let i = i0; i <= i1; i += stride) {
+          const tH = i * hoursPer;
+          if (tH > maxHour) break;
+          const px = xToPix(tH);
           const py = yToPix(s.values[i]);
           if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
         }
         ctx.stroke();
       });
       ctx.setLineDash([]);
+      // Dots: one per reported value, joined by a faint dotted line — the
+      // dots are the data; the dotted line only guides the eye between them.
+      series.filter((s) => s.visible !== false && s.points).forEach((s) => {
+        const times = s.points.timeHours;
+        let visibleCount = 0;
+        for (let i = 0; i < times.length; i++) {
+          if (times[i] >= xMin && times[i] <= xMax) visibleCount++;
+        }
+        const r = plotW / Math.max(visibleCount, 1) > 8 ? 3.5 : 2.1;
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = 1.3;
+        ctx.setLineDash([3, 3]);
+        ctx.globalAlpha = 0.8;
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i < times.length; i++) {
+          if (times[i] > maxHour) break;
+          const px = xToPix(times[i]);
+          const py = yToPix(s.points.values[i]);
+          if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = s.color;
+        for (let i = 0; i < times.length; i++) {
+          const t = times[i];
+          if (t < xMin || t > xMax || t > maxHour) continue;
+          ctx.beginPath();
+          ctx.arc(xToPix(t), yToPix(s.points.values[i]), r, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      });
+      // Register marks: the two values a liquid-in-glass record keeps,
+      // drawn at their CURRENT position as of maxHour — during the delivery
+      // sweep they ride the column, sticking at each new extreme.
+      series.filter((s) => s.visible !== false && s.markSeries).forEach((s) => {
+        const ms = s.markSeries;
+        const idx = Math.min(ms.maxVal.length - 1, Math.max(0, Math.ceil((maxHour / 24) * ms.maxVal.length) - 1));
+        [
+          { timeH: ms.maxTimeH[idx], valueC: ms.maxVal[idx] },
+          { timeH: ms.minTimeH[idx], valueC: ms.minVal[idx] },
+        ].forEach((m) => {
+          ctx.beginPath();
+          ctx.arc(xToPix(m.timeH), yToPix(m.valueC), 4.5, 0, 2 * Math.PI);
+          ctx.fillStyle = bgColor;
+          ctx.fill();
+          ctx.strokeStyle = s.color;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        });
+      });
+      ctx.restore();
       ctx.fillStyle = textColor;
       const xTitle = 'Local solar time (hours)';
       ctx.fillText(xTitle, padL + Math.max(0, (plotW - ctx.measureText(xTitle).width) / 2), h - 6);
@@ -1747,7 +1898,8 @@ const WIND_ICONS = {
           `<td>${exp.short}</td>` +
           `<td>${fmtC(r.recordedTmaxC)}</td>` +
           `<td>${fmtC(r.recordedTminC)}</td>` +
-          `<td>${fmtC(r.midpointC)}</td>`;
+          `<td>${fmtC(r.midpointC)}</td>` +
+          `<td>${r.recordedMeanC === null ? '—' : fmtC(r.recordedMeanC)}</td>`;
         tr.querySelector('td').style.borderLeft = `3px solid ${SERIES_COLORS[i]}`;
         els.receiptBody.appendChild(tr);
       });
@@ -1768,11 +1920,17 @@ const WIND_ICONS = {
         (withAir ? '<th scope="col">The air itself</th>' : '') +
         '</tr>';
       els.hourlyBody.innerHTML = '';
-      const n = order.day.timeHours.length;
+      const at = (arr, hr) => arr[Math.min(arr.length - 1, Math.round((hr / 24) * arr.length))];
+      // Each instrument's reading is quoted at ITS resolution — a Six
+      // pattern reads to 0.5 °C, not the simulation's precision. Only the
+      // air itself (simulation truth) gets two decimals.
+      const readAt = (r, hr) => {
+        const res = getInstrument(r.instrumentId).resolutionC;
+        return fmtC(Math.round(at(r.instrSeries, hr) / res) * res);
+      };
       for (let hr = 0; hr < 24; hr++) {
-        const idx = Math.min(n - 1, Math.round((hr / 24) * n));
-        const cells = order.results.map((r) => `<td>${r.instrSeries[idx].toFixed(2)}</td>`).join('');
-        const airCell = withAir ? `<td>${order.day.airC[idx].toFixed(2)}</td>` : '';
+        const cells = order.results.map((r) => `<td>${readAt(r, hr)}</td>`).join('');
+        const airCell = withAir ? `<td>${at(order.day.airC, hr).toFixed(2)}</td>` : '';
         els.hourlyBody.insertAdjacentHTML('beforeend', `<tr><th scope="row">${String(hr).padStart(2, '0')}:00</th>${cells}${airCell}</tr>`);
       }
     }
@@ -1782,15 +1940,100 @@ const WIND_ICONS = {
     // motion. Each chart keeps its own sweep state so the tracking chart
     // and the rate-your-purchase chart animate independently.
     const CHART_SWEEP_MS = 3200;
-    function createAnimatedChart(canvas, legendEl) {
+    const CHART_MIN_SPAN_H = 0.25; // deepest zoom: a 15-minute window
+    function createAnimatedChart(canvas, legendEl, toolsEl) {
       let series = [];
       let day = null;
       let maxHour = 24;
       let frame = null;
+      let view = { x0: 0, x1: 24 };
       const redraw = () => {
-        if (day) drawDayChart(canvas, series, day, maxHour);
+        if (day) drawDayChart(canvas, series, day, maxHour, view);
       };
       chartRedraws.push(redraw);
+
+      // ── Zoom / pan state ──────────────────────────────────────────
+      const isZoomed = () => view.x0 > 0 || view.x1 < 24;
+      function syncZoomUi() {
+        if (toolsEl) {
+          const resetBtn = toolsEl.querySelector('[data-zoom="reset"]');
+          if (resetBtn) resetBtn.disabled = !isZoomed();
+        }
+        // Zoomed in, horizontal drags belong to the chart; zoomed out,
+        // vertical page scrolling over the canvas must keep working.
+        canvas.style.touchAction = isZoomed() ? 'none' : 'pan-y';
+        canvas.style.cursor = isZoomed() ? 'grab' : '';
+      }
+      function setView(x0, x1) {
+        const span = Math.min(24, Math.max(CHART_MIN_SPAN_H, x1 - x0));
+        let v0 = x0;
+        if (v0 < 0) v0 = 0;
+        if (v0 + span > 24) v0 = 24 - span;
+        view = { x0: v0, x1: v0 + span };
+        syncZoomUi();
+        redraw();
+      }
+      function hourAtPixel(clientX) {
+        const rect = canvas.getBoundingClientRect();
+        const plotW = rect.width - CHART_PAD.l - CHART_PAD.r;
+        const frac = (clientX - rect.left - CHART_PAD.l) / Math.max(plotW, 1);
+        return view.x0 + Math.min(1, Math.max(0, frac)) * (view.x1 - view.x0);
+      }
+      function zoomAt(centerH, factor) {
+        const span = (view.x1 - view.x0) * factor;
+        const rel = (centerH - view.x0) / (view.x1 - view.x0);
+        setView(centerH - rel * span, centerH + (1 - rel) * span);
+      }
+      if (toolsEl) {
+        toolsEl.querySelector('[data-zoom="in"]').addEventListener('click', () =>
+          zoomAt((view.x0 + view.x1) / 2, 0.5));
+        toolsEl.querySelector('[data-zoom="out"]').addEventListener('click', () =>
+          zoomAt((view.x0 + view.x1) / 2, 2));
+        toolsEl.querySelector('[data-zoom="reset"]').addEventListener('click', () =>
+          setView(0, 24));
+      }
+      canvas.addEventListener('dblclick', (e) => zoomAt(hourAtPixel(e.clientX), 0.5));
+      canvas.addEventListener('wheel', (e) => {
+        // Ctrl/cmd-scroll (and trackpad pinch, which browsers deliver as a
+        // ctrl-wheel) zooms; plain scrolling stays with the page.
+        if (!e.ctrlKey && !e.metaKey) return;
+        e.preventDefault();
+        zoomAt(hourAtPixel(e.clientX), e.deltaY > 0 ? 1.25 : 0.8);
+      }, { passive: false });
+      // Drag to pan; two pointers pinch-zoom.
+      const pointers = new Map();
+      canvas.addEventListener('pointerdown', (e) => {
+        pointers.set(e.pointerId, e.clientX);
+        canvas.setPointerCapture(e.pointerId);
+        if (isZoomed()) canvas.style.cursor = 'grabbing';
+      });
+      canvas.addEventListener('pointermove', (e) => {
+        if (!pointers.has(e.pointerId)) return;
+        if (pointers.size === 1 && isZoomed()) {
+          const rect = canvas.getBoundingClientRect();
+          const plotW = Math.max(1, rect.width - CHART_PAD.l - CHART_PAD.r);
+          const dxH = ((e.clientX - pointers.get(e.pointerId)) / plotW) * (view.x1 - view.x0);
+          pointers.set(e.pointerId, e.clientX);
+          setView(view.x0 - dxH, view.x1 - dxH);
+        } else if (pointers.size === 2) {
+          const xs = [...pointers.entries()];
+          const other = xs.find(([id]) => id !== e.pointerId);
+          const beforeSpan = Math.abs(pointers.get(e.pointerId) - other[1]);
+          const afterSpan = Math.abs(e.clientX - other[1]);
+          pointers.set(e.pointerId, e.clientX);
+          if (beforeSpan > 10 && afterSpan > 10) {
+            zoomAt(hourAtPixel((e.clientX + other[1]) / 2), beforeSpan / afterSpan);
+          }
+        }
+      });
+      const endPointer = (e) => {
+        pointers.delete(e.pointerId);
+        if (pointers.size === 0) syncZoomUi();
+      };
+      canvas.addEventListener('pointerup', endPointer);
+      canvas.addEventListener('pointercancel', endPointer);
+      syncZoomUi();
+
       return {
         render(newSeries, newDay, { animate = true, onDone = null } = {}) {
           // Preserve the reader's legend toggles across re-renders.
@@ -1798,9 +2041,11 @@ const WIND_ICONS = {
             if (series[i] && series[i].label === s.label) s.visible = series[i].visible;
           });
           series = newSeries;
+          const isNewDay = day !== newDay;
           day = newDay;
           createLegend(legendEl, series, redraw);
           if (frame) cancelAnimationFrame(frame);
+          if (isNewDay) setView(0, 24); // a fresh order resets the zoom
           if (!animate || prefersReducedMotion) {
             maxHour = 24;
             redraw();
@@ -1810,12 +2055,21 @@ const WIND_ICONS = {
           const startedAt = performance.now();
           maxHour = 0;
           const step = (now) => {
-            maxHour = Math.min(24, ((now - startedAt) / CHART_SWEEP_MS) * 24);
-            redraw();
-            if (maxHour < 24) {
+            const raw = Math.min(24, ((now - startedAt) / CHART_SWEEP_MS) * 24);
+            // Quantize the sweep clock to whole simulated minutes: at the
+            // full-day view nothing finer is visible, so redraws between
+            // minute boundaries would repaint identical pixels.
+            const quantized = Math.min(24, Math.floor(raw * 60) / 60);
+            if (quantized !== maxHour) {
+              maxHour = quantized;
+              redraw();
+            }
+            if (raw < 24) {
               frame = requestAnimationFrame(step);
             } else {
               frame = null;
+              maxHour = 24;
+              redraw();
               if (onDone) onDone();
             }
           };
@@ -1823,15 +2077,23 @@ const WIND_ICONS = {
         },
       };
     }
-    const trackingChart = createAnimatedChart(els.dayChart, els.dayChartLegend);
-    const truthChart = createAnimatedChart(els.truthChart, els.truthChartLegend);
+    const trackingChart = createAnimatedChart(els.dayChart, els.dayChartLegend, document.getElementById('dayChartTools'));
+    const truthChart = createAnimatedChart(els.truthChart, els.truthChartLegend, document.getElementById('truthChartTools'));
 
     function itemSeries(order) {
-      return order.results.map((r, i) => ({
-        label: itemShortLabel(r),
-        color: SERIES_COLORS[i],
-        values: r.instrSeries,
-      }));
+      // Each item is drawn as the kind of data its record actually holds:
+      // electronic loggers as dots (one per reported value), liquid-in-glass
+      // as the watchable column plus the register marks riding it.
+      return order.results.map((r, i) => {
+        const s = { label: itemShortLabel(r), color: SERIES_COLORS[i] };
+        if (r.readings) {
+          s.points = r.readings;
+        } else {
+          s.values = r.instrSeries;
+          s.markSeries = r.registerSeries;
+        }
+        return s;
+      });
     }
     function renderChart(order) {
       // The receipt gates on the tracking sweep finishing: the traces are
@@ -1853,7 +2115,7 @@ const WIND_ICONS = {
             label: 'The air itself',
             color: cssVar('--text-primary') || '#ccc',
             values: order.day.airC,
-            dash: true,
+            under: true,
           },
         ],
         order.day,
@@ -1862,27 +2124,85 @@ const WIND_ICONS = {
     }
     window.addEventListener('klymot:theme-toggled', () => chartRedraws.forEach((fn) => fn()));
 
+    // The rating screen's comparison table shows ONE recorded statistic at
+    // a time (kinder to narrow screens, and it makes the asymmetry between
+    // instruments explicit: a register cannot produce a daily average).
+    // Each metric is compared against the matching truth the simulation
+    // knows about the air itself.
+    const RATING_METRICS = {
+      max: {
+        head: 'Tmax (°C)',
+        value: (r) => r.recordedTmaxC,
+        diffs: [{ head: 'Error (°C)', of: (r, day) => r.recordedTmaxC - day.trueMaxC }],
+        caption: 'Error: each item’s registered maximum minus the warmest 10-second average of the air itself. Positive means it read too warm.',
+      },
+      min: {
+        head: 'Tmin (°C)',
+        value: (r) => r.recordedTminC,
+        diffs: [{ head: 'Error (°C)', of: (r, day) => r.recordedTminC - day.trueMinC }],
+        caption: 'Error: each item’s registered minimum minus the coldest 10-second average of the air itself. Positive means it never caught the full depth of the night.',
+      },
+      midpoint: {
+        head: 'Met average (°C)',
+        value: (r) => r.midpointC,
+        diffs: [
+          { head: 'Error (°C)', of: (r, day) => r.midpointC - (day.trueMaxC + day.trueMinC) / 2 },
+          { head: 'True error (°C)', of: (r, day) => r.midpointC - day.trueMeanC },
+        ],
+        caption: 'The meteorological average (Tmax+Tmin)/2 — the quantity daily temperature records are built from. Error: minus the air’s own (max+min)/2, i.e. how well the instrument measured the met average. True error: minus the air’s true 24-hour average — the instrument’s error plus the met-average convention’s own gap from the true average.',
+      },
+      mean: {
+        head: 'True average (°C)',
+        value: (r) => r.recordedMeanC,
+        diffs: [{ head: 'Error (°C)', of: (r, day) => r.recordedMeanC - day.trueMeanC }],
+        caption: 'The daily average an electronic logger can total from its readings, and its error against the air’s true 24-hour average. A mechanical register keeps only its max and min — it has no average to offer.',
+      },
+    };
+    let ratingMetric = 'midpoint';
+
+    function renderRatingTable(order) {
+      const metric = RATING_METRICS[ratingMetric];
+      els.ratingHead.innerHTML =
+        '<tr><th scope="col">Item</th><th scope="col">Shelter</th>' +
+        `<th scope="col">${metric.head}</th>` +
+        metric.diffs.map((d) => `<th scope="col">${d.head}</th>`).join('') +
+        '</tr>';
+      els.ratingCaption.textContent = metric.caption;
+      els.ratingBody.innerHTML = '';
+      order.results.forEach((r, i) => {
+        const inst = getInstrument(r.instrumentId);
+        const exp = getExposure(r.exposureId);
+        const value = metric.value(r);
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          `<td>${inst.name}</td>` +
+          `<td class="order-table-shelter">${exp.short}</td>` +
+          (value === null
+            ? `<td class="rating-na" colspan="${1 + metric.diffs.length}">N/A — the register keeps only max &amp; min</td>`
+            : `<td>${fmtC(value)}</td>` +
+              metric.diffs.map((d) => `<td>${fmtSigned(d.of(r, order.day))}</td>`).join(''));
+        tr.querySelector('td').style.borderLeft = `3px solid ${SERIES_COLORS[i]}`;
+        els.ratingBody.appendChild(tr);
+      });
+    }
+
+    els.ratingMetricToggle.querySelectorAll('[data-metric]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        ratingMetric = btn.getAttribute('data-metric');
+        els.ratingMetricToggle.querySelectorAll('[data-metric]').forEach((b) =>
+          b.classList.toggle('active', b === btn));
+        if (lastOrder && hasRevealedTruth) renderRatingTable(lastOrder);
+      });
+    });
+
     // The rating screen's numbers: air tiles plus the per-item comparison
-    // of each midpoint against the air's true median and true average.
+    // of the chosen recorded statistic against the air itself.
     function renderRating(order) {
       els.truthMean.textContent = `${order.day.trueMeanC.toFixed(2)} °C`;
       els.truthMedian.textContent = `${order.day.trueMedianC.toFixed(2)} °C`;
       els.truthMax.textContent = `${order.day.trueMaxC.toFixed(2)} °C`;
       els.truthMin.textContent = `${order.day.trueMinC.toFixed(2)} °C`;
-      els.ratingBody.innerHTML = '';
-      order.results.forEach((r, i) => {
-        const inst = getInstrument(r.instrumentId);
-        const exp = getExposure(r.exposureId);
-        const tr = document.createElement('tr');
-        tr.innerHTML =
-          `<td>${inst.name}</td>` +
-          `<td class="order-table-shelter">${exp.short}</td>` +
-          `<td>${fmtC(r.midpointC)}</td>` +
-          `<td>${fmtSigned(r.midpointC - order.day.trueMedianC)}</td>` +
-          `<td>${fmtSigned(r.midpointC - order.day.trueMeanC)}</td>`;
-        tr.querySelector('td').style.borderLeft = `3px solid ${SERIES_COLORS[i]}`;
-        els.ratingBody.appendChild(tr);
-      });
+      renderRatingTable(order);
       // The rating chart is a reference view, not a reveal — no sweep.
       renderTruthChart(order, { animate: false });
     }
@@ -1954,7 +2274,17 @@ const WIND_ICONS = {
       lastOrder = { day, results, settings };
       runHistory.push({
         settings,
-        results,
+        // Slim copies only: the full results carry the day's second-by-
+        // second series (megabytes per item), and the history table needs
+        // just the written-down numbers.
+        results: results.map((r) => ({
+          instrumentId: r.instrumentId,
+          exposureId: r.exposureId,
+          recordedTmaxC: r.recordedTmaxC,
+          recordedTminC: r.recordedTminC,
+          midpointC: r.midpointC,
+          recordedMeanC: r.recordedMeanC,
+        })),
         trueMeanC: day.trueMeanC,
         truthKnown: hasRevealedTruth,
       });
