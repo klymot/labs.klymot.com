@@ -103,7 +103,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="container">
         <div class="prose">
           <h2 id="explore-heading">Look at the two series together</h2>
-          <p>Both series are drawn with equal weight — which one gets which colour, and which is listed first, is randomized on each visit, so neither is presented as the baseline the other is checked against. Change the averaging to see how much the comparison depends on it: individual days, months, or whole years. A second control narrows everything below to a single calendar month or season, so times of year with different typical values are only pooled together when you choose to pool them.</p>
+          <p>Both series are drawn with equal weight — which one gets which colour, and which is listed first, is randomized on each visit, so neither is presented as the baseline the other is checked against. Change the averaging to see how much the comparison depends on it: individual days, monthly means, or whole years. When you compare by day or by month, a second control picks which calendar month — so like is always compared with like, rather than mixing times of year that can disagree with the model by very different amounts.</p>
         </div>
 
         <div class="window-length-row">
@@ -201,7 +201,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
-              <span class="chart-title">Measured minus modelled</span>
+              <span class="chart-title" id="diffChartTitle">Measured minus ERA5 reanalysis</span>
               <span class="chart-meta">MJ/m²/day</span>
               <div class="chart-toolbar" aria-label="Zoom and pan">
                 <button class="mini-tool" data-chart-nav="cal" data-nav-action="pan-left" aria-label="Pan earlier" type="button">‹</button>
@@ -220,7 +220,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
         <div class="prose" style="margin-top:1.5rem">
           <h3>Your difference distribution</h3>
-          <p>The same differences, tallied — from every part of the year pooled together, or from a single month or season, depending on the time-of-year filter above. The shaded band marks the central share of them — you pick how central. A 50% band that misses half the points is behaving exactly as labelled; the label is the claim being tested later, so it stays on screen.</p>
+          <p>The same differences, tallied — for the month or year the controls above select. The shaded band marks the central share of them — you pick how central. A 50% band that misses half the points is behaving exactly as labelled; the label is the claim being tested later, so it stays on screen.</p>
         </div>
 
         <div class="window-length-row">
@@ -237,7 +237,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
-              <span class="chart-title">Distribution of the differences</span>
+              <span class="chart-title" id="histChartTitle">Distribution of the differences</span>
               <span class="chart-meta">MJ/m²/day</span>
             </div>
             <div class="chart-container" id="histChartContainer">
@@ -297,7 +297,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
-              <span class="chart-title">Modelled series with your frozen band</span>
+              <span class="chart-title" id="transferChartTitle">Modelled series with your frozen band</span>
               <span class="chart-meta">MJ/m²/day</span>
               <div class="chart-toolbar" aria-label="Zoom and pan">
                 <button class="mini-tool" data-chart-nav="transfer" data-nav-action="pan-left" aria-label="Pan earlier" type="button">‹</button>
@@ -432,7 +432,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       valueDecimals: 2,
       diffDecimals: 2,
       seriesNames: { measured: 'Pyranometer measurement', modelled: 'Reanalysis estimate' },
-      pairedTitle: 'Measured and modelled',
+      pairedTitle: (siteName) => `${siteName} vs ERA5 reanalysis`,
+      diffTitle: (siteName) => `${siteName} minus ERA5 reanalysis`,
+      histTitle: (siteName) => `Distribution of ${siteName} minus ERA5 reanalysis`,
+      transferTitle: ({ target, calibration, coverage, slice }) => target
+        ? `${target} vs ERA5 reanalysis — ${coverage ? `${coverage}% ` : ''}band from ${calibration}${slice ? `, ${slice}` : ''}`
+        : 'ERA5 reanalysis with your frozen band',
+      poolTimeOfYear: false,
       cardHtml: (site) => `
         <span class="sc-card-top">
           <span class="sc-bu-map" style="${bu2020TileStyle(site.buIdx)}" aria-hidden="true"></span>

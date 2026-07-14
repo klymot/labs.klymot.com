@@ -149,12 +149,12 @@ export function initErrorBarsLab(config) {
     'readoutSpan', 'readoutPeriods', 'readoutAgg',
     'subsetRow', 'subsetButtons',
     'buildDifference', 'buildDifferenceHint',
-    'diffChart', 'diffChartContainer', 'diffTooltip', 'diffKey',
-    'histChart', 'histChartContainer', 'histTooltip',
+    'diffChart', 'diffChartContainer', 'diffChartTitle', 'diffTooltip', 'diffKey',
+    'histChart', 'histChartContainer', 'histChartTitle', 'histTooltip',
     'diffN', 'diffMean', 'diffMedian', 'bandRange',
     'freezeBand', 'freezeBandHint', 'frozenBanner', 'frozenLabel',
     'targetGrid', 'targetPrompt',
-    'transferChart', 'transferChartContainer', 'transferTooltip', 'transferChartLoading', 'transferKey',
+    'transferChart', 'transferChartContainer', 'transferChartTitle', 'transferTooltip', 'transferChartLoading', 'transferKey',
     'revealMeasured', 'revealMeasuredHint', 'transferTally',
     'scorecardBody', 'pairsTable', 'resetLab',
   ].forEach((id) => { els[id] = document.getElementById(id); });
@@ -203,17 +203,46 @@ export function initErrorBarsLab(config) {
   // band, and transfer test — from a single calendar month (daily/monthly
   // averaging) or season (seasonal averaging) instead. 'all' = pooled.
   const SEASON_KEYS = ['DJF', 'MAM', 'JJA', 'SON'];
+  // Meteorological quarters map to opposite seasons across the equator, so the
+  // familiar season name for a DJF/MAM/JJA/SON block depends on the station's
+  // hemisphere. Keyed by month-block; the southern set is the northern one
+  // shifted half a year.
+  const SEASON_NAMES_NORTH = { DJF: 'winter', MAM: 'spring', JJA: 'summer', SON: 'autumn' };
+  const SEASON_NAMES_SOUTH = { DJF: 'summer', MAM: 'autumn', JJA: 'winter', SON: 'spring' };
+  const MONTH_NAMES_FULL = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+
+  function seasonName(key) {
+    const site = siteById(siteId);
+    const lat = site && site.lat;
+    if (typeof lat !== 'number') return null;
+    return (lat < 0 ? SEASON_NAMES_SOUTH : SEASON_NAMES_NORTH)[key] || null;
+  }
 
   function subsetOptionsFor(aggKey) {
-    if (aggKey === 'seasonal') return ['all', ...SEASON_KEYS];
     if (aggKey === 'annual') return ['all'];
-    return ['all', ...MONTHS.map((_, i) => `m${i + 1}`)];
+    const specific = aggKey === 'seasonal'
+      ? [...SEASON_KEYS]
+      : MONTHS.map((_, i) => `m${i + 1}`);
+    // Pooling every month/season into one distribution ('all') mixes times of
+    // year that disagree with the model by different amounts. A lab can opt out
+    // of offering that pooled view with poolTimeOfYear: false, leaving only the
+    // like-with-like single-month/season comparisons; annual stays whole-year.
+    return config.poolTimeOfYear === false ? specific : ['all', ...specific];
   }
 
   function subsetLabel(key) {
     if (key === 'all') return 'All';
     if (key.startsWith('m')) return MONTHS[Number(key.slice(1)) - 1];
     return key;
+  }
+
+  // Toggle-button label: seasons carry their hemisphere name ("DJF (winter)");
+  // months stay compact ("Jun"). Prose/aria use the plain subsetLabel to avoid
+  // nesting parens (e.g. "seasonal (DJF)" not "seasonal (DJF (winter))").
+  function subsetButtonLabel(key) {
+    const name = key === 'all' || key.startsWith('m') ? null : seasonName(key);
+    return name ? `${subsetLabel(key)} (${name})` : subsetLabel(key);
   }
 
   function matchesSubset(pairKey, aggKey, subsetKey) {
@@ -515,6 +544,7 @@ export function initErrorBarsLab(config) {
   let pairedLayout = null;
 
   function drawPairedChart() {
+    updatePairedTitle();
     const container = els.pairedChartContainer;
     const canvas = els.pairedChart;
     if (!container || !canvas) return;
@@ -567,7 +597,68 @@ export function initErrorBarsLab(config) {
   /* ── Difference chart ──────────────────────────────────────────────── */
   let diffLayout = null;
 
+  // Spell out the full month/season a slice refers to, e.g. "December",
+  // "winter" (hemisphere-aware). Toggle buttons use the compact subsetLabel
+  // ("Dec", "DJF (winter)"); chart titles use this fuller form.
+  function subsetFullName(subsetKey) {
+    if (subsetKey === 'all') return null;
+    if (subsetKey.startsWith('m')) return MONTH_NAMES_FULL[Number(subsetKey.slice(1)) - 1];
+    return seasonName(subsetKey);
+  }
+
+  // Describe the current averaging + time-of-year slice for a chart title, so a
+  // screenshot is self-describing: "Annual", "Monthly (December)", "Seasonal
+  // (winter)", "Daily (December)". The averaging word is always present, which
+  // also keeps a lone month unambiguous where several averaging levels offer
+  // one (e.g. both daily and monthly).
+  function subsetDescriptor(aggKey = agg, subsetKey = subset) {
+    if (!aggKey) return null;
+    const full = subsetFullName(subsetKey);
+    return full ? `${aggLabel(aggKey)} (${full})` : aggLabel(aggKey);
+  }
+
+  // Both chart titles read "<station> <verb> ERA5 reanalysis — <slice>", where
+  // the base ("… vs …" for the paired chart, "… minus …" for the difference) is
+  // a per-lab config function and the slice is the shared averaging descriptor.
+  function chartTitle(el, baseFn) {
+    if (!el || typeof baseFn !== 'function') return;
+    const site = siteById(siteId);
+    if (!site) return;
+    const descriptor = subsetDescriptor();
+    el.textContent = descriptor ? `${baseFn(site.name)} — ${descriptor}` : baseFn(site.name);
+  }
+
+  function updateDiffTitle() {
+    chartTitle(els.diffChartTitle, config.diffTitle);
+  }
+
+  function updatePairedTitle() {
+    chartTitle(els.pairedChartTitle, config.pairedTitle);
+  }
+
+  function updateHistTitle() {
+    chartTitle(els.histChartTitle, config.histTitle);
+  }
+
+  // The transfer chart shows a different (target) station than the one the band
+  // was built at, so its title names both — the target being tested, and the
+  // calibration station plus slice the frozen band came from.
+  function updateTransferTitle() {
+    if (!els.transferChartTitle || !config.transferTitle) return;
+    const target = siteById(targetId);
+    // The band's provenance is the station it was frozen at, which may differ
+    // from the currently-selected calibration station after an upstream change.
+    const calibration = siteById(frozen ? frozen.siteId : siteId);
+    els.transferChartTitle.textContent = config.transferTitle({
+      target: target ? target.name : null,
+      calibration: calibration ? calibration.name : null,
+      coverage: frozen ? Math.round(frozen.coverage * 100) : null,
+      slice: frozen ? subsetDescriptor(frozen.agg, frozen.subset) : null,
+    });
+  }
+
   function drawDiffChart() {
+    updateDiffTitle();
     const container = els.diffChartContainer;
     const canvas = els.diffChart;
     if (!container || !canvas) return;
@@ -621,6 +712,7 @@ export function initErrorBarsLab(config) {
   let histLayout = null;
 
   function drawHistChart() {
+    updateHistTitle();
     const container = els.histChartContainer;
     const canvas = els.histChart;
     if (!container || !canvas) return;
@@ -727,9 +819,21 @@ export function initErrorBarsLab(config) {
     els.bandRange.textContent = band
       ? `${fmtDiff(band.lo)} to ${fmtDiff(band.hi)} ${config.unit}`
       : 'not enough differences';
-    els.freezeBand.disabled = !band || Boolean(frozen && frozen.agg === agg && frozen.subset === subset && frozen.coverage === coverage);
+    // The candidate matches the frozen band only if it's the same station,
+    // record version, averaging, time-of-year and coverage — change any of them
+    // and the button offers to adopt the new band instead of staying locked.
+    const isFrozenSelection = Boolean(frozen
+      && frozen.siteId === siteId && frozen.datasetKey === datasetKey
+      && frozen.agg === agg && frozen.subset === subset && frozen.coverage === coverage);
+    els.freezeBand.disabled = !band || isFrozenSelection;
+    // Once a band is frozen, changing the coverage/averaging/time-of-year picks
+    // a different candidate band; the button then offers to adopt it in place of
+    // the frozen one, rather than reading as a first-time freeze.
+    els.freezeBand.textContent = frozen && !isFrozenSelection ? 'Use this band' : 'Freeze this band';
     els.freezeBandHint.textContent = frozen
-      ? `Frozen: central ${Math.round(frozen.coverage * 100)}% of ${aggSubsetLabel(frozen.agg, frozen.subset)} differences, ${fmtDiff(frozen.lo)} to ${fmtDiff(frozen.hi)} ${config.unit} (n=${frozen.n}). Freezing again replaces it and clears your scorecard.`
+      ? isFrozenSelection
+        ? `This is your frozen band: central ${Math.round(frozen.coverage * 100)}% of ${aggSubsetLabel(frozen.agg, frozen.subset)} differences, ${fmtDiff(frozen.lo)} to ${fmtDiff(frozen.hi)} ${config.unit} (n=${frozen.n}).`
+        : `Using this band replaces your frozen one (central ${Math.round(frozen.coverage * 100)}% of ${aggSubsetLabel(frozen.agg, frozen.subset)} differences) and clears your scorecard.`
       : band
         ? 'Freezing locks this band so you can test it at another site. You can re-freeze later.'
         : `Needs at least 30 ${aggSubsetLabel(agg, subset)} differences.`;
@@ -746,6 +850,7 @@ export function initErrorBarsLab(config) {
   }
 
   function drawTransferChart() {
+    updateTransferTitle();
     const container = els.transferChartContainer;
     const canvas = els.transferChart;
     if (!container || !canvas) return;
@@ -923,8 +1028,10 @@ export function initErrorBarsLab(config) {
       btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
     // The month/season filter options depend on the averaging; an invalid
-    // carry-over falls back to the pooled view.
-    if (!subsetOptionsFor(key).includes(subset)) subset = 'all';
+    // carry-over falls back to the first available option (the pooled view
+    // where one is offered, otherwise the first month/season).
+    const validSubsets = subsetOptionsFor(key);
+    if (!validSubsets.includes(subset)) subset = validSubsets[0];
     renderSubsetButtons();
     if (pairsByAgg) {
       fillPairsTable();
@@ -937,7 +1044,7 @@ export function initErrorBarsLab(config) {
     const options = subsetOptionsFor(agg);
     els.subsetRow.hidden = options.length === 1;
     els.subsetButtons.innerHTML = options.map((key) =>
-      `<button type="button" class="toggle-btn${key === subset ? ' active' : ''}" data-subset="${key}" aria-pressed="${key === subset}">${subsetLabel(key)}</button>`).join('');
+      `<button type="button" class="toggle-btn${key === subset ? ' active' : ''}" data-subset="${key}" aria-pressed="${key === subset}">${subsetButtonLabel(key)}</button>`).join('');
   }
 
   function setSubset(key, { fromRestore = false } = {}) {
@@ -994,6 +1101,7 @@ export function initErrorBarsLab(config) {
     });
   }
 
+  // Full reset (Reset button): collapse everything past the explore section.
   function clearDownstream() {
     differenceBuilt = false;
     frozen = null;
@@ -1009,6 +1117,20 @@ export function initErrorBarsLab(config) {
     if (els.scorecardBody) els.scorecardBody.innerHTML = '';
   }
 
+  // Drop only the transfer target (keeping the frozen band) — used when a newly
+  // chosen calibration station is the one currently under test, which would
+  // otherwise leave a station being compared against itself.
+  function resetTarget() {
+    targetId = null;
+    revealed = false;
+    targetPairsByAgg = null;
+    els.targetPrompt.hidden = false;
+    els.transferTally.textContent = '';
+    els.revealMeasured.disabled = true;
+    els.revealMeasuredHint.textContent = 'Pick a site above first.';
+    updateTargetCards();
+  }
+
   function chooseSite(id, { fromRestore = false } = {}) {
     if (!siteById(id)) return;
     const changed = siteId !== null && siteId !== id;
@@ -1020,8 +1142,19 @@ export function initErrorBarsLab(config) {
     const firstReveal = nextSection.hidden;
     nextSection.hidden = false;
     if (!hasDatasets) sections.diffPrompt.hidden = differenceBuilt;
-    els.pairedChartTitle.textContent = `${config.pairedTitle} — ${siteById(id).name}`;
-    if (changed) clearDownstream();
+    updatePairedTitle();
+    updateDiffTitle();
+    updateHistTitle();
+    // Season button names are hemisphere-dependent, so (re)render them now the
+    // station is known — matters on URL restore, where the subset buttons first
+    // render before any station is chosen.
+    renderSubsetButtons();
+    // Changing the calibration station recomputes the difference for the new
+    // station but leaves everything you've already opened in place — the
+    // difference stays open, and any frozen band and its transfer results stay
+    // visible (the band keeps its own provenance). Only drop the transfer target
+    // if it collides with the new calibration station.
+    if (changed && targetId === id) resetTarget();
     renderTargetCards();
     if (!fromRestore) {
       beacon('siteSelected');
@@ -1053,7 +1186,6 @@ export function initErrorBarsLab(config) {
   function chooseDataset(key, { fromRestore = false } = {}) {
     const opt = (config.datasets || []).find((o) => o.key === key);
     if (!opt) return;
-    const changed = datasetKey !== null && datasetKey !== key;
     datasetKey = key;
     document.querySelectorAll('#datasetGrid .prediction-card').forEach((c) => {
       c.classList.toggle('chosen', c.dataset.key === key);
@@ -1064,7 +1196,9 @@ export function initErrorBarsLab(config) {
     const firstReveal = sections.explore.hidden;
     sections.explore.hidden = false;
     sections.diffPrompt.hidden = differenceBuilt;
-    if (changed) clearDownstream();
+    // Switching record version (QCU/QCF) recomputes the difference against the
+    // new series but keeps whatever you've already opened — including a frozen
+    // band and its transfer results — rather than collapsing back.
     if (!fromRestore) {
       beacon('datasetSelected');
       pushStateToUrl();
@@ -1112,7 +1246,8 @@ export function initErrorBarsLab(config) {
         if (restored.df) buildDifference({ fromRestore: true });
         if (restored.fa && COVERAGE_LEVELS.includes(restored.fc)
             && AGG_KEYS.includes(restored.fa)) {
-          const fsu = subsetOptionsFor(restored.fa).includes(restored.fsu) ? restored.fsu : 'all';
+          const fsuOptions = subsetOptionsFor(restored.fa);
+          const fsu = fsuOptions.includes(restored.fsu) ? restored.fsu : fsuOptions[0];
           freezeBand({ fromRestore: true, agg: restored.fa, coverage: restored.fc, subset: fsu });
           if (restored.t && siteById(restored.t) && restored.t !== siteId) {
             await chooseTarget(restored.t, { fromRestore: true });
@@ -1153,7 +1288,7 @@ export function initErrorBarsLab(config) {
     if (!pairs) return;
     const band = empiricalBand(differences(pairs), useCov);
     if (!band) return;
-    frozen = { agg: useAgg, subset: useSub, coverage: useCov, lo: band.lo, hi: band.hi, n: band.n };
+    frozen = { siteId, datasetKey, agg: useAgg, subset: useSub, coverage: useCov, lo: band.lo, hi: band.hi, n: band.n };
     scorecard = [];
     targetId = null;
     revealed = false;
@@ -1210,6 +1345,7 @@ export function initErrorBarsLab(config) {
     targetPairsByAgg = null;
     if (!fromRestore) viewTransfer = null;
     updateTargetCards();
+    updateTransferTitle();
     els.targetPrompt.hidden = true;
     els.transferTally.textContent = '';
     els.revealMeasured.disabled = true;

@@ -139,13 +139,19 @@ def main() -> int:
         if entry is None:
             print(f"Warning: {station['id']} not in klymot index; skipped", file=sys.stderr)
             continue
-        print(f"{station['id']} ({station['name']}): ERA5 daily {MODELLED_START}..{end_date}",
+        station_elevation = entry.get("elevation_m")
+        print(f"{station['id']} ({station['name']}): ERA5 daily {MODELLED_START}..{end_date}"
+              f" at elevation {station_elevation} m",
               file=sys.stderr)
         # timezone=auto: daily extremes over local days, matching how the
         # station's own observing day is defined.
+        # elevation: pass the station's true GHCN elevation so Open-Meteo
+        # downscales ERA5 to it, rather than guessing from its DEM (which lands
+        # ~100 m too high at coastal points and biases the model ~1 °C cold).
         daily = fetch_open_meteo_daily(
             entry["lat"], entry["lng"], MODELLED_START, end_date,
             ["temperature_2m_max", "temperature_2m_min"], timezone="auto",
+            elevation=station_elevation,
         )
         time.sleep(args.sleep)
         monthly = monthly_midpoint_means(
@@ -165,7 +171,8 @@ def main() -> int:
             "place": station["place"],
             "lat": entry["lat"],
             "lon": entry["lng"],
-            "elevation_m": entry.get("elevation_m"),
+            "elevation_m": station_elevation,
+            "modelled_elevation_m": station_elevation,
             "ghcn_first_year": entry.get("ghcn_first_year"),
             "ghcn_last_year": entry.get("ghcn_last_year"),
             "modelled_source": "Open-Meteo Historical Weather API (ERA5-family reanalysis)",
@@ -186,6 +193,9 @@ def main() -> int:
             "place": station["place"],
             "region": station["region"],
             "since": entry.get("ghcn_first_year"),
+            # lat lets the page name seasons by hemisphere (DJF is winter north
+            # of the equator, summer south of it).
+            "lat": entry["lat"],
             **bu_context_of(entry),
         })
 

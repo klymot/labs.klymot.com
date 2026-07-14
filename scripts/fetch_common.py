@@ -275,10 +275,18 @@ def fetch_open_meteo_daily(
     end_date: str,
     variables: list[str],
     timezone: str = "UTC",
+    elevation: float | None = None,
 ) -> dict[str, list]:
     """Open-Meteo Historical Weather API (ERA5-family reanalysis).
 
     Returns the raw "daily" block: {"time": [...], <var>: [...], ...}.
+
+    When ``elevation`` is given, it is passed through so Open-Meteo applies its
+    lapse-rate downscaling to that exact elevation rather than guessing one from
+    its 90 m DEM at the coordinate. Supplying the station's true elevation
+    removes the DEM-lookup artifact that otherwise biases coastal points (where
+    the DEM can land ~100 m too high, cooling the model by ~1 °C). Left unset,
+    behaviour is unchanged.
     """
     params = {
         "latitude": lat,
@@ -288,6 +296,8 @@ def fetch_open_meteo_daily(
         "daily": ",".join(variables),
         "timezone": timezone,
     }
+    if elevation is not None:
+        params["elevation"] = elevation
     url = f"{OPEN_METEO_ARCHIVE_URL}?{urllib.parse.urlencode(params)}"
     data = fetch_json(url, timeout=180)
     return data.get("daily", {})

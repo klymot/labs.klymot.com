@@ -129,7 +129,7 @@ import BetaGate from '../../components/BetaGate.astro';
       <div class="container">
         <div class="prose">
           <h2 id="explore-heading">Look at the two series together</h2>
-          <p>Both series are drawn with equal weight — which one gets which colour, and which is listed first, is randomized on each visit, so neither is presented as the baseline the other is checked against. Change the averaging to see how much the comparison depends on it: individual months, seasons, or whole years. A second control narrows everything below to a single calendar month or season, so times of year with different typical values are only pooled together when you choose to pool them.</p>
+          <p>Both series are drawn with equal weight — which one gets which colour, and which is listed first, is randomized on each visit, so neither is presented as the baseline the other is checked against. Change the averaging to see how much the comparison depends on it: a single calendar month, a single season, or whole years. When you compare by month or season, a second control picks which one — so like is always compared with like, rather than mixing times of year that can disagree with the model by very different amounts.</p>
         </div>
 
         <div class="window-length-row">
@@ -227,7 +227,7 @@ import BetaGate from '../../components/BetaGate.astro';
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
-              <span class="chart-title">Station minus reanalysis</span>
+              <span class="chart-title" id="diffChartTitle">Station minus ERA5 reanalysis</span>
               <span class="chart-meta">°C</span>
               <div class="chart-toolbar" aria-label="Zoom and pan">
                 <button class="mini-tool" data-chart-nav="cal" data-nav-action="pan-left" aria-label="Pan earlier" type="button">‹</button>
@@ -246,7 +246,7 @@ import BetaGate from '../../components/BetaGate.astro';
 
         <div class="prose" style="margin-top:1.5rem">
           <h3>Your difference distribution</h3>
-          <p>The same differences, tallied — from every part of the year pooled together, or from a single month or season, depending on the time-of-year filter above. The shaded band marks the central share of them — you pick how central. A 50% band that misses half the points is behaving exactly as labelled; the label is the claim being tested later, so it stays on screen.</p>
+          <p>The same differences, tallied — for the month, season, or year the controls above select. The shaded band marks the central share of them — you pick how central. A 50% band that misses half the points is behaving exactly as labelled; the label is the claim being tested later, so it stays on screen.</p>
         </div>
 
         <div class="window-length-row">
@@ -263,7 +263,7 @@ import BetaGate from '../../components/BetaGate.astro';
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
-              <span class="chart-title">Distribution of the differences</span>
+              <span class="chart-title" id="histChartTitle">Distribution of the differences</span>
               <span class="chart-meta">°C</span>
             </div>
             <div class="chart-container" id="histChartContainer">
@@ -323,7 +323,7 @@ import BetaGate from '../../components/BetaGate.astro';
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
-              <span class="chart-title">Reanalysis with your frozen band</span>
+              <span class="chart-title" id="transferChartTitle">Reanalysis with your frozen band</span>
               <span class="chart-meta">°C</span>
               <div class="chart-toolbar" aria-label="Zoom and pan">
                 <button class="mini-tool" data-chart-nav="transfer" data-nav-action="pan-left" aria-label="Pan earlier" type="button">‹</button>
@@ -391,7 +391,7 @@ import BetaGate from '../../components/BetaGate.astro';
               <dt>Station temperature records — NOAA GHCNm v4</dt>
               <dd>Monthly mean temperatures from the NOAA Global Historical Climatology Network Monthly v4, in both its unadjusted (QCU) and adjusted (QCF) versions. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018</a>. Series are fetched per station from klymot.com's published data mirror (<code>www.klymot.com/data/&#123;qcu,qcf&#125;/&lt;station-id&gt;.csv</code>), the same files behind the main site's station explorer.</dd>
               <dt>Reanalysis temperature — ERA5 via Open-Meteo</dt>
-              <dd>ERA5 is produced by the European Centre for Medium-Range Weather Forecasts: <a href="https://doi.org/10.1002/qj.3803" target="_blank" rel="noopener">Hersbach et al., 2020</a>. Daily 2 m maximum and minimum temperature at each station's coordinates are fetched from the <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo Historical Weather API</a> and aggregated to monthly means of (Tmax+Tmin)/2 — the GHCNm definition — keeping months with at least 90% of days present.</dd>
+              <dd>ERA5 is produced by the European Centre for Medium-Range Weather Forecasts: <a href="https://doi.org/10.1002/qj.3803" target="_blank" rel="noopener">Hersbach et al., 2020</a>. Daily 2 m maximum and minimum temperature at each station's coordinates are fetched from the <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo Historical Weather API</a> and aggregated to monthly means of (Tmax+Tmin)/2 — the GHCNm definition — keeping months with at least 90% of days present. Open-Meteo downscales ERA5's coarse grid to the station's own recorded elevation, so the model and the thermometer are compared at the same height rather than at whatever elevation a terrain model happens to assign the grid cell.</dd>
               <dt>Station pool</dt>
               <dd>Long-running GHCN stations from klymot.com's station index, spanning a wide range of 2020 built-up context. Each has at least ~1000 monthly values from 1940 onward on both QCU and QCF so the full ERA5 comparison window is usable, with only small scattered gaps.</dd>
               <dt>Built-up context — GHSL</dt>
@@ -434,6 +434,7 @@ import BetaGate from '../../components/BetaGate.astro';
       place: s.place,
       region: s.region,
       since: s.since,
+      lat: s.lat,
       buIdx: s.bu_2020_idx,
       bu1km: s.bu_2020_1km,
       bu5km: s.bu_2020_5km,
@@ -471,7 +472,13 @@ import BetaGate from '../../components/BetaGate.astro';
       valueDecimals: 2,
       diffDecimals: 2,
       seriesNames: { measured: 'Station record', modelled: 'Reanalysis estimate' },
-      pairedTitle: 'Station and reanalysis',
+      pairedTitle: (siteName) => `${siteName} vs ERA5 reanalysis`,
+      diffTitle: (siteName) => `${siteName} minus ERA5 reanalysis`,
+      histTitle: (siteName) => `Distribution of ${siteName} minus ERA5 reanalysis`,
+      transferTitle: ({ target, calibration, coverage, slice }) => target
+        ? `${target} vs ERA5 reanalysis — ${coverage ? `${coverage}% ` : ''}band from ${calibration}${slice ? `, ${slice}` : ''}`
+        : 'ERA5 reanalysis with your frozen band',
+      poolTimeOfYear: false,
       cardHtml: (site) => `
         <span class="sc-card-top">
           <span class="sc-bu-map" style="${bu2020TileStyle(site.buIdx)}" aria-hidden="true"></span>
