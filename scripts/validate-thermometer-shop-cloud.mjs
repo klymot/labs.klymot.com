@@ -94,29 +94,50 @@ function solarHourAt(st, doy, binIndex) {
 // USCRN subhourly01 fields (whitespace-split, 0-indexed here): 3 LST_DATE,
 // 4 LST_TIME, 8 AIR_TEMPERATURE (°C, 5-min mean), 10 SOLAR_RADIATION
 // (W/m²), 11 SR_FLAG, 21 WIND_1_5 (m/s), 22 WIND_FLAG. Missing = -9999.
+// Timestamps are PERIOD-ENDING: a row stamped HH:MM is the mean over the
+// five minutes ending at HH:MM, so it belongs in the bin starting at
+// HH:MM−5 — and the 0000 row belongs to the PREVIOUS day's last bin.
+export function previousYmd(ymd) {
+  const d = new Date(Date.UTC(+ymd.slice(0, 4), +ymd.slice(4, 6) - 1, +ymd.slice(6, 8)) - 86400000);
+  return `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}${String(d.getUTCDate()).padStart(2, '0')}`;
+}
 export function loadStationDays(text) {
   const days = new Map();
-  for (const line of text.split('\n')) {
-    if (!line.trim()) continue;
-    const f = line.trim().split(/\s+/);
-    const lstDate = f[3];
-    const lstTime = f[4];
-    let rec = days.get(lstDate);
+  const getRec = (dateKey) => {
+    let rec = days.get(dateKey);
     if (!rec) {
       rec = {
         t: new Float64Array(288).fill(NaN),
         ghi: new Float64Array(288).fill(NaN),
         wind: new Float64Array(288).fill(NaN),
       };
-      days.set(lstDate, rec);
+      days.set(dateKey, rec);
     }
-    const idx = Math.round((+lstTime.slice(0, 2) * 60 + +lstTime.slice(2)) / 5) % 288;
+    return rec;
+  };
+  for (const line of text.split('\n')) {
+    if (!line.trim()) continue;
+    const f = line.trim().split(/\s+/);
+    const lstDate = f[3];
+    const lstTime = f[4];
+    let idx = Math.round((+lstTime.slice(0, 2) * 60 + +lstTime.slice(2)) / 5) - 1;
+    let dateKey = lstDate;
+    if (idx < 0) {
+      idx = 287;
+      dateKey = previousYmd(lstDate);
+    }
+    const rec = getRec(dateKey);
     const airT = +f[8];
     const ghi = +f[10];
     const wind = +f[21];
+    // Missing sentinels are the lowest value each field's WIDTH allows:
+    // -9999.0 for the 7-char temperature, -99999 for solar, but -99.00 for
+    // the 6-char wind — and Titusville 2023 carries months of unflagged
+    // -99.00 wind, so the wind guard must be "physically possible", not
+    // just "not the documented sentinel".
     if (airT > -9990) rec.t[idx] = airT;
-    if (ghi > -9990 && f[11] === '0') rec.ghi[idx] = ghi;
-    if (wind > -9990 && f[22] === '0') rec.wind[idx] = wind;
+    if (ghi >= 0 && f[11] === '0') rec.ghi[idx] = ghi;
+    if (wind >= 0 && wind < 90 && f[22] === '0') rec.wind[idx] = wind;
   }
   return days;
 }
@@ -240,7 +261,8 @@ function fmtRow(name, rows) {
 
 function main() {
   const manifest = JSON.parse(readFileSync(new URL('stations.json', VALIDATION_DIR), 'utf8'));
-  const { year } = manifest;
+  const yearArg = process.argv.find((a) => a.startsWith('--year='));
+  const year = yearArg ? Number(yearArg.slice(7)) : manifest.year;
   for (const st of manifest.stations) {
     const dataUrl = new URL(`data/CRNS0101-05-${year}-${st.slug}.txt`, VALIDATION_DIR);
     if (!existsSync(dataUrl)) {

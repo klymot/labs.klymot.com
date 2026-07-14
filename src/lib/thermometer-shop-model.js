@@ -192,7 +192,13 @@ export function cloudTransmission(cloudFraction) {
  * Returns { timeHours, airC, sun, trueMeanC, trueMaxC, trueMinC, ... }.
  */
 export function simulateDay({ latDeg, dayOfYear, cloudFraction, seed, windMps = WIND_REF_MPS, gustFrac = 0.4 }) {
-  const rng = mulberry32(seed >>> 0);
+  // The noise realization is seeded by BOTH the weather number and the
+  // date: the same seed on a different day must deal different cloud gaps
+  // and gusts, not replay the same script under a different sun. Latitude
+  // is left out deliberately — sweeping location holds the day's weather
+  // script fixed while the sun path changes, which is exactly the
+  // comparison the location control invites.
+  const rng = mulberry32(hashString(`${seed >>> 0}:d${dayOfYear}`));
   const baseline = seasonalBaselineC(latDeg, dayOfYear);
   // Wind's two effects on the air itself: stronger wind couples the layer
   // harder to the baseline (advection — smaller diurnal swing), and it
@@ -592,6 +598,10 @@ export const CATALOGUE = [
     toleranceC: 0.3,
     resolutionC: 0.25,
     stictionC: 0.05,
+    // Two physically separate thermometers: each draws its own scale
+    // error, and only the spirit minimum has an index to stick (the
+    // mercury maximum is a constriction type — no index friction).
+    pair: true,
     registration: 'ligRegister',
     blurb:
       'The classic observatory pair: sheathed mercury maximum (constriction bore) and spirit minimum (dumbbell index), certificate-calibrated against a standard — the pattern that populated the world’s new Stevenson screens.',
@@ -599,7 +609,7 @@ export const CATALOGUE = [
       { label: 'Response time', value: '≈2.5 min in moving air' },
       { label: 'Tolerance', value: '±0.3 °C (certificate)' },
       { label: 'Resolution', value: 'read to the nearest 0.25 °C' },
-      { label: 'Index friction', value: '≈0.05 °C of push to move' },
+      { label: 'Index friction', value: '≈0.05 °C (spirit minimum’s index; the constriction maximum has none)' },
       { label: 'Measurement method', value: 'mechanical min/max indexes, read & reset once daily' },
     ],
     citation: 'Middleton (1966); WMO CIMO Guide',
@@ -613,6 +623,7 @@ export const CATALOGUE = [
     toleranceC: 0.15,
     resolutionC: 0.1,
     stictionC: 0.02,
+    pair: true, // separate max/min thermometers, like the 1880s pattern
     registration: 'ligRegister',
     blurb:
       'National-met-service sheathed pattern with regular calibration checks — the instrument behind most 20th-century climate records. Same mechanical min/max principle as its ancestors, with tighter tolerances and finer readings.',
@@ -620,7 +631,7 @@ export const CATALOGUE = [
       { label: 'Response time', value: '≈1.5 min in moving air' },
       { label: 'Tolerance', value: '±0.15 °C (maintained)' },
       { label: 'Resolution', value: 'read to the nearest 0.1 °C' },
-      { label: 'Index friction', value: '≈0.02 °C of push to move' },
+      { label: 'Index friction', value: '≈0.02 °C (spirit minimum’s index; the constriction maximum has none)' },
       { label: 'Measurement method', value: 'mechanical min/max indexes, read & reset once daily' },
     ],
     citation: 'WMO CIMO Guide (WMO-No. 8), Vol. I Ch. 2',
@@ -661,12 +672,12 @@ export const CATALOGUE = [
       'A small, low-mass element with the logger reporting one-minute means — the WMO’s current definition of daily max and min uses the highest and lowest of these one-minute values.',
     specs: [
       { label: 'Response time', value: '≈20 s' },
-      { label: 'Tolerance', value: '±0.05 °C (calibrated)' },
+      { label: 'Tolerance', value: '±0.05 °C (this lab’s assumption of maintained certificate-grade calibration)' },
       { label: 'Resolution', value: 'logged to 0.1 °C' },
       { label: 'Sampling', value: '10 s samples → 1-min means' },
       { label: 'Daily max/min', value: 'highest/lowest 1-min mean' },
     ],
-    citation: 'WMO CIMO Guide (WMO-No. 8), Vol. I Ch. 2',
+    citation: 'WMO CIMO Guide (WMO-No. 8), Vol. I Ch. 2 — sampling and Tmax/Tmin definitions; the ±0.05 °C tolerance is this lab’s calibration assumption (CIMO quotes 0.1–0.2 °C achievable field uncertainty)',
   },
   {
     id: 'prtUscrn',
@@ -683,12 +694,12 @@ export const CATALOGUE = [
       'The US Climate Reference Network pattern: fast elements, but the published record is five-minute means — block averages instead of instantaneous readings.',
     specs: [
       { label: 'Response time', value: '≈20 s' },
-      { label: 'Tolerance', value: '±0.05 °C (calibrated)' },
+      { label: 'Tolerance', value: '±0.05 °C (this lab’s assumption of maintained certificate-grade calibration)' },
       { label: 'Resolution', value: 'logged to 0.1 °C' },
       { label: 'Sampling', value: '10 s samples → 5-min means' },
       { label: 'Daily max/min', value: 'highest/lowest 5-min mean' },
     ],
-    citation: 'Diamond et al. (2013), USCRN',
+    citation: 'Diamond et al. (2013), USCRN — station design and 5-min means; the ±0.05 °C tolerance is this lab’s calibration assumption (network-level accuracy targets are looser)',
   },
 ];
 
@@ -740,8 +751,15 @@ export function runCartItem(day, instrument, exposure, itemKey) {
   }
 
   // Manufacturing draw: this unit's scale error, uniform within tolerance.
+  // A two-thermometer pair is two separate instruments off the bench: the
+  // max and min each draw their OWN scale error, so the pair's midpoint
+  // mixes two independent errors instead of inheriting one — and recorded
+  // Tmax ≥ Tmin is no longer structurally guaranteed, only practically.
   const itemRng = mulberry32(hashString(itemKey));
   const calOffsetC = (itemRng() * 2 - 1) * instrument.toleranceC;
+  const calOffsetMinC = instrument.pair
+    ? (itemRng() * 2 - 1) * instrument.toleranceC
+    : null;
 
   // Beyond the extremes, each registration mode now also states WHAT the
   // record contains — because the chart and rating table must not pretend
@@ -773,12 +791,17 @@ export function runCartItem(day, instrument, exposure, itemKey) {
     const maxTimeH = new Float64Array(n);
     const minVal = new Float64Array(n);
     const minTimeH = new Float64Array(n);
+    // Per-side friction: in the two-thermometer pairs the maximum is a
+    // constriction type (the column itself is the register — nothing to
+    // stick), so only the spirit minimum's index carries friction. The
+    // single-tube Six pushes a steel index on both sides.
+    const stictionMaxC = instrument.pair ? 0 : instrument.stictionC;
     let regMax = instrSeries[0];
     let regMin = instrSeries[0];
     let regMaxIdx = 0;
     let regMinIdx = 0;
     for (let i = 0; i < n; i++) {
-      if (instrSeries[i] > regMax + instrument.stictionC) {
+      if (instrSeries[i] > regMax + stictionMaxC) {
         regMax = instrSeries[i];
         regMaxIdx = i;
       }
@@ -842,7 +865,10 @@ export function runCartItem(day, instrument, exposure, itemKey) {
   }
 
   const recordedTmaxC = roundToResolution(rawMax + calOffsetC, instrument.resolutionC);
-  const recordedTminC = roundToResolution(rawMin + calOffsetC, instrument.resolutionC);
+  const recordedTminC = roundToResolution(
+    rawMin + (calOffsetMinC === null ? calOffsetC : calOffsetMinC),
+    instrument.resolutionC
+  );
 
   return {
     instrumentId: instrument.id,
@@ -852,8 +878,11 @@ export function runCartItem(day, instrument, exposure, itemKey) {
     registerSeries,
     readings,
     // Never displayed on the receipt — you know the tolerance you bought,
-    // not the error you got. Kept for the tests.
+    // not the error you got. Kept for the tests. calOffsetC is the single
+    // unit's (or the pair's maximum thermometer's) draw; calOffsetMinC is
+    // the pair's minimum thermometer's, null for everything else.
     calOffsetC,
+    calOffsetMinC,
     recordedTmaxC,
     recordedTminC,
     midpointC: (recordedTmaxC + recordedTminC) / 2,

@@ -11,6 +11,9 @@ matches real 5-minute records from the US Climate Reference Network.
 ```sh
 python3 scripts/fetch_thermometer_shop_validation.py   # ~14 MB per station-year, git-ignored
 npm run validate:thermometer-shop
+# hold-out year:
+python3 scripts/fetch_thermometer_shop_validation.py --year 2023
+node scripts/validate-thermometer-shop-cloud.mjs --year=2023
 ```
 
 The pure pieces (file parsing, day classification, metrics) are covered by
@@ -56,29 +59,44 @@ beam whose gate-average reproduces Kasten–Czeplak exactly, and the OU
 turbulence amplitude was retuned *together with* the gate against this
 comparison (see `OU_SIGMA_DAY` in `src/lib/thermometer-shop-model.js`).
 
-## Reading the output, and the 2024 result
+Because 2024 is therefore a **tuning set, not a test**, the same comparison
+is also run against the same stations' **2023** records as a held-out
+check: nothing was adjusted against 2023.
+
+## Reading the output, and the 2024 (tuning) + 2023 (hold-out) results
 
 The model's medians should sit within or near the observed [q25–q75]
-interval in every station × sky-class cell. Against 2024 (fetched
+interval in every station × sky-class cell. Against both years (fetched
 2026-07-14, model as of that date) they do, with the expected one-knob
 limit: real broken-cloud spikes run sharper than the model's at the
 convective site (Titusville) and softer at the marine one (Coos Bay) — a
-cloud-type distinction a single cloud slider cannot express, and now
+cloud-type distinction a single cloud slider cannot express, and
 acknowledged in the lab's methodology copy. Median σ(ΔT₅) in °C, observed
-vs model, that run:
+vs model:
 
-| Station, sky class | Observed | Model |
-|---|---|---|
-| Coos Bay clear | 0.270 | 0.237 |
-| Coos Bay broken | 0.190 | 0.240 |
-| Coos Bay overcast | 0.127 | 0.127 |
-| Titusville clear | 0.208 | 0.256 |
-| Titusville broken | 0.268 | 0.242 |
-| Titusville overcast | 0.152 | 0.156 |
+| Station, sky class | 2024 obs | 2024 model | 2023 obs (hold-out) | 2023 model |
+|---|---|---|---|---|
+| Coos Bay clear | 0.270 | 0.234 | 0.268 | 0.206 |
+| Coos Bay broken | 0.212 | 0.252 | 0.201 | 0.220 |
+| Coos Bay overcast | 0.145 | 0.133 | 0.114 | 0.138 |
+| Titusville clear | 0.227 | 0.259 | 0.215 | 0.291\* |
+| Titusville broken | 0.231 | 0.259 | 0.251 | 0.279 |
+| Titusville overcast | 0.152 | 0.161 | 0.189 | 0.191 |
+
+The hold-out year shows the same pattern as the tuning year (the two
+stations bracket the model in opposite directions on clear days), which is
+the no-overfitting signal this check exists to provide.
+
+\* Titusville's 1.5 m anemometer reported flat zeros (with good QC flags)
+for most of 2023, so those model runs fall back to the calm-wind floor,
+which inflates modelled clear-day jitter; its 2023 wind inputs are
+unreliable and that cell should be read with that caveat. (Unflagged
+`-99.00` wind sentinels in the same file are screened out by the parser.)
 
 If the weather generator's stochastic pieces change (gate timescale, OU
-amplitudes, irradiance decomposition), rerun this and re-check that table;
-`stations.json` sets the year and stations.
+amplitudes, irradiance decomposition, seeding), rerun BOTH years and
+re-check this table; `stations.json` sets the default year and stations,
+`--year=` overrides it.
 
 ## Data isolation
 

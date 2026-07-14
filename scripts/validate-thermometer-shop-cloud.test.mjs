@@ -25,17 +25,19 @@ describe('dayOfYearFromYmd', () => {
 });
 
 describe('loadStationDays', () => {
-  // Two rows in USCRN subhourly01 layout: fields 4/5 are LST date/time,
+  // Rows in USCRN subhourly01 layout: fields 4/5 are LST date/time,
   // 9 air temp, 11 solar, 12 SR flag, 22 wind, 23 wind flag (1-indexed).
+  // Timestamps are period-ENDING: 0405 covers 04:00–04:05.
   const rows = [
     '12345 20240615 1205 20240615 0405 2.514 -124.32 43.27 12.3 0.0 5 0 13.9 C 0 88 0 0.11 14.9 1103 0 1.2 0',
     '12345 20240615 1210 20240615 0410 2.514 -124.32 43.27 -9999.0 0.0 -99999 3 14.0 C 0 88 0 0.11 14.9 1103 0 -9999.0 3',
+    '12345 20240616 0800 20240616 0000 2.514 -124.32 43.27 9.9 0.0 0 0 13.9 C 0 88 0 0.11 14.9 1103 0 0.8 0',
   ].join('\n');
 
-  it('places values in the right 5-min bin and drops sentinels/flagged', () => {
+  it('bins period-ending stamps, rolls 0000 to the previous day, drops sentinels/flagged', () => {
     const days = loadStationDays(rows);
     const rec = days.get('20240615');
-    const idx0405 = (4 * 60 + 5) / 5;
+    const idx0405 = (4 * 60 + 5) / 5 - 1; // 04:05 stamp = bin starting 04:00
     expect(rec.t[idx0405]).toBeCloseTo(12.3);
     expect(rec.ghi[idx0405]).toBe(5);
     expect(rec.wind[idx0405]).toBeCloseTo(1.2);
@@ -43,6 +45,9 @@ describe('loadStationDays', () => {
     expect(Number.isNaN(rec.t[idx0410])).toBe(true); // -9999 sentinel
     expect(Number.isNaN(rec.ghi[idx0410])).toBe(true); // SR_FLAG 3
     expect(Number.isNaN(rec.wind[idx0410])).toBe(true); // WIND_FLAG 3
+    // The 20240616 00:00 stamp is the mean over 23:55–24:00 of the 15th.
+    expect(rec.t[287]).toBeCloseTo(9.9);
+    expect(days.get('20240616')).toBeUndefined();
   });
 });
 

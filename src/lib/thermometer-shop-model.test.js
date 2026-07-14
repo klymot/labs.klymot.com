@@ -142,6 +142,24 @@ describe('simulateDay', () => {
     expect(a.trueMeanC).not.toBe(b.trueMeanC);
   });
 
+  it('changing the day re-deals the weather, not just the sun', () => {
+    // Same seed, adjacent days, half cloud: if the date were not mixed
+    // into the noise stream, the cloud gate would flip at the same clock
+    // times on both days and the on/off patterns would agree ~100%.
+    // Independent draws agree ~c² + (1−c)² = 50%.
+    const a = simulateDay({ ...base, cloudFraction: 0.5 });
+    const b = simulateDay({ ...base, cloudFraction: 0.5, dayOfYear: base.dayOfYear + 1 });
+    let daySteps = 0;
+    let agree = 0;
+    for (let i = 0; i < a.ghi.length; i++) {
+      if (a.ghi[i] <= 0 || b.ghi[i] <= 0) continue;
+      daySteps++;
+      if ((a.dni[i] > 0) === (b.dni[i] > 0)) agree++;
+    }
+    expect(daySteps).toBeGreaterThan(1000);
+    expect(agree / daySteps).toBeLessThan(0.9);
+  });
+
   it('returns one full day of samples with true stats ordered', () => {
     const d = simulateDay(base);
     expect(d.airC.length).toBe(AIR_STEPS_PER_DAY);
@@ -261,6 +279,28 @@ describe('exposures and instruments', () => {
     const rAvg = runCartItem(day, avg5, exp, 'same');
     expect(rAvg.recordedTmaxC).toBeLessThanOrEqual(rSpot.recordedTmaxC + 1e-9);
     expect(rAvg.recordedTminC).toBeGreaterThanOrEqual(rSpot.recordedTminC - 1e-9);
+  });
+
+  it('two-thermometer pairs draw independent scale errors; singles share one', () => {
+    const exp = getExposure('stevenson');
+    const pair = runCartItem(day, getInstrument('lig1880'), exp, 'pair-draws');
+    expect(pair.calOffsetMinC).not.toBeNull();
+    expect(pair.calOffsetMinC).not.toBe(pair.calOffsetC);
+    expect(Math.abs(pair.calOffsetMinC)).toBeLessThanOrEqual(getInstrument('lig1880').toleranceC);
+    const six = runCartItem(day, getInstrument('lig1780'), exp, 'single-draw');
+    expect(six.calOffsetMinC).toBeNull();
+    const prt = runCartItem(day, getInstrument('prtUscrn'), getExposure('aspirated'), 'prt-draw');
+    expect(prt.calOffsetMinC).toBeNull();
+  });
+
+  it('pair stiction binds only the spirit minimum: the constriction maximum reads friction-free', () => {
+    const exp = getExposure('stevenson');
+    const free = exact(getInstrument('lig1880'), { stictionC: 0 });
+    const sticky = exact(getInstrument('lig1880'));
+    const rFree = runCartItem(day, free, exp, 'same');
+    const rSticky = runCartItem(day, sticky, exp, 'same');
+    expect(rSticky.recordedTmaxC).toBeCloseTo(rFree.recordedTmaxC, 9); // no index on max
+    expect(rSticky.recordedTminC).toBeGreaterThanOrEqual(rFree.recordedTminC - 1e-9); // min can only narrow
   });
 
   it('index friction can only narrow the registered extremes, never widen them', () => {

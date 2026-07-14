@@ -107,7 +107,7 @@ const WIND_ICONS = {
             <details class="expander">
               <summary>How the simulated day is generated</summary>
               <div class="expander-body">
-                <p>A single energy balance drives the air temperature: absorbed sunlight in; thermal radiation out at the layer's own T⁴ against a cloud-dependent sky (the Swinbank 1963 clear-sky downwelling, evaluated at the seasonal baseline and enhanced under cloud — so clear nights can cool toward a radiative equilibrium well below the day's baseline, while overcast nights barely can); and relaxation toward a latitude-based seasonal baseline standing in for the boundary-layer mixing and advection the model doesn't resolve. That relaxation weakens on calm nights — stable air decouples from the layers above, which is what lets a still, clear night dig a deep minimum that a windy night cannot. Sunlight is split into an always-present diffuse part and a direct beam (the Meinel clear-sky airmass formula) that switches off whenever a simulated cloud is over the sun's disc — a random on/off gate whose average matches your cloud slider, passing faster in wind. The diffuse part is sized so the gate-averaged total reproduces the published Kasten &amp; Czeplak (1980) cloud relation; instant by instant, though, a half-cloudy sky flickers the way real broken sky does, and every flicker reaches the air itself: each cloud gap is a small heating spike the thermometers then chase, each covering a dip. The same gated sunshine drives the wall exposure's direct beam, the screens' radiation errors, and the damping of daytime turbulence while the sun is hidden.</p>
+                <p>A single energy balance drives the air temperature: absorbed sunlight in; thermal radiation out at the layer's own T⁴ against a cloud-dependent sky (the Swinbank 1963 clear-sky downwelling, evaluated at the seasonal baseline and enhanced under cloud — so clear nights can cool toward a radiative equilibrium well below the day's baseline, while overcast nights barely can); and relaxation toward a latitude-based seasonal baseline standing in for the boundary-layer mixing and advection the model doesn't resolve. That relaxation weakens on calm nights — stable air decouples from the layers above, which is what lets a still, clear night dig a deep minimum that a windy night cannot. Sunlight is split into an always-present diffuse part and a direct beam (the Meinel clear-sky airmass formula) that switches off whenever a simulated cloud is over the sun's disc — a random on/off gate whose average matches your cloud slider, passing faster in wind. The diffuse part is sized so the gate-averaged total reproduces the published Kasten &amp; Czeplak (1980) cloud relation; instant by instant, though, a half-cloudy sky flickers the way real broken sky does, and every flicker reaches the air itself: each cloud gap is a small heating spike the thermometers then chase, each covering a dip. (One admitted crudity: to keep the day's total anchored to the published relation, this model's sun-out level runs above the clear-sky value for the whole gap — real records exceed clear-sky only briefly, near cloud edges.) The same gated sunshine drives the wall exposure's direct beam, the screens' radiation errors, and the damping of daytime turbulence while the sun is hidden.</p>
                 <p>On top of that sits small, fast turbulence (a mean-reverting random wiggle, stronger in daytime convection) — the tenths-of-a-degree texture real air has, the part of the signal that response times and sampling schedules act on. All randomness is seeded: the "weather number" printed on your receipt replays the identical day, so shared links reproduce exactly.</p>
               </div>
             </details>
@@ -374,13 +374,13 @@ const WIND_ICONS = {
               <button type="button" class="mini-tool" data-zoom="in" aria-label="Zoom in">+</button>
               <button type="button" class="mini-tool" data-zoom="out" aria-label="Zoom out">−</button>
               <button type="button" class="mini-tool" data-zoom="reset">Reset</button>
-              <span class="toolbar-label chart-zoom-hint">drag to pan · double-click, pinch or ctrl-scroll to zoom</span>
+              <span class="toolbar-label chart-zoom-hint">drag to pan · double-click, pinch or ctrl-scroll to zoom · or focus the chart: + − arrows, Home</span>
             </div>
             <div class="chart-container" id="dayChartContainer" role="img" aria-label="Chart of each purchased instrument's temperature through the simulated day">
               <canvas id="dayChart" style="display:block; width:100%; height:100%;"></canvas>
             </div>
             <div id="dayChartLegend"></div>
-            <p class="chart-caption">Local solar time. Shaded bands: warm tint marks daylight; the darker tint marks night. Toggle series in the legend. Liquid-in-glass items draw as a continuous line — a column you could watch all day — with rings riding it for the max and min indexes, sticking at each new extreme; the rings' final resting places are the ONLY two numbers that survive to the record. Electronic items draw as dots, one per value the logger reports; zoom in and the reporting interval becomes visible.</p>
+            <p class="chart-caption">Local solar time. Shaded bands: warm tint marks daylight; the darker tint marks night. Toggle series in the legend. Liquid-in-glass items draw as a continuous line — a column you could watch all day — with rings riding it for the max and min indexes, sticking at each new extreme; the rings' final resting places are the ONLY two numbers that survive to the record. Electronic items draw as dots, one per value the logger reports; zoom in and the reporting interval becomes visible. The chart plots each sensor's physical temperature; the written record is that value read through the unit's imperfect scale (somewhere within its stated tolerance — you know the tolerance you bought, not the error you got) and rounded to its resolution, so receipt numbers can sit a scale-error away from the chart.</p>
           </div>
         </div>
 
@@ -409,7 +409,7 @@ const WIND_ICONS = {
         <button type="button" class="screen-back" id="backToTracking">← Back to the tracking chart</button>
         <div class="prose">
           <h2 id="receipt-heading">Your receipt</h2>
-          <p>Each line shows what that item wrote down: its registered maximum, its registered minimum, and the meteorological average (Tmax+Tmin)/2 — the quantity daily records are built from. Electronic loggers can also total their readings into a true daily average; a mechanical register keeps two numbers and nothing else, so that column shows a dash.</p>
+          <p>Each line shows what that item wrote down: its registered maximum, its registered minimum, and the meteorological average (Tmax+Tmin)/2 — the quantity daily records are built from. Electronic loggers can also total their readings into a logged 24-hour average; a mechanical register keeps two numbers and nothing else, so that column shows a dash. The final row is the one reading nobody sells: the air itself, which the simulation knows and no instrument records — its extremes quoted as 10-second averages, its last column the true 24-hour average of all 86,400 one-second samples. How your items compare is yours to judge — different carts, days, and skies can answer differently.</p>
         </div>
         <div class="section-card receipt-card">
           <div class="receipt-head">
@@ -419,16 +419,16 @@ const WIND_ICONS = {
           <div class="receipt-table-wrap">
             <table class="receipt-table" aria-describedby="receipt-heading">
               <thead>
-                <tr><th scope="col">Item</th><th scope="col">Shelter</th><th scope="col">Tmax (°C)</th><th scope="col">Tmin (°C)</th><th scope="col">Met avg (°C)</th><th scope="col">True avg (°C)</th></tr>
+                <tr><th scope="col">Item</th><th scope="col">Shelter</th><th scope="col">Tmax (°C)</th><th scope="col">Tmin (°C)</th><th scope="col">Met avg (°C)</th><th scope="col">Logged 24-h avg (°C)</th></tr>
               </thead>
               <tbody id="receiptBody"></tbody>
-              <tfoot id="receiptFoot" hidden>
+              <tfoot>
                 <tr class="receipt-truth-row">
-                  <th scope="row" colspan="2">24-hour average of the air itself (all 86,400 samples)</th>
-                  <td class="receipt-truth-dash">—</td>
-                  <td class="receipt-truth-dash">—</td>
-                  <td class="receipt-truth-dash">—</td>
-                  <td id="receiptTrueMean"></td>
+                  <th scope="row" colspan="2">The air itself — simulation truth</th>
+                  <td id="airTrueMax"></td>
+                  <td id="airTrueMin"></td>
+                  <td id="airMetAvg"></td>
+                  <td id="airTrueMean"></td>
                 </tr>
               </tfoot>
             </table>
@@ -436,38 +436,12 @@ const WIND_ICONS = {
           <p class="receipt-footer" id="receiptFooter">*** THANK YOU FOR MEASURING WITH US ***</p>
         </div>
 
-        <div class="primary-cta-row" id="truthPromptRow">
-          <button type="button" class="primary-cta" id="revealTruth">Rate your purchase</button>
-          <p class="primary-cta-hint">Compare every item with the one reading nobody sells: the air itself, which the simulation knows and no instrument records.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── Section: The true mean ──────────────────────────────────── -->
-    <section class="lab-section" id="truth" aria-labelledby="truth-heading" hidden>
-      <div class="container">
-        <button type="button" class="screen-back" id="backToReceipt">← Back to the receipt</button>
-        <div class="prose">
-          <h2 id="truth-heading">Rate your purchase</h2>
-          <p>The simulation knows what no instrument records: the air itself, generated second by second (its extremes quoted as 10-second averages — a one-second blip is finer than even the reference chain resolves). How your items compare is yours to judge — different carts, days, and skies can answer differently.</p>
-        </div>
-        <div class="section-card rating-table-card">
-          <table class="order-table air-stats-table">
-            <tbody>
-              <tr><th scope="row">24-h average of the air</th><td id="truthMean">—</td></tr>
-              <tr><th scope="row">24-h median of the air</th><td id="truthMedian">—</td></tr>
-              <tr><th scope="row">Warmest moment (10-s average)</th><td id="truthMax">—</td></tr>
-              <tr><th scope="row">Coldest moment (10-s average)</th><td id="truthMin">—</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="section-card rating-table-card">
+        <div class="section-card rating-table-card" style="margin-top:1.25rem">
           <div class="metric-toggle" id="ratingMetricToggle" role="group" aria-label="Choose which recorded statistic to compare">
             <button type="button" data-metric="max">Tmax</button>
             <button type="button" data-metric="min">Tmin</button>
             <button type="button" data-metric="midpoint" class="active">Met average</button>
-            <button type="button" data-metric="mean">True average</button>
+            <button type="button" data-metric="mean">Logged average</button>
           </div>
           <div class="receipt-table-wrap">
             <table class="receipt-table" aria-label="Each item's chosen recorded statistic compared with the air itself">
@@ -484,32 +458,52 @@ const WIND_ICONS = {
               <button type="button" class="mini-tool" data-zoom="in" aria-label="Zoom in">+</button>
               <button type="button" class="mini-tool" data-zoom="out" aria-label="Zoom out">−</button>
               <button type="button" class="mini-tool" data-zoom="reset">Reset</button>
-              <span class="toolbar-label chart-zoom-hint">drag to pan · double-click, pinch or ctrl-scroll to zoom</span>
+              <span class="toolbar-label chart-zoom-hint">drag to pan · double-click, pinch or ctrl-scroll to zoom · or focus the chart: + − arrows, Home</span>
             </div>
             <div class="chart-container" id="truthChartContainer" role="img" aria-label="Chart of each purchased instrument's temperature with the air itself overlaid">
               <canvas id="truthChart" style="display:block; width:100%; height:100%;"></canvas>
             </div>
             <div id="truthChartLegend"></div>
-            <p class="chart-caption">The same day again — with the air itself as the solid line beneath everything your items read. Rings mark the only two values a liquid-in-glass register keeps; dots are the values an electronic logger reports. Toggle series in the legend.</p>
+            <p class="chart-caption">The same day again — with the air itself as the solid line beneath everything your items read. Rings mark the only two values a liquid-in-glass register keeps; dots are the values an electronic logger reports. (Chart values are the sensors' physical temperatures; the written record adds each unit's undisclosed scale error, within its stated tolerance, and rounds to its resolution.) Toggle series in the legend.</p>
           </div>
         </div>
 
         <div id="runHistorySection" hidden>
-          <p class="chart-caption run-history-placeholder" id="runHistoryPlaceholder"><em>If you change your cart or the day and check out again, a table of all your orders will be kept here so you can compare them.</em></p>
+          <p class="chart-caption run-history-placeholder" id="runHistoryPlaceholder"><em>If you change your cart or the day and check out again, a table of all your orders — and a histogram of their true errors — will be kept here so you can compare them.</em></p>
           <div id="runHistoryContent" hidden>
             <div class="prose">
               <h3>Your orders so far</h3>
               <p class="chart-caption">Every checkout is added here. Cleared if you reload or reset the lab.</p>
             </div>
-            <div class="run-history-scroll section-card">
-              <table class="run-history-table">
-                <thead>
-                  <tr><th>#</th><th>Day settings</th><th>Items (Tmax / Tmin / met avg °C)</th><th>Air 24-h avg (°C)</th></tr>
-                </thead>
-                <tbody id="runHistoryBody"></tbody>
-              </table>
+            <div class="section-card" style="padding:1rem; margin-bottom:0.9rem">
+              <div class="chart-container" id="errorHistContainer" role="img" aria-label="Histogram of true errors across your orders: each item's meteorological average minus that day's true 24-hour air average">
+                <canvas id="errorHist" style="display:block; width:100%; height:100%;"></canvas>
+              </div>
+              <div id="errorHistLegend" class="chart-legend"></div>
+              <p class="chart-caption">True error, pooled across every order this session: each item's met average (Tmax+Tmin)/2 minus that day's true 24-hour air average, stacked by item. Left of the zero line an item's met average ran cold of the true average; right, warm. Every number is in the order-history table below (expand to read it).</p>
             </div>
+            <details class="expander">
+              <summary>Order history table (data fallback for the histogram)</summary>
+              <div class="expander-body">
+                <div class="run-history-scroll section-card">
+                  <table class="run-history-table">
+                    <thead>
+                      <tr><th>#</th><th>Day settings</th><th>Items (Tmax / Tmin / met avg °C)</th><th>Air 24-h avg (°C)</th></tr>
+                    </thead>
+                    <tbody id="runHistoryBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </details>
           </div>
+        </div>
+
+        <div class="primary-cta-row">
+          <div class="receipt-next-btns">
+            <button type="button" class="primary-cta" id="redeliverBtn">Schedule a re-delivery</button>
+            <button type="button" class="secondary-cta" id="newOrderBtn">Clear the cart &amp; start a new order</button>
+          </div>
+          <p class="primary-cta-hint">Re-delivery keeps your instruments and returns to the delivery details — change the day, the sky, the wind, or the weather number and dispatch again. A new order empties the cart and returns to the catalogue. Your orders-so-far table keeps growing either way.</p>
         </div>
       </div>
     </section>
@@ -522,7 +516,7 @@ const WIND_ICONS = {
           <div class="expander-body">
             <dl class="sources-list">
               <dt>The synthetic weather (methodology, not a data source)</dt>
-              <dd>The day itself is generated, not measured: a single-layer energy balance relaxed toward a latitude-based seasonal baseline, with seeded stochastic cloud gating and turbulence. Its magnitudes are tuned to plausible screen-level diurnal behaviour, and it is not a reconstruction of any real location or date. Radiation pieces use the two published relations below; everything else in the weather generator is this lab's own simplification, stated in "How the simulated day is generated" above. The day's short-term texture (the size of its 5-minute wiggles on clear, broken, and overcast days) was sanity-checked against US Climate Reference Network 5-minute records from two near-sea-level stations — one Pacific, one Atlantic — with the observed days classified by their measured solar radiation; the model's flicker sits within the observed day-to-day spread for both, though real broken-cloud spikes run sharper than the model's at the convective-cumulus site and softer at the marine-cloud one, a cloud-type distinction one cloud slider cannot express.</dd>
+              <dd>The day itself is generated, not measured: a single-layer energy balance relaxed toward a latitude-based seasonal baseline, with seeded stochastic cloud gating and turbulence. Its magnitudes are tuned to plausible screen-level diurnal behaviour, and it is not a reconstruction of any real location or date. Radiation pieces use the two published relations below; everything else in the weather generator is this lab's own simplification, stated in "How the simulated day is generated" above. The day's short-term texture (the size of its 5-minute wiggles on clear, broken, and overcast days) was tuned against US Climate Reference Network 5-minute records from 2024 at two near-sea-level stations — one Pacific, one Atlantic — with observed days classified by their measured solar radiation, then checked against the same stations' 2023 records as a held-out test (nothing was adjusted against 2023). In both years the model's flicker sits within the observed day-to-day spread, though real broken-cloud spikes run sharper than the model's at the convective-cumulus site and softer at the marine-cloud one, a cloud-type distinction one cloud slider cannot express.</dd>
               <dt>Cloud transmission — Kasten &amp; Czeplak (1980)</dt>
               <dd>"Solar and terrestrial radiation dependent on the amount and type of cloud," <em>Solar Energy</em>, 24(2), 177–189. <a href="https://doi.org/10.1016/0038-092X(80)90391-6" target="_blank" rel="noopener">doi:10.1016/0038-092X(80)90391-6</a> — global-irradiance-vs-cloud-fraction relation; here it fixes the gate-averaged total, with the stochastic gate supplying the instant-by-instant broken-cloud flicker around it.</dd>
               <dt>Clear-sky downwelling longwave — Swinbank (1963)</dt>
@@ -551,14 +545,28 @@ const WIND_ICONS = {
   </main>
 
   <style>
+    /* The bleed below can overhang by a scrollbar width on some
+       platforms; clip (not hidden — hidden would break sticky) absorbs it. */
+    .lab-section { overflow-x: clip; }
     .screen-back {
-      display: inline-flex;
+      /* Sticks just below the (sticky, 3.25rem) site header once the page
+         scrolls past it, so the way back is never out of reach on the
+         long shopping screens. Full-bleed: the bar's background runs
+         edge-to-edge of the viewport while the label stays aligned with
+         the container text. */
+      position: sticky;
+      top: 3.25rem;
+      z-index: 5;
+      display: flex;
       align-items: center;
       min-height: 44px;
       margin-bottom: 0.5rem;
-      padding: 0;
-      background: none;
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      padding: 0 1rem 0 calc(50vw - 50%);
+      background: var(--bg, canvas);
       border: none;
+      border-bottom: 1px solid var(--border, rgba(128,128,128,0.15));
       color: var(--text-secondary, #999);
       font-size: 0.85rem;
       cursor: pointer;
@@ -1017,6 +1025,7 @@ const WIND_ICONS = {
       border-top: 2px solid var(--border, rgba(128,128,128,0.45));
       font-weight: 600;
     }
+    .receipt-truth-row th { white-space: normal; }
     .receipt-truth-dash { color: var(--text-secondary, #888); }
     .receipt-footer {
       margin: 0.8rem 0 0;
@@ -1025,7 +1034,28 @@ const WIND_ICONS = {
       letter-spacing: 0.12em;
       color: var(--text-secondary, #888);
     }
+    .receipt-next-btns {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .secondary-cta {
+      font-family: var(--font-sans, sans-serif);
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.75rem 1.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border-strong, rgba(128,128,128,0.5));
+      background: transparent;
+      color: var(--text-secondary, #999);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .secondary-cta:hover { color: var(--text, inherit); border-color: var(--accent, #d4a855); }
+    .secondary-cta:active { transform: scale(0.98); }
     .chart-zoom-tools { margin-bottom: 0.6rem; }
+    .chart-container canvas:focus-visible { outline: 2px solid var(--accent, #d4a855); outline-offset: -2px; }
     .chart-zoom-tools .mini-tool { min-width: 1.7rem; height: 1.7rem; }
     .chart-zoom-hint { text-transform: none; letter-spacing: 0.02em; font-weight: 500; }
     .metric-toggle {
@@ -1108,11 +1138,6 @@ const WIND_ICONS = {
       color: var(--text-secondary, #888);
     }
     .lab-thermometer-shop .order-table-shelter { color: var(--text-secondary, #999); white-space: nowrap; }
-    .lab-thermometer-shop .air-stats-table th[scope='row'] {
-      font-weight: 400;
-      color: var(--text-secondary, #999);
-    }
-    .lab-thermometer-shop .air-stats-table td { font-family: var(--font-mono, monospace); }
     .lab-thermometer-shop .order-table th.order-table-actions,
     .lab-thermometer-shop .order-table td.order-table-actions { text-align: right; width: 44px; padding-right: 0; }
     .lab-thermometer-shop .trash-btn {
@@ -1210,29 +1235,26 @@ const WIND_ICONS = {
       receiptSection: document.getElementById('receipt'),
       receiptMeta: document.getElementById('receiptMeta'),
       receiptBody: document.getElementById('receiptBody'),
-      receiptFoot: document.getElementById('receiptFoot'),
-      receiptTrueMean: document.getElementById('receiptTrueMean'),
+      airTrueMax: document.getElementById('airTrueMax'),
+      airTrueMin: document.getElementById('airTrueMin'),
+      airMetAvg: document.getElementById('airMetAvg'),
+      airTrueMean: document.getElementById('airTrueMean'),
       dayChart: document.getElementById('dayChart'),
       dayChartLegend: document.getElementById('dayChartLegend'),
       hourlyHead: document.getElementById('hourlyHead'),
       hourlyBody: document.getElementById('hourlyBody'),
-      truthPromptRow: document.getElementById('truthPromptRow'),
-      revealTruth: document.getElementById('revealTruth'),
       truthChart: document.getElementById('truthChart'),
       truthChartLegend: document.getElementById('truthChartLegend'),
-      truthSection: document.getElementById('truth'),
-      truthMedian: document.getElementById('truthMedian'),
       ratingBody: document.getElementById('ratingBody'),
       ratingHead: document.getElementById('ratingHead'),
       ratingCaption: document.getElementById('ratingCaption'),
       ratingMetricToggle: document.getElementById('ratingMetricToggle'),
-      truthMean: document.getElementById('truthMean'),
-      truthMax: document.getElementById('truthMax'),
-      truthMin: document.getElementById('truthMin'),
       runHistorySection: document.getElementById('runHistorySection'),
       runHistoryPlaceholder: document.getElementById('runHistoryPlaceholder'),
       runHistoryContent: document.getElementById('runHistoryContent'),
       runHistoryBody: document.getElementById('runHistoryBody'),
+      errorHist: document.getElementById('errorHist'),
+      errorHistLegend: document.getElementById('errorHistLegend'),
     };
 
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1241,10 +1263,14 @@ const WIND_ICONS = {
       const d = new Date(Date.UTC(2001, 0, Number(doy)));
       return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
     }
-    // Trim trailing zeros so a 0.5 °C-resolution reading shows as "12.5",
-    // not a false-precision "12.50".
-    function fmtC(v) {
-      return String(Math.round(v * 1000) / 1000);
+    // Format a recorded value at the instrument's own resolution: exactly
+    // the decimals the resolution implies ("25.0" for a 0.1 °C logger,
+    // "19.75" for a 0.25 °C certificate pair) — no more, no fewer.
+    function decimalsOf(res) {
+      return (String(res).split('.')[1] || '').length;
+    }
+    function fmtRes(v, res) {
+      return v.toFixed(decimalsOf(res));
     }
     // Signed difference, always showing the sign (a "+0.00" is meaningful).
     function fmtSigned(v) {
@@ -1308,7 +1334,6 @@ const WIND_ICONS = {
     let cart = []; // [{instrumentId, exposureId}]
     let hasCheckedOut = false; // reached the shipping screen at least once
     let hasRunOnce = false; // a delivery has been simulated
-    let hasRevealedTruth = false;
 
     // ── Screens: the SPA "pages" of the shop flow ─────────────────────
     // One stage visible at a time (intro → shop → shipping → tracking →
@@ -1321,7 +1346,6 @@ const WIND_ICONS = {
       shipping: () => cart.length >= MIN_ITEMS,
       tracking: () => hasRunOnce,
       receipt: () => hasRunOnce,
-      rating: () => hasRunOnce && hasRevealedTruth,
     };
     function refreshScreens() {
       const hero = document.getElementById('introHero');
@@ -1333,9 +1357,12 @@ const WIND_ICONS = {
       els.shippingSection.hidden = currentScreen !== 'shipping';
       els.trackingSection.hidden = currentScreen !== 'tracking';
       els.receiptSection.hidden = currentScreen !== 'receipt';
-      els.truthSection.hidden = currentScreen !== 'rating';
+      // Data Sources shows on the intro AND the final receipt screen — the
+      // two places a reader weighs claims. Hiding it during the
+      // shopping-cart flow is a deliberate design exception to "sources
+      // always reachable".
       const sources = document.getElementById('sources');
-      sources.hidden = currentScreen !== 'intro';
+      sources.hidden = currentScreen !== 'intro' && currentScreen !== 'receipt';
       // The cart bar follows the cart, not the screen: it appears with the
       // first item and stays through back-navigation on the browsing
       // screens, retiring on the post-checkout screens.
@@ -1441,10 +1468,14 @@ const WIND_ICONS = {
       syncDayOptions(month, dayOfMonth);
       els.weatherSeedLabel.textContent = `#${weatherSeed}`;
       document.querySelectorAll('[data-wind-id]').forEach((btn) => {
-        btn.classList.toggle('active', btn.getAttribute('data-wind-id') === windId);
+        const on = btn.getAttribute('data-wind-id') === windId;
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-pressed', String(on));
       });
       document.querySelectorAll('[data-cloud]').forEach((btn) => {
-        btn.classList.toggle('active', Number(btn.getAttribute('data-cloud')) === cloudPct);
+        const on = Number(btn.getAttribute('data-cloud')) === cloudPct;
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-pressed', String(on));
       });
     }
 
@@ -1476,7 +1507,10 @@ const WIND_ICONS = {
       if (restored.loc && LOCATIONS.some((l) => l.id === restored.loc)) els.locationSelect.value = restored.loc;
       if (restored.doy) dayOfYear = clamp(Math.round(Number(restored.doy)) || 180, 1, 365);
       // Older links may carry any 0–100 value; snap to the nearest button.
-      if (restored.cloud !== null) cloudPct = clamp(Math.round(Number(restored.cloud) / 25) * 25, 0, 100);
+      // Guard NaN: a hand-edited/truncated cl= param must not poison the run.
+      if (restored.cloud !== null && Number.isFinite(Number(restored.cloud))) {
+        cloudPct = clamp(Math.round(Number(restored.cloud) / 25) * 25, 0, 100);
+      }
       if (restored.wind && getWindRegime(restored.wind)) windId = restored.wind;
       if (restored.seed && Number(restored.seed) > 0) weatherSeed = Math.floor(Number(restored.seed));
       if (restored.unitSeed && Number(restored.unitSeed) > 0) unitSeed = Math.floor(Number(restored.unitSeed));
@@ -1865,6 +1899,7 @@ const WIND_ICONS = {
         function applyStyle() {
           btn.style.borderColor = s.visible !== false ? s.color : offBorder;
           btn.classList.toggle('series-off', s.visible === false);
+          btn.setAttribute('aria-pressed', String(s.visible !== false));
         }
         applyStyle();
         btn.addEventListener('click', () => {
@@ -1896,24 +1931,25 @@ const WIND_ICONS = {
         tr.innerHTML =
           `<td>${inst.name} <span class="receipt-item-era">(${inst.era})</span></td>` +
           `<td>${exp.short}</td>` +
-          `<td>${fmtC(r.recordedTmaxC)}</td>` +
-          `<td>${fmtC(r.recordedTminC)}</td>` +
-          `<td>${fmtC(r.midpointC)}</td>` +
-          `<td>${r.recordedMeanC === null ? '—' : fmtC(r.recordedMeanC)}</td>`;
+          `<td>${fmtRes(r.recordedTmaxC, inst.resolutionC)}</td>` +
+          `<td>${fmtRes(r.recordedTminC, inst.resolutionC)}</td>` +
+          `<td>${fmtRes(r.midpointC, inst.resolutionC / 2)}</td>` +
+          `<td>${r.recordedMeanC === null ? '—' : fmtRes(r.recordedMeanC, inst.resolutionC)}</td>`;
         tr.querySelector('td').style.borderLeft = `3px solid ${SERIES_COLORS[i]}`;
         els.receiptBody.appendChild(tr);
       });
-      if (hasRevealedTruth) {
-        els.receiptFoot.hidden = false;
-        els.receiptTrueMean.textContent = order.day.trueMeanC.toFixed(2);
-      } else {
-        els.receiptFoot.hidden = true;
-      }
+      // The air itself, in the same columns as the instruments: its true
+      // extremes (10-s averages), its own (max+min)/2, and its true 24-h
+      // average — the simulation's ground truth, hidden from nobody.
+      els.airTrueMax.textContent = order.day.trueMaxC.toFixed(2);
+      els.airTrueMin.textContent = order.day.trueMinC.toFixed(2);
+      els.airMetAvg.textContent = ((order.day.trueMaxC + order.day.trueMinC) / 2).toFixed(2);
+      els.airTrueMean.textContent = order.day.trueMeanC.toFixed(2);
     }
 
     function renderHourlyTable(order) {
       const cols = order.results.map((r) => itemShortLabel(r));
-      const withAir = hasRevealedTruth;
+      const withAir = true;
       els.hourlyHead.innerHTML =
         '<tr><th scope="col">Hour</th>' +
         cols.map((c) => `<th scope="col">${c}</th>`).join('') +
@@ -1926,7 +1962,7 @@ const WIND_ICONS = {
       // air itself (simulation truth) gets two decimals.
       const readAt = (r, hr) => {
         const res = getInstrument(r.instrumentId).resolutionC;
-        return fmtC(Math.round(at(r.instrSeries, hr) / res) * res);
+        return fmtRes(Math.round(at(r.instrSeries, hr) / res) * res, res);
       };
       for (let hr = 0; hr < 24; hr++) {
         const cells = order.results.map((r) => `<td>${readAt(r, hr)}</td>`).join('');
@@ -1992,6 +2028,32 @@ const WIND_ICONS = {
         toolsEl.querySelector('[data-zoom="reset"]').addEventListener('click', () =>
           setView(0, 24));
       }
+      // Keyboard: the canvas is focusable; arrows pan, +/− zoom about the
+      // view center, Home/0 resets — so sunrise and sunset detail are
+      // reachable without a pointer.
+      canvas.tabIndex = 0;
+      canvas.setAttribute(
+        'aria-label',
+        'Chart. Use plus and minus to zoom, arrow keys to pan when zoomed, Home to reset. Values are in the hourly readings table.'
+      );
+      canvas.addEventListener('keydown', (e) => {
+        const span = view.x1 - view.x0;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          if (!isZoomed()) return;
+          e.preventDefault();
+          const dx = span * 0.2 * (e.key === 'ArrowLeft' ? -1 : 1);
+          setView(view.x0 + dx, view.x1 + dx);
+        } else if (e.key === '+' || e.key === '=') {
+          e.preventDefault();
+          zoomAt(view.x0 + span / 2, 0.5);
+        } else if (e.key === '-' || e.key === '_') {
+          e.preventDefault();
+          zoomAt(view.x0 + span / 2, 2);
+        } else if (e.key === 'Home' || e.key === '0') {
+          e.preventDefault();
+          setView(0, 24);
+        }
+      });
       canvas.addEventListener('dblclick', (e) => zoomAt(hourAtPixel(e.clientX), 0.5));
       canvas.addEventListener('wheel', (e) => {
         // Ctrl/cmd-scroll (and trackpad pinch, which browsers deliver as a
@@ -2104,6 +2166,16 @@ const WIND_ICONS = {
         onDone: () => {
           els.viewReceiptBtn.disabled = false;
           els.viewReceiptHint.textContent = "The written record: what each item's registers actually kept from that day.";
+          // Repeat deliveries auto-advance to the receipt: the reader has
+          // done the view-receipt ritual once, and on re-runs they're here
+          // for the comparison. A beat's pause lets the finished day land;
+          // navigating away during it cancels the advance.
+          if (runHistory.length >= 2) {
+            els.viewReceiptHint.textContent = 'Opening your receipt…';
+            setTimeout(() => {
+              if (currentScreen === 'tracking') goToReceipt();
+            }, 900);
+          }
         },
       });
     }
@@ -2152,7 +2224,7 @@ const WIND_ICONS = {
         caption: 'The meteorological average (Tmax+Tmin)/2 — the quantity daily temperature records are built from. Error: minus the air’s own (max+min)/2, i.e. how well the instrument measured the met average. True error: minus the air’s true 24-hour average — the instrument’s error plus the met-average convention’s own gap from the true average.',
       },
       mean: {
-        head: 'True average (°C)',
+        head: 'Logged 24-h avg (°C)',
         value: (r) => r.recordedMeanC,
         diffs: [{ head: 'Error (°C)', of: (r, day) => r.recordedMeanC - day.trueMeanC }],
         caption: 'The daily average an electronic logger can total from its readings, and its error against the air’s true 24-hour average. A mechanical register keeps only its max and min — it has no average to offer.',
@@ -2179,7 +2251,7 @@ const WIND_ICONS = {
           `<td class="order-table-shelter">${exp.short}</td>` +
           (value === null
             ? `<td class="rating-na" colspan="${1 + metric.diffs.length}">N/A — the register keeps only max &amp; min</td>`
-            : `<td>${fmtC(value)}</td>` +
+            : `<td>${fmtRes(value, ratingMetric === 'midpoint' ? inst.resolutionC / 2 : inst.resolutionC)}</td>` +
               metric.diffs.map((d) => `<td>${fmtSigned(d.of(r, order.day))}</td>`).join(''));
         tr.querySelector('td').style.borderLeft = `3px solid ${SERIES_COLORS[i]}`;
         els.ratingBody.appendChild(tr);
@@ -2187,25 +2259,159 @@ const WIND_ICONS = {
     }
 
     els.ratingMetricToggle.querySelectorAll('[data-metric]').forEach((btn) => {
+      btn.setAttribute('aria-pressed', String(btn.classList.contains('active')));
       btn.addEventListener('click', () => {
         ratingMetric = btn.getAttribute('data-metric');
-        els.ratingMetricToggle.querySelectorAll('[data-metric]').forEach((b) =>
-          b.classList.toggle('active', b === btn));
-        if (lastOrder && hasRevealedTruth) renderRatingTable(lastOrder);
+        els.ratingMetricToggle.querySelectorAll('[data-metric]').forEach((b) => {
+          b.classList.toggle('active', b === btn);
+          b.setAttribute('aria-pressed', String(b === btn));
+        });
+        if (lastOrder) renderRatingTable(lastOrder);
       });
     });
 
-    // The rating screen's numbers: air tiles plus the per-item comparison
-    // of the chosen recorded statistic against the air itself.
+    // The receipt's comparison half: the per-item comparison table for the
+    // chosen recorded statistic, plus the reference chart with the air
+    // itself. (No sweep — the tracking chart already performed the day.)
     function renderRating(order) {
-      els.truthMean.textContent = `${order.day.trueMeanC.toFixed(2)} °C`;
-      els.truthMedian.textContent = `${order.day.trueMedianC.toFixed(2)} °C`;
-      els.truthMax.textContent = `${order.day.trueMaxC.toFixed(2)} °C`;
-      els.truthMin.textContent = `${order.day.trueMinC.toFixed(2)} °C`;
       renderRatingTable(order);
-      // The rating chart is a reference view, not a reveal — no sweep.
       renderTruthChart(order, { animate: false });
     }
+
+    // ── True-error histogram across the session's orders ─────────────
+    // One stacked histogram of (met average − that day's true 24-h air
+    // average) for every item of every run. Colors follow the item
+    // (first-seen order, same palette as the day charts); combos beyond
+    // the palette fold into a neutral "other". The run-history table
+    // right below is the data fallback.
+    const HIST_OTHER_COLOR = '#8b8b8b';
+    function histogramGroups() {
+      const groups = [];
+      const byKey = new Map();
+      runHistory.forEach((run) => {
+        run.results.forEach((r) => {
+          const key = `${r.instrumentId}.${r.exposureId}`;
+          let g = byKey.get(key);
+          if (!g) {
+            if (groups.length < SERIES_COLORS.length) {
+              g = { label: itemShortLabel(r), color: SERIES_COLORS[groups.length], errors: [] };
+              groups.push(g);
+            } else {
+              g = byKey.get('__other__');
+              if (!g) {
+                g = { label: 'Other items', color: HIST_OTHER_COLOR, errors: [] };
+                byKey.set('__other__', g);
+                groups.push(g);
+              }
+            }
+            byKey.set(key, g);
+          }
+          g.errors.push(r.midpointC - run.trueMeanC);
+        });
+      });
+      return groups;
+    }
+
+    function drawErrorHistogram() {
+      const canvas = els.errorHist;
+      if (!canvas || runHistory.length < 2 || els.runHistoryContent.hidden) return;
+      const groups = histogramGroups();
+      const all = groups.flatMap((g) => g.errors);
+      if (!all.length) return;
+
+      // Bins: nice width, edges on multiples of it, zero always included.
+      const lo = Math.min(0, ...all);
+      const hi = Math.max(0, ...all);
+      const binW =
+        [0.05, 0.1, 0.2, 0.25, 0.5, 1].find((w) => (hi - lo) / w <= 12) || 1;
+      const start = Math.floor(lo / binW - 1e-9) * binW;
+      const end = Math.ceil(hi / binW + 1e-9) * binW + (hi === lo ? binW : 0);
+      const nBins = Math.max(1, Math.round((end - start) / binW));
+      const counts = groups.map(() => new Array(nBins).fill(0));
+      groups.forEach((g, gi) => {
+        g.errors.forEach((e) => {
+          const b = Math.min(nBins - 1, Math.max(0, Math.floor((e - start) / binW)));
+          counts[gi][b]++;
+        });
+      });
+      const totals = new Array(nBins).fill(0);
+      counts.forEach((row) => row.forEach((c, b) => { totals[b] += c; }));
+      const yMax = Math.max(1, ...totals);
+
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const padL = 34, padR = 10, padT = 12, padB = 32;
+      const plotW = w - padL - padR, plotH = h - padT - padB;
+      const textColor = cssVar('--text-secondary') || '#888';
+      const gridColor = cssVar('--border') || 'rgba(128,128,128,0.2)';
+      const xToPix = (v) => padL + ((v - start) / (end - start)) * plotW;
+      const yToPix = (c) => padT + plotH - (c / yMax) * plotH;
+
+      ctx.font = '11px sans-serif';
+      // Recessive y grid at integer counts.
+      const yStep = Math.max(1, Math.ceil(yMax / 5));
+      for (let yv = 0; yv <= yMax; yv += yStep) {
+        const py = yToPix(yv);
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(padL, py); ctx.lineTo(padL + plotW, py); ctx.stroke();
+        ctx.fillStyle = textColor;
+        ctx.fillText(String(yv), 6, py + 4);
+      }
+      // X labels on bin edges, thinned to ≤ 8.
+      const edgeStride = Math.max(1, Math.ceil((nBins + 1) / 8));
+      for (let i = 0; i <= nBins; i += edgeStride) {
+        const v = start + i * binW;
+        const px = xToPix(v);
+        ctx.fillStyle = textColor;
+        const lbl = String(Math.round(v * 100) / 100);
+        ctx.fillText(lbl, px - ctx.measureText(lbl).width / 2, padT + plotH + 14);
+      }
+      // Stacked bars: 2px gap between bars and between stacked segments.
+      for (let b = 0; b < nBins; b++) {
+        const x0 = xToPix(start + b * binW) + 1;
+        const x1 = xToPix(start + (b + 1) * binW) - 1;
+        let acc = 0;
+        groups.forEach((g, gi) => {
+          const c = counts[gi][b];
+          if (!c) return;
+          const yTop = yToPix(acc + c);
+          const yBot = yToPix(acc);
+          ctx.fillStyle = g.color;
+          const gap = yBot - yTop > 4 ? 1 : 0;
+          ctx.fillRect(x0, yTop + gap, Math.max(1, x1 - x0), Math.max(1, yBot - yTop - 2 * gap));
+          acc += c;
+        });
+      }
+      // The zero line — the boundary between reading cold and warm.
+      const zx = xToPix(0);
+      ctx.strokeStyle = cssVar('--text-primary') || '#ccc';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(zx, padT); ctx.lineTo(zx, padT + plotH); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = textColor;
+      const xTitle = 'True error of the met average (°C)';
+      ctx.fillText(xTitle, padL + Math.max(0, (plotW - ctx.measureText(xTitle).width) / 2), h - 6);
+
+      // Static legend chips (identity only, nothing to toggle).
+      els.errorHistLegend.innerHTML = '';
+      groups.forEach((g) => {
+        const chip = document.createElement('span');
+        chip.className = 'legend-btn';
+        chip.style.borderColor = g.color;
+        chip.style.cursor = 'default';
+        chip.textContent = `${g.label} (n=${g.errors.length})`;
+        els.errorHistLegend.appendChild(chip);
+      });
+    }
+    chartRedraws.push(drawErrorHistogram);
 
     function renderRunHistory() {
       els.runHistorySection.hidden = runHistory.length === 0;
@@ -2220,7 +2426,10 @@ const WIND_ICONS = {
       runHistory.forEach((run, i) => {
         const loc = LOCATIONS.find((l) => l.id === run.settings.locId);
         const itemsText = run.results
-          .map((r) => `${itemShortLabel(r)}: ${fmtC(r.recordedTmaxC)} / ${fmtC(r.recordedTminC)} / ${fmtC(r.midpointC)}`)
+          .map((r) => {
+            const res = getInstrument(r.instrumentId).resolutionC;
+            return `${itemShortLabel(r)}: ${fmtRes(r.recordedTmaxC, res)} / ${fmtRes(r.recordedTminC, res)} / ${fmtRes(r.midpointC, res / 2)}`;
+          })
           .join('\n');
         const truth = run.truthKnown ? run.trueMeanC.toFixed(2) : '—';
         const tr = document.createElement('tr');
@@ -2231,6 +2440,7 @@ const WIND_ICONS = {
           `<td>${truth}</td>`;
         els.runHistoryBody.appendChild(tr);
       });
+      drawErrorHistogram();
     }
 
     // ── Screen navigation buttons ─────────────────────────────────────
@@ -2239,7 +2449,6 @@ const WIND_ICONS = {
     document.getElementById('backToShop').addEventListener('click', () => showScreen('shop'));
     document.getElementById('backToShipping').addEventListener('click', () => showScreen('shipping'));
     document.getElementById('backToTracking').addEventListener('click', () => showScreen('tracking'));
-    document.getElementById('backToReceipt').addEventListener('click', () => showScreen('receipt'));
 
     els.checkoutBtn.addEventListener('click', () => {
       if (cart.length < MIN_ITEMS) return;
@@ -2286,15 +2495,9 @@ const WIND_ICONS = {
           recordedMeanC: r.recordedMeanC,
         })),
         trueMeanC: day.trueMeanC,
-        truthKnown: hasRevealedTruth,
+        truthKnown: true,
       });
-      // Once the truth line has been revealed once, later orders keep it —
-      // the gate exists so the first look at the receipt happens before
-      // the true mean is on it, not to make every re-run re-click.
-      if (hasRevealedTruth) {
-        runHistory.forEach((r) => { r.truthKnown = true; });
-        renderRating(lastOrder);
-      }
+      renderRating(lastOrder);
       renderReceipt(lastOrder);
       renderHourlyTable(lastOrder);
       renderChart(lastOrder);
@@ -2309,21 +2512,32 @@ const WIND_ICONS = {
       showScreen('tracking');
     });
 
-    els.viewReceiptBtn.addEventListener('click', () => showScreen('receipt'));
-
-    // ── Rate your purchase: its own screen ────────────────────────────
-    els.revealTruth.addEventListener('click', () => {
-      if (!lastOrder) return;
-      const firstReveal = !hasRevealedTruth;
-      hasRevealedTruth = true;
-      runHistory.forEach((r) => { r.truthKnown = true; });
-      renderRating(lastOrder);
-      renderReceipt(lastOrder);
-      renderHourlyTable(lastOrder);
-      renderRunHistory();
-      if (firstReveal) sendFeatureBeacon('labs/thermometer-shop/03-true-mean-revealed');
-      showScreen('rating');
+    // Receipt exits: loop back into the lab. Re-delivery keeps the cart
+    // and returns to the delivery controls (dispatch stays disabled until
+    // something changes — same rule as any other return trip); a new order
+    // empties the cart and reopens the catalogue. Run history survives
+    // both on purpose: it's the session's lab notebook.
+    document.getElementById('redeliverBtn').addEventListener('click', () => showScreen('shipping'));
+    document.getElementById('newOrderBtn').addEventListener('click', () => {
+      cart.length = 0;
+      renderCart();
+      pushStateToUrl();
+      markOrderChanged();
+      showScreen('shop');
     });
+
+    // The receipt now includes the true-mean row and the comparison table
+    // (formerly the separate "Rate your purchase" screen). The funnel
+    // event keeps its historical name and fires on first arrival here.
+    let truthBeaconSent = false;
+    function goToReceipt() {
+      if (!truthBeaconSent) {
+        truthBeaconSent = true;
+        sendFeatureBeacon('labs/thermometer-shop/03-true-mean-revealed');
+      }
+      showScreen('receipt');
+    }
+    els.viewReceiptBtn.addEventListener('click', goToReceipt);
 
     // ── Init ──────────────────────────────────────────────────────────
     renderCart();
@@ -2334,7 +2548,8 @@ const WIND_ICONS = {
     // so they downgrade to shipping.
     if (restored && restored.sec) {
       let target = restored.sec;
-      if ((target === 'tracking' || target === 'receipt' || target === 'rating') && !hasRunOnce) target = 'shipping';
+      if (target === 'rating') target = 'receipt'; // pre-merge links
+      if ((target === 'tracking' || target === 'receipt') && !hasRunOnce) target = 'shipping';
       if (target === 'shipping' && cart.length < MIN_ITEMS) target = 'shop';
       if (!(target in SCREEN_GUARDS)) target = 'intro';
       if (target === 'shipping') hasCheckedOut = true;
