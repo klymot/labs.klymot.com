@@ -393,7 +393,7 @@ import BetaGate from '../../components/BetaGate.astro';
               <dt>Reanalysis temperature — ERA5 via Open-Meteo</dt>
               <dd>ERA5 is produced by the European Centre for Medium-Range Weather Forecasts: <a href="https://doi.org/10.1002/qj.3803" target="_blank" rel="noopener">Hersbach et al., 2020</a>. Daily 2 m maximum and minimum temperature at each station's coordinates are fetched from the <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo Historical Weather API</a> and aggregated to monthly means of (Tmax+Tmin)/2 — the GHCNm definition — keeping months with at least 90% of days present. Open-Meteo downscales ERA5's coarse grid to the station's own recorded elevation, so the model and the thermometer are compared at the same height rather than at whatever elevation a terrain model happens to assign the grid cell.</dd>
               <dt>Station pool</dt>
-              <dd>Reference-grade GHCN long records only: stations in the GCOS Surface Network (GSN) or the US Historical Climatology Network (HCN) — external NOAA/WMO quality flags, not our own selection — each with a near-continuous annual record from 1940 to today. Added to these are co-located "gold" reference sites, where a long COOP record is spliced onto its co-located successor: the newer reference station anchors the recent era unchanged, and the older record is shifted onto its level by the offset measured over their overlap (estimated per calendar month and documented in the data file). These are served as that single merged (QCU-based) series, so the QCU/QCF version choice does not apply to them and is skipped. From the eligible stations, one is drawn per built-up band so the pool spans open country to city. ("Gold" here means unbroken record continuity through the handover, not low development — Stillwater, for instance, is a gold reference that still sits in a town.)</dd>
+              <dd>Reference-grade GHCN long records only: stations in the GCOS Surface Network (GSN) or the US Historical Climatology Network (HCN) — external NOAA/WMO quality flags, not our own selection — each with a near-continuous annual record from 1940 to today. Added to these are co-located "gold" reference sites, where a long COOP record is spliced onto its co-located successor: the newer reference station anchors the recent era unchanged, and the older record is shifted onto its level by the offset measured over their overlap (estimated per calendar month and documented in the data file). For these the record-version choice is not QCU vs QCF but Spliced (offset-corrected) vs Raw (the same records joined with no offset applied), so you can see what the correction does rather than take it on trust. From the eligible stations, one is drawn per built-up band so the pool spans open country to city. ("Gold" here means unbroken record continuity through the handover, not low development — Stillwater, for instance, is a gold reference that still sits in a town.)</dd>
               <dt>Built-up context — GHSL</dt>
               <dd>Built-up land fractions and imagery around each station are from the Global Human Settlement Layer's built-up surface data for 2020, as published on klymot.com's station explorer. <a href="https://human-settlement.emergency.copernicus.eu/" target="_blank" rel="noopener">European Commission JRC GHSL</a>.</dd>
               <dt>Bands and the transfer test</dt>
@@ -464,6 +464,21 @@ import BetaGate from '../../components/BetaGate.astro';
           desc: "The same record after NOAA's pairwise homogenization algorithm has estimated and removed the effects of detected station changes.",
         },
       ],
+      // Composite (co-located gold) sites have no QCU/QCF distinction; instead they
+      // offer the merged series with or without the overlap offset correction, so
+      // you can see the effect of the splice rather than take it on trust.
+      datasetsForSite: (site) => site.composite ? [
+        {
+          key: 'spliced',
+          label: 'Spliced (offset-corrected)',
+          desc: 'The two co-located records joined as one homogeneous series: the newer reference station is kept as-is, and the older record is shifted onto its level by the offset measured over their overlap (per calendar month).',
+        },
+        {
+          key: 'raw',
+          label: 'Raw join (no correction)',
+          desc: 'The same two records joined with no offset applied — the older record stays at its own level, so any step at the handover is visible. Compare with Spliced to see what the correction does.',
+        },
+      ] : null,
       aggregations: [
         { key: 'monthly', label: 'Monthly' },
         { key: 'seasonal', label: 'Seasonal' },
@@ -509,7 +524,8 @@ import BetaGate from '../../components/BetaGate.astro';
           if (!resp.ok) throw new Error(`${resp.status} ${site.id}.json`);
           const data = await resp.json();
           const era5 = data.monthly;
-          const meas = data.measured;
+          // Spliced (offset-corrected) by default; Raw = the uncorrected join.
+          const meas = datasetKey === 'raw' && data.measured_raw ? data.measured_raw : data.measured;
           if (!meas || meas.start !== era5.start) {
             throw new Error(`composite ${site.id}: measured/modelled calendars not aligned`);
           }

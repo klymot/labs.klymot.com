@@ -174,20 +174,25 @@ def build_composite(source_ids: list[str], start_ym: str, end_ym: str) -> dict:
             if overlap:
                 fallback.append(m)
 
-    values: list[float | None] = []
+    values: list[float | None] = []      # spliced (offset-corrected)
+    values_raw: list[float | None] = []  # raw join, no offset correction (for the toggle)
     for ym in month_range(start_ym, end_ym):
         if ym in new:
             values.append(new[ym])                              # newer reference, unchanged
+            values_raw.append(new[ym])
         elif ym in old:
             values.append(round(old[ym] - offset_m[int(ym[5:7])], 2))  # shifted onto new level
+            values_raw.append(old[ym])                          # old at its own level (shows the step)
         else:
             values.append(None)
+            values_raw.append(None)
 
     note = ("no overlap — older record left uncorrected" if not overlap
             else "per-month splice" if not fallback
             else f"per-month splice; pooled fallback for months {fallback}")
     return {
         "values": values,
+        "values_raw": values_raw,
         "anchor_id": new_id, "shifted_id": old_id,
         "offset_by_month_c": {str(m): round(offset_m[m], 3) for m in range(1, 13)},
         "offset_pooled_c": round(pooled, 3),
@@ -309,6 +314,8 @@ def main() -> int:
                                                "reference station's level (older record shifted by "
                                                "the per-month overlap offset), °C")
                 record["measured"] = {"start": start_ym, "end": end_ym, "values": comp["values"]}
+                # Raw join (no offset correction) — served for the Spliced/Raw toggle.
+                record["measured_raw"] = {"start": start_ym, "end": end_ym, "values": comp["values_raw"]}
                 n_meas = sum(1 for v in comp["values"] if v is not None)
                 print(f"  {station['id']}: composite anchor={comp['anchor_id']} shift={comp['shifted_id']} "
                       f"pooled_offset={comp['offset_pooled_c']:+.3f}C over {comp['overlap_months']}mo — "

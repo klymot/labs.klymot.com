@@ -98,6 +98,10 @@ export function keyToX(key) {
 export function initErrorBarsLab(config) {
   const AGG_KEYS = config.aggregations.map((a) => a.key);
   const hasDatasets = Boolean(config.datasets && config.datasets.length);
+  // The available record versions can vary by site: a normal station offers
+  // QCU/QCF, a composite offers Spliced/Raw. Falls back to the global set.
+  const datasetsForSite = (site) =>
+    (site && config.datasetsForSite && config.datasetsForSite(site)) || config.datasets || [];
 
   /* ── State ─────────────────────────────────────────────────────────── */
   let siteId = null;          // blocking choice 1
@@ -809,7 +813,17 @@ export function initErrorBarsLab(config) {
 
   function updateDiffReadouts() {
     const pairs = currentPairs();
-    if (!pairs || !differenceBuilt) return;
+    // No current difference (e.g. a station switch is awaiting a record-version
+    // pick) — the band can't be frozen, so make sure the button reflects that
+    // rather than keeping whatever state the previous station left it in.
+    if (!pairs || !differenceBuilt) {
+      els.freezeBand.disabled = true;
+      els.diffN.textContent = '—';
+      els.diffMean.textContent = '—';
+      els.diffMedian.textContent = '—';
+      els.bandRange.textContent = '—';
+      return;
+    }
     const diffs = differences(pairs);
     const summary = summarizeDiffs(diffs);
     const band = empiricalBand(diffs, coverage);
@@ -1136,16 +1150,19 @@ export function initErrorBarsLab(config) {
     if (!site) return;
     const changed = siteId !== null && siteId !== id;
     siteId = id;
-    // A co-located reference is served as a single merged series, so the record
-    // version (QCU/QCF) choice does not apply — skip the dataset step for it, and
-    // clear any stale dataset confirmation left by a previous (non-composite) site.
-    const needsDataset = hasDatasets && !site.composite;
-    if (hasDatasets && !needsDataset) {
-      datasetKey = null;
-      sections.dataset.hidden = true;
-      els.datasetChosenBanner.hidden = true;
-      els.datasetPrompt.hidden = false;
-      document.querySelectorAll('#datasetGrid .prediction-card').forEach((c) => c.classList.remove('chosen'));
+    // The record-version options can differ by site (QCU/QCF vs a composite's
+    // Spliced/Raw), so re-render the dataset cards for this site and drop a choice
+    // that is no longer valid (e.g. carrying "qcf" onto a composite).
+    const dsOpts = datasetsForSite(site);
+    const needsDataset = hasDatasets && dsOpts.length > 0;
+    if (hasDatasets) {
+      if (datasetKey && !dsOpts.some((o) => o.key === datasetKey)) {
+        datasetKey = null;
+        els.datasetChosenBanner.hidden = true;
+        els.datasetPrompt.hidden = false;
+        pairsByAgg = null;  // the new station's series isn't loaded until re-picked
+      }
+      renderDatasetCards();
     }
     updateSiteCards();
     els.siteInfo.innerHTML = config.siteInfoHtml(site);
@@ -1173,6 +1190,7 @@ export function initErrorBarsLab(config) {
       pushStateToUrl();
       if (firstReveal) nextSection.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
       if (!needsDataset || datasetKey) loadAndShow();
+      else redrawAll();  // awaiting a version pick: clear stale charts + freeze state
     }
   }
 
@@ -1181,7 +1199,7 @@ export function initErrorBarsLab(config) {
     if (!hasDatasets) return;
     const grid = els.datasetGrid;
     grid.innerHTML = '';
-    shuffleArray(config.datasets).forEach((opt) => {
+    shuffleArray(datasetsForSite(siteById(siteId))).forEach((opt) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'prediction-card' + (opt.key === datasetKey ? ' chosen' : '');
@@ -1196,7 +1214,7 @@ export function initErrorBarsLab(config) {
   }
 
   function chooseDataset(key, { fromRestore = false } = {}) {
-    const opt = (config.datasets || []).find((o) => o.key === key);
+    const opt = datasetsForSite(siteById(siteId)).find((o) => o.key === key);
     if (!opt) return;
     datasetKey = key;
     document.querySelectorAll('#datasetGrid .prediction-card').forEach((c) => {
@@ -1240,7 +1258,7 @@ export function initErrorBarsLab(config) {
 
   let loadToken = 0;
   async function loadAndShow({ restored = null } = {}) {
-    if (!siteId || (hasDatasets && !datasetKey && !siteById(siteId)?.composite)) return;
+    if (!siteId || (hasDatasets && !datasetKey)) return;
     const token = ++loadToken;
     pairsByAgg = null;
     viewCal = restored ? restored.vx : null;
@@ -1558,13 +1576,11 @@ export function initErrorBarsLab(config) {
     // any fetch starts, then restore the scroll position exactly once.
     const restoredSite = urlState.s && siteById(urlState.s) ? urlState.s : null;
     const restoredDataset = hasDatasets && urlState.d
-      && (config.datasets || []).some((o) => o.key === urlState.d) ? urlState.d : null;
+      && datasetsForSite(siteById(urlState.s)).some((o) => o.key === urlState.d) ? urlState.d : null;
     if (restoredSite) {
       chooseSite(restoredSite, { fromRestore: true });
       if (hasDatasets && restoredDataset) chooseDataset(restoredDataset, { fromRestore: true });
-      // A composite site needs no dataset choice, so it is "complete" without one.
-      const choicesComplete = !hasDatasets || Boolean(restoredDataset)
-        || Boolean(siteById(restoredSite)?.composite);
+      const choicesComplete = !hasDatasets || Boolean(restoredDataset);
       if (choicesComplete && urlState.df) {
         sections.diffPrompt.hidden = true;
         sections.difference.hidden = false;
@@ -1573,8 +1589,7 @@ export function initErrorBarsLab(config) {
     restoring = false;
     sectionTracker.restoreSectionFromUrl(urlState.sec);
 
-    const choicesComplete = restoredSite
-      && (!hasDatasets || restoredDataset || siteById(restoredSite)?.composite);
+    const choicesComplete = restoredSite && (!hasDatasets || restoredDataset);
     if (choicesComplete) {
       loadAndShow({ restored: urlState });
     } else {
