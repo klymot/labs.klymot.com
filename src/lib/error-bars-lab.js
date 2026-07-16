@@ -1132,16 +1132,28 @@ export function initErrorBarsLab(config) {
   }
 
   function chooseSite(id, { fromRestore = false } = {}) {
-    if (!siteById(id)) return;
+    const site = siteById(id);
+    if (!site) return;
     const changed = siteId !== null && siteId !== id;
     siteId = id;
+    // A co-located reference is served as a single merged series, so the record
+    // version (QCU/QCF) choice does not apply — skip the dataset step for it, and
+    // clear any stale dataset confirmation left by a previous (non-composite) site.
+    const needsDataset = hasDatasets && !site.composite;
+    if (hasDatasets && !needsDataset) {
+      datasetKey = null;
+      sections.dataset.hidden = true;
+      els.datasetChosenBanner.hidden = true;
+      els.datasetPrompt.hidden = false;
+      document.querySelectorAll('#datasetGrid .prediction-card').forEach((c) => c.classList.remove('chosen'));
+    }
     updateSiteCards();
-    els.siteInfo.innerHTML = config.siteInfoHtml(siteById(id));
+    els.siteInfo.innerHTML = config.siteInfoHtml(site);
     els.sitePrompt.hidden = true;
-    const nextSection = hasDatasets ? sections.dataset : sections.explore;
+    const nextSection = needsDataset ? sections.dataset : sections.explore;
     const firstReveal = nextSection.hidden;
     nextSection.hidden = false;
-    if (!hasDatasets) sections.diffPrompt.hidden = differenceBuilt;
+    if (!needsDataset) sections.diffPrompt.hidden = differenceBuilt;
     updatePairedTitle();
     updateDiffTitle();
     updateHistTitle();
@@ -1160,7 +1172,7 @@ export function initErrorBarsLab(config) {
       beacon('siteSelected');
       pushStateToUrl();
       if (firstReveal) nextSection.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
-      if (!hasDatasets || datasetKey) loadAndShow();
+      if (!needsDataset || datasetKey) loadAndShow();
     }
   }
 
@@ -1228,7 +1240,7 @@ export function initErrorBarsLab(config) {
 
   let loadToken = 0;
   async function loadAndShow({ restored = null } = {}) {
-    if (!siteId || (hasDatasets && !datasetKey)) return;
+    if (!siteId || (hasDatasets && !datasetKey && !siteById(siteId)?.composite)) return;
     const token = ++loadToken;
     pairsByAgg = null;
     viewCal = restored ? restored.vx : null;
@@ -1550,7 +1562,9 @@ export function initErrorBarsLab(config) {
     if (restoredSite) {
       chooseSite(restoredSite, { fromRestore: true });
       if (hasDatasets && restoredDataset) chooseDataset(restoredDataset, { fromRestore: true });
-      const choicesComplete = !hasDatasets || Boolean(restoredDataset);
+      // A composite site needs no dataset choice, so it is "complete" without one.
+      const choicesComplete = !hasDatasets || Boolean(restoredDataset)
+        || Boolean(siteById(restoredSite)?.composite);
       if (choicesComplete && urlState.df) {
         sections.diffPrompt.hidden = true;
         sections.difference.hidden = false;
@@ -1559,7 +1573,8 @@ export function initErrorBarsLab(config) {
     restoring = false;
     sectionTracker.restoreSectionFromUrl(urlState.sec);
 
-    const choicesComplete = restoredSite && (!hasDatasets || restoredDataset);
+    const choicesComplete = restoredSite
+      && (!hasDatasets || restoredDataset || siteById(restoredSite)?.composite);
     if (choicesComplete) {
       loadAndShow({ restored: urlState });
     } else {

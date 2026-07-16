@@ -90,7 +90,7 @@ import BetaGate from '../../components/BetaGate.astro';
         <details class="expander">
           <summary>How were these stations chosen?</summary>
           <div class="expander-body">
-            <p>Every station in the network with a near-continuous monthly record since 1940 was eligible — enough overlap with the reanalysis to build a band across the whole window. From those, a fixed rule draws a spread across surrounding built-up land, from open country to city, and selects the individual stations at random rather than by hand, so the pool isn't curated to favour any result. They are presented in a random order to avoid suggesting that any one station is the "right" place to start.</p>
+            <p>Every station here is a reference-grade long record. Most are stations in recognised reference networks — the GCOS Surface Network and the US Historical Climatology Network — chosen for long, well-documented records. A few are co-located "gold" sites, where a long record carries through a documented same-place instrument handover with no break in continuity (Stillwater, kept on university land through its move, is one). They are chosen to be trustworthy first, then to span surrounding built-up land from open country to city, so you can weigh the built-up context yourself — in either direction. Reference grade is a quality criterion fixed before any comparison, not chosen to favour a result, and the non-gold stations are drawn at random within each built-up band, in a random order, so no station reads as the "right" place to start.</p>
           </div>
         </details>
         <p class="random-order-note">Stations are shown in a random order to avoid nudging your choice.</p>
@@ -393,7 +393,7 @@ import BetaGate from '../../components/BetaGate.astro';
               <dt>Reanalysis temperature — ERA5 via Open-Meteo</dt>
               <dd>ERA5 is produced by the European Centre for Medium-Range Weather Forecasts: <a href="https://doi.org/10.1002/qj.3803" target="_blank" rel="noopener">Hersbach et al., 2020</a>. Daily 2 m maximum and minimum temperature at each station's coordinates are fetched from the <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo Historical Weather API</a> and aggregated to monthly means of (Tmax+Tmin)/2 — the GHCNm definition — keeping months with at least 90% of days present. Open-Meteo downscales ERA5's coarse grid to the station's own recorded elevation, so the model and the thermometer are compared at the same height rather than at whatever elevation a terrain model happens to assign the grid cell.</dd>
               <dt>Station pool</dt>
-              <dd>GHCN stations from klymot.com's station index with a near-continuous monthly record since 1940 — at least nine months in every year with each season represented, averaging over ten and a half months a year, and at most two sparse years — so the whole ERA5 comparison window is usable. From the eligible stations, a fixed rule draws a spread across 2020 built-up context and selects at random rather than by hand.</dd>
+              <dd>Reference-grade GHCN long records only: stations in the GCOS Surface Network (GSN) or the US Historical Climatology Network (HCN) — external NOAA/WMO quality flags, not our own selection — each with a near-continuous annual record from 1940 to today. Added to these are co-located "gold" reference sites, where a long COOP record is spliced onto its co-located successor: the newer reference station anchors the recent era unchanged, and the older record is shifted onto its level by the offset measured over their overlap (estimated per calendar month and documented in the data file). These are served as that single merged (QCU-based) series, so the QCU/QCF version choice does not apply to them and is skipped. From the eligible stations, one is drawn per built-up band so the pool spans open country to city. ("Gold" here means unbroken record continuity through the handover, not low development — Stillwater, for instance, is a gold reference that still sits in a town.)</dd>
               <dt>Built-up context — GHSL</dt>
               <dd>Built-up land fractions and imagery around each station are from the Global Human Settlement Layer's built-up surface data for 2020, as published on klymot.com's station explorer. <a href="https://human-settlement.emergency.copernicus.eu/" target="_blank" rel="noopener">European Commission JRC GHSL</a>.</dd>
               <dt>Bands and the transfer test</dt>
@@ -435,6 +435,7 @@ import BetaGate from '../../components/BetaGate.astro';
       region: s.region,
       since: s.since,
       lat: s.lat,
+      composite: s.composite || false,
       buIdx: s.bu_2020_idx,
       bu1km: s.bu_2020_1km,
       bu5km: s.bu_2020_5km,
@@ -500,6 +501,37 @@ import BetaGate from '../../components/BetaGate.astro';
           `<a class="station-klymot-link" href="${klymotUrl}" target="_blank" rel="noopener">View on klymot.com →</a>`;
       },
       loadPairs: async (site, datasetKey) => {
+        // Co-located gold reference: the merged measured series is embedded in the
+        // station JSON (there is no single klymot CSV for a composite), so the QCU/QCF
+        // toggle does not apply — the same reference series is used either way.
+        if (site.composite) {
+          const resp = await fetch(`${DATA_BASE}/${site.id}.json`);
+          if (!resp.ok) throw new Error(`${resp.status} ${site.id}.json`);
+          const data = await resp.json();
+          const era5 = data.monthly;
+          const meas = data.measured;
+          if (!meas || meas.start !== era5.start) {
+            throw new Error(`composite ${site.id}: measured/modelled calendars not aligned`);
+          }
+          const sy = Number(era5.start.slice(0, 4));
+          const sm = Number(era5.start.slice(5, 7));
+          const monthly = [];
+          const n = Math.min(meas.values.length, era5.modelled.length);
+          for (let i = 0; i < n; i++) {
+            const a = meas.values[i];
+            const b = era5.modelled[i];
+            if (a == null || b == null) continue;
+            const m0 = sm - 1 + i;
+            const yy = sy + Math.floor(m0 / 12);
+            const mm = (m0 % 12) + 1;
+            monthly.push({ key: `${String(yy).padStart(4, '0')}-${String(mm).padStart(2, '0')}`, a, b });
+          }
+          return {
+            monthly,
+            seasonal: seasonalPairsFromMonthly(monthly),
+            annual: annualPairsFromMonthly(monthly),
+          };
+        }
         const [csvResp, era5Resp] = await Promise.all([
           fetch(`${KLYMOT_DATA_BASE}/${datasetKey}/${site.id}.csv`),
           fetch(`${DATA_BASE}/${site.id}.json`),
