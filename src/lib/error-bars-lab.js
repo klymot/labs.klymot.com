@@ -1238,10 +1238,25 @@ export function initErrorBarsLab(config) {
   }
 
   /* ── Data loading ──────────────────────────────────────────────────── */
+  // The record-version key is chosen for the calibration station, but a transfer
+  // target can offer a different set (a composite's Spliced/Raw vs a normal
+  // station's QCU/QCF). Carry the current key over only if the target actually
+  // has it; otherwise fall back to that site's own default (the first option —
+  // QCU for a normal station), so e.g. a composite calibration never asks a
+  // normal station for a non-existent "spliced" record.
+  function datasetKeyForSite(site) {
+    if (!hasDatasets) return datasetKey;
+    const opts = datasetsForSite(site);
+    if (!opts.length) return datasetKey;
+    if (opts.some((o) => o.key === datasetKey)) return datasetKey;
+    return opts[0].key;
+  }
+
   async function loadPairsCached(site) {
-    const cacheKey = `${site.id}:${datasetKey || ''}`;
+    const key = datasetKeyForSite(site);
+    const cacheKey = `${site.id}:${key || ''}`;
     if (pairsCache.has(cacheKey)) return pairsCache.get(cacheKey);
-    const result = await config.loadPairs(site, datasetKey);
+    const result = await config.loadPairs(site, key);
     pairsCache.set(cacheKey, result);
     return result;
   }
