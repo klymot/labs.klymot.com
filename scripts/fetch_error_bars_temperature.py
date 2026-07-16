@@ -44,21 +44,22 @@ MODELLED_UNIT = (
     "Open-Meteo, aggregated to match the GHCNm monthly-mean definition"
 )
 
-# Span a wide range of 2020 built-up context; each has at least ~1000 GHCN
-# monthly values from 1940 onward on both QCU and QCF, with only small gaps.
+# Selected by a fixed, partly-random rule from every station with a clean, near-
+# continuous ANNUAL record 1940→2025 (≤3 missing years, no gap >3), not hand-picked:
+# the rule spreads the draw across built-up settings and across the shape of each
+# record's difference from ERA5, then picks at random within that. Card labels
+# ("region") expose only the built-up setting, never the shape, so the pool does not
+# prime what users will find. Drawn with OS-entropy seed 852050427 (reproducible via
+# tmp-investigation/code/select_pool.py); a different draw gives an equally valid pool.
 STATIONS = [
-    {"id": "UK000003026", "name": "Stornoway Airport", "place": "Scotland, United Kingdom", "region": "Very low BU"},
-    {"id": "DAM00006011", "name": "Torshavn", "place": "Faroe Islands", "region": "Very low BU"},
-    {"id": "EI000003953", "name": "Valentia Observatory", "place": "Ireland", "region": "Low BU"},
-    {"id": "USW00013733", "name": "Lynchburg Rgnl AP", "place": "Virginia, United States", "region": "Low BU"},
-    {"id": "USW00014914", "name": "Fargo Hector Intl AP", "place": "North Dakota, United States", "region": "Low BU"},
-    {"id": "GM000010962", "name": "Hohenpeissenberg", "place": "Bavaria, Germany", "region": "Moderate BU"},
-    {"id": "NLM00006260", "name": "De Bilt", "place": "Netherlands", "region": "Moderate-high BU"},
-    {"id": "AU000005010", "name": "Kremsmünster", "place": "Austria", "region": "Moderate-high BU"},
-    {"id": "BE000006447", "name": "Uccle", "place": "Belgium", "region": "High BU"},
-    {"id": "HUM00012843", "name": "Budapest Pestszentlörinc", "place": "Hungary", "region": "High BU"},
-    {"id": "PO000008535", "name": "Lisbon Geophysical", "place": "Portugal", "region": "Very high BU"},
-    {"id": "HR000142360", "name": "Zagreb Gric", "place": "Croatia", "region": "Very high BU"},
+    {"id": "USW00024156", "name": "Pocatello Regional Airport", "place": "Idaho, United States", "region": "open country"},
+    {"id": "UK000003302", "name": "Valley", "place": "Wales, United Kingdom", "region": "rural"},
+    {"id": "USW00014929", "name": "Aberdeen", "place": "South Dakota, United States", "region": "town edge"},
+    {"id": "GME00120994", "name": "Angermünde", "place": "Germany", "region": "town edge"},
+    {"id": "GM000010147", "name": "Hamburg Fuhlsbüttel", "place": "Germany", "region": "town edge"},
+    {"id": "GM000004204", "name": "Jena Sternwarte", "place": "Germany", "region": "town"},
+    {"id": "TX000038895", "name": "Bayramaly", "place": "Turkmenistan", "region": "town"},
+    {"id": "USW00093134", "name": "Los Angeles Downtown", "place": "California, United States", "region": "city"},
 ]
 
 
@@ -207,9 +208,9 @@ def main() -> int:
             "Open-Meteo, aggregated to the GHCNm monthly-mean definition."
         ),
         "pool_rule": (
-            "Long-record GHCN stations spanning a wide range of 2020 built-up "
-            "context, each with at least ~1000 monthly GHCN values from 1940 "
-            "onward on both QCU and QCF for a full ERA5 comparison window."
+            "Stations with a near-continuous monthly record since 1940, drawn by a "
+            "fixed partly-random rule to span a range of built-up settings; "
+            "individual stations selected at random, not hand-picked."
         ),
         "stations": manifest_stations,
     }
