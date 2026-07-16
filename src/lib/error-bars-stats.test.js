@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ANOMALY_BASELINE,
   MIN_DIFFS_FOR_BAND,
   annualPairsFromMonthly,
   dailyPairs,
   daysInMonth,
   differences,
   empiricalBand,
+  monthlyAnomalies,
   monthlyPairsFromDaily,
   monthlyPairsFromGhcn,
   quantile,
@@ -99,6 +101,46 @@ function yearOfMonthly(year, a, b) {
     key: `${year}-${String(i + 1).padStart(2, '0')}`, a, b,
   }));
 }
+
+describe('monthlyAnomalies', () => {
+  const baseline = { start: 2001, end: 2002 };
+
+  it('removes the per-calendar-month climatology from each series', () => {
+    // Two baseline years: Jan a=[10,20]→clim 15, b=[3,7]→clim 5; a later year sees
+    // its own value minus that climatology, per series independently.
+    const pairs = [
+      { key: '2001-01', a: 10, b: 3 },
+      { key: '2002-01', a: 20, b: 7 },
+      { key: '2010-01', a: 18, b: 6 },
+    ];
+    expect(monthlyAnomalies(pairs, baseline)).toEqual([
+      { key: '2001-01', a: -5, b: -2 },
+      { key: '2002-01', a: 5, b: 2 },
+      { key: '2010-01', a: 3, b: 1 },
+    ]);
+  });
+
+  it('subtracts the seasonal cycle by working per calendar month', () => {
+    // Jan clim 0, Jul clim 100 (a); the raw seasonal swing is gone from anomalies.
+    const pairs = [
+      { key: '2001-01', a: 0, b: 0 },
+      { key: '2001-07', a: 100, b: 50 },
+    ];
+    expect(monthlyAnomalies(pairs, baseline)).toEqual([
+      { key: '2001-01', a: 0, b: 0 },
+      { key: '2001-07', a: 0, b: 0 },
+    ]);
+  });
+
+  it('drops months with no data inside the baseline window', () => {
+    const pairs = [{ key: '1995-06', a: 12, b: 4 }];
+    expect(monthlyAnomalies(pairs, baseline)).toEqual([]);
+  });
+
+  it('defaults to the 1991–2020 WMO normal', () => {
+    expect(ANOMALY_BASELINE).toEqual({ start: 1991, end: 2020 });
+  });
+});
 
 describe('annualPairsFromMonthly', () => {
   it('requires all 12 months', () => {

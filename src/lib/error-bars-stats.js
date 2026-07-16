@@ -120,6 +120,47 @@ export function monthlyPairsFromGhcn(records, monthly) {
 }
 
 /**
+ * Fixed 30-year reference window for anomalies (the current WMO climate normal),
+ * applied identically to every station so all records are levelled the same way.
+ */
+export const ANOMALY_BASELINE = { start: 1991, end: 2020 };
+
+/**
+ * Convert monthly value pairs to anomalies about a per-calendar-month climatology
+ * over a fixed reference window. Each series (station `a`, model `b`) is referenced
+ * to its OWN mean for that calendar month across the window, so the constant
+ * station−model offset — dominated by the station's height relative to ERA5's
+ * grid-cell mean elevation, not by climate — is removed and only the shape of the
+ * disagreement remains. Per-calendar-month (not a single annual mean) so the
+ * seasonal cycle is subtracted out and the monthly/seasonal views show anomalies
+ * rather than the seasons. Months whose calendar-month has no data inside the
+ * window (so no baseline can be formed) are dropped.
+ * @param {Array<{key: string, a: number, b: number}>} monthlyPairs — key "YYYY-MM"
+ * @param {{start: number, end: number}} baseline
+ * @returns {Array<{key: string, a: number, b: number}>} anomaly pairs, °C
+ */
+export function monthlyAnomalies(monthlyPairs, baseline = ANOMALY_BASELINE) {
+  const sumA = new Array(13).fill(0);
+  const cntA = new Array(13).fill(0);
+  const sumB = new Array(13).fill(0);
+  const cntB = new Array(13).fill(0);
+  monthlyPairs.forEach((p) => {
+    const y = Number(p.key.slice(0, 4));
+    if (y < baseline.start || y > baseline.end) return;
+    const m = Number(p.key.slice(5, 7));
+    if (p.a != null) { sumA[m] += p.a; cntA[m] += 1; }
+    if (p.b != null) { sumB[m] += p.b; cntB[m] += 1; }
+  });
+  const out = [];
+  monthlyPairs.forEach((p) => {
+    const m = Number(p.key.slice(5, 7));
+    if (!cntA[m] || !cntB[m]) return;
+    out.push({ key: p.key, a: p.a - sumA[m] / cntA[m], b: p.b - sumB[m] / cntB[m] });
+  });
+  return out;
+}
+
+/**
  * Annual pairs from monthly pairs — all 12 months required, so a missing
  * winter can't skew a year.
  * @param {Array<{key: string, a: number, b: number}>} monthlyPairs

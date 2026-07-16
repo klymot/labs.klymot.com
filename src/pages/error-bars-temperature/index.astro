@@ -57,7 +57,15 @@ import BetaGate from '../../components/BetaGate.astro';
           <h2 id="concept-heading">What's being compared</h2>
           <p>For every station in this lab there are two monthly temperature series. One is the station's own record: monthly means built from thermometer readings, published in the NOAA GHCN monthly dataset. The other is a <em>reanalysis</em> estimate — a weather model's reconstruction of past conditions at the station's coordinates, from the ERA5 dataset.</p>
           <p>Both series claim to describe the same place and the same months, from 1940 to the present. This lab never treats one as the answer key for the other; it only measures how much, and when, they disagree — and puts that measurement in your hands.</p>
+          <p>Rather than compare raw temperatures, the lab compares each series as an <em>anomaly</em> — its departure from its own 1991–2020 average, measured separately for each calendar month. That strips out a fixed gap between the two: a station sitting above or below the average height of ERA5's grid cell reads a degree or two apart from it for reasons that have nothing to do with climate. Set that offset aside and what remains is the thing this lab is about — the shape of the disagreement over time.</p>
         </div>
+        <details class="expander">
+          <summary>Why anomalies, and not raw temperatures?</summary>
+          <div class="expander-body">
+            <p>An anomaly is a value measured against a fixed reference average instead of against zero degrees. Here every series — station and reanalysis alike — is expressed as its departure from its own 1991–2020 monthly average (the current WMO climate normal), using the same thirty-year window for every station.</p>
+            <p>The reason is that a reanalysis value is a grid cell's average, tied to the average elevation of the terrain across that cell. A station that sits higher or lower than that average reads a roughly constant amount cooler or warmer than the reanalysis — a fixed offset set by geometry, not by any disagreement about the climate. Left in, that offset dominates the chart and hides what is worth looking at. Subtracting each series' own baseline removes it, so the two start from a common zero and any gap that remains is a real difference in how they vary over time. The offset itself is neither error nor signal; it is expected, and the anomaly view simply sets it aside.</p>
+          </div>
+        </details>
         <details class="expander">
           <summary>What is a reanalysis?</summary>
           <div class="expander-body">
@@ -129,7 +137,7 @@ import BetaGate from '../../components/BetaGate.astro';
       <div class="container">
         <div class="prose">
           <h2 id="explore-heading">Look at the two series together</h2>
-          <p>Both series are drawn with equal weight — which one gets which colour, and which is listed first, is randomized on each visit, so neither is presented as the baseline the other is checked against. Change the averaging to see how much the comparison depends on it: a single calendar month, a single season, or whole years. When you compare by month or season, a second control picks which one — so like is always compared with like, rather than mixing times of year that can disagree with the model by very different amounts.</p>
+          <p>Both series are drawn as anomalies — each one's departure from its own 1991–2020 average — with equal weight; which one gets which colour, and which is listed first, is randomized on each visit, so neither is presented as the baseline the other is checked against. With the constant offset removed, the two lines share a common zero and you can watch where they part company. Change the averaging to see how much the comparison depends on it: a single calendar month, a single season, or whole years. When you compare by month or season, a second control picks which one — so like is always compared with like, rather than mixing times of year that can disagree with the model by very different amounts.</p>
         </div>
 
         <div class="window-length-row">
@@ -155,8 +163,8 @@ import BetaGate from '../../components/BetaGate.astro';
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
-              <span class="chart-title" id="pairedChartTitle">Station and reanalysis</span>
-              <span class="chart-meta">°C</span>
+              <span class="chart-title" id="pairedChartTitle">Station and reanalysis anomalies</span>
+              <span class="chart-meta">Anomaly (°C, vs 1991–2020)</span>
               <div class="chart-toolbar" aria-label="Zoom and pan">
                 <button class="mini-tool" data-chart-nav="cal" data-nav-action="pan-left" aria-label="Pan earlier" type="button">‹</button>
                 <button class="mini-tool" data-chart-nav="cal" data-nav-action="zoom-in" aria-label="Zoom in" type="button">+</button>
@@ -193,7 +201,7 @@ import BetaGate from '../../components/BetaGate.astro';
           <div class="expander-body">
             <div class="data-table-wrap">
               <table class="data-table" id="pairsTable">
-                <thead><tr><th scope="col">Period</th><th scope="col">Station (°C)</th><th scope="col">Reanalysis (°C)</th></tr></thead>
+                <thead><tr><th scope="col">Period</th><th scope="col">Station anomaly (°C)</th><th scope="col">Reanalysis anomaly (°C)</th></tr></thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -221,14 +229,14 @@ import BetaGate from '../../components/BetaGate.astro';
       <div class="container">
         <div class="prose">
           <h2 id="difference-heading">The difference, period by period</h2>
-          <p>Each point is the station's value minus the reanalysis estimate for the same period. Points above zero are periods where the station's record is warmer than the model's estimate; points below zero, cooler. The averaging control above still applies.</p>
+          <p>Each point is the station's anomaly minus the reanalysis anomaly for the same period. Because the fixed offset between them has already been removed, zero marks their typical 1991–2020 relationship: points above zero are periods where the station ran warmer relative to the model than it did on average across the baseline; points below, cooler. The averaging control above still applies.</p>
         </div>
 
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
-              <span class="chart-title" id="diffChartTitle">Station minus ERA5 reanalysis</span>
-              <span class="chart-meta">°C</span>
+              <span class="chart-title" id="diffChartTitle">Station minus ERA5 reanalysis, anomalies</span>
+              <span class="chart-meta">Anomaly (°C, vs 1991–2020)</span>
               <div class="chart-toolbar" aria-label="Zoom and pan">
                 <button class="mini-tool" data-chart-nav="cal" data-nav-action="pan-left" aria-label="Pan earlier" type="button">‹</button>
                 <button class="mini-tool" data-chart-nav="cal" data-nav-action="zoom-in" aria-label="Zoom in" type="button">+</button>
@@ -264,7 +272,7 @@ import BetaGate from '../../components/BetaGate.astro';
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
               <span class="chart-title" id="histChartTitle">Distribution of the differences</span>
-              <span class="chart-meta">°C</span>
+              <span class="chart-meta">Anomaly (°C, vs 1991–2020)</span>
             </div>
             <div class="chart-container" id="histChartContainer">
               <canvas id="histChart" style="display:block;width:100%;height:100%"></canvas>
@@ -323,8 +331,8 @@ import BetaGate from '../../components/BetaGate.astro';
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
-              <span class="chart-title" id="transferChartTitle">Reanalysis with your frozen band</span>
-              <span class="chart-meta">°C</span>
+              <span class="chart-title" id="transferChartTitle">Reanalysis anomalies with your frozen band</span>
+              <span class="chart-meta">Anomaly (°C, vs 1991–2020)</span>
               <div class="chart-toolbar" aria-label="Zoom and pan">
                 <button class="mini-tool" data-chart-nav="transfer" data-nav-action="pan-left" aria-label="Pan earlier" type="button">‹</button>
                 <button class="mini-tool" data-chart-nav="transfer" data-nav-action="zoom-in" aria-label="Zoom in" type="button">+</button>
@@ -392,6 +400,8 @@ import BetaGate from '../../components/BetaGate.astro';
               <dd>Monthly mean temperatures from the NOAA Global Historical Climatology Network Monthly v4, in both its unadjusted (QCU) and adjusted (QCF) versions. <a href="https://doi.org/10.1175/JCLI-D-18-0094.1" target="_blank" rel="noopener">Menne et al., 2018</a>. Series are fetched per station from klymot.com's published data mirror (<code>www.klymot.com/data/&#123;qcu,qcf&#125;/&lt;station-id&gt;.csv</code>), the same files behind the main site's station explorer.</dd>
               <dt>Reanalysis temperature — ERA5 via Open-Meteo</dt>
               <dd>ERA5 is produced by the European Centre for Medium-Range Weather Forecasts: <a href="https://doi.org/10.1002/qj.3803" target="_blank" rel="noopener">Hersbach et al., 2020</a>. Daily 2 m maximum and minimum temperature at each station's coordinates are fetched from the <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo Historical Weather API</a> and aggregated to monthly means of (Tmax+Tmin)/2 — the GHCNm definition — keeping months with at least 90% of days present. Open-Meteo downscales ERA5's coarse grid to the station's own recorded elevation, so the model and the thermometer are compared at the same height rather than at whatever elevation a terrain model happens to assign the grid cell.</dd>
+              <dt>Anomalies — 1991–2020 baseline</dt>
+              <dd>Every series, station and reanalysis alike, is shown as an anomaly: its departure from its own average for each calendar month over 1991–2020 — the current WMO climate normal — the same thirty-year window applied to every station. Working per calendar month subtracts out the seasonal cycle, so the monthly and seasonal views show departures rather than the seasons themselves. This also removes the near-constant offset between a station and ERA5 that comes from the station's height relative to the grid cell's mean elevation (geometry, not climate), leaving a comparison of how the two vary rather than of a fixed gap. Any month with no data inside the baseline window is omitted.</dd>
               <dt>Station pool</dt>
               <dd>Reference-grade GHCN long records only: stations in the GCOS Surface Network (GSN) or the US Historical Climatology Network (HCN) — external NOAA/WMO quality flags, not our own selection — each with a near-continuous annual record from 1940 to today. Added to these are co-located "gold" reference sites, where a long COOP record is spliced onto its co-located successor: the newer reference station anchors the recent era unchanged, and the older record is shifted onto its level by the offset measured over their overlap (estimated per calendar month and documented in the data file). For these the record-version choice is not QCU vs QCF but Spliced (offset-corrected) vs Raw (the same records joined with no offset applied), so you can see what the correction does rather than take it on trust. From the eligible stations, one is drawn per built-up band so the pool spans open country to city. ("Gold" here means unbroken record continuity through the handover, not low development — Stillwater, for instance, is a gold reference that still sits in a town.)</dd>
               <dt>Built-up context — GHSL</dt>
@@ -419,6 +429,7 @@ import BetaGate from '../../components/BetaGate.astro';
     import { bu2020TileStyle, fmtBu, initErrorBarsLab } from '../../lib/error-bars-lab.js';
     import {
       annualPairsFromMonthly,
+      monthlyAnomalies,
       monthlyPairsFromGhcn,
       seasonalPairsFromMonthly,
     } from '../../lib/error-bars-stats.js';
@@ -488,12 +499,12 @@ import BetaGate from '../../components/BetaGate.astro';
       valueDecimals: 2,
       diffDecimals: 2,
       seriesNames: { measured: 'Station record', modelled: 'Reanalysis estimate' },
-      pairedTitle: (siteName) => `${siteName} vs ERA5 reanalysis`,
-      diffTitle: (siteName) => `${siteName} minus ERA5 reanalysis`,
-      histTitle: (siteName) => `Distribution of ${siteName} minus ERA5 reanalysis`,
+      pairedTitle: (siteName) => `${siteName} vs ERA5 reanalysis, anomalies`,
+      diffTitle: (siteName) => `${siteName} minus ERA5 reanalysis, anomalies`,
+      histTitle: (siteName) => `Distribution of ${siteName} minus ERA5 reanalysis, anomalies`,
       transferTitle: ({ target, calibration, coverage, slice }) => target
-        ? `${target} vs ERA5 reanalysis — ${coverage ? `${coverage}% ` : ''}band from ${calibration}${slice ? `, ${slice}` : ''}`
-        : 'ERA5 reanalysis with your frozen band',
+        ? `${target} vs ERA5 reanalysis, anomalies — ${coverage ? `${coverage}% ` : ''}band from ${calibration}${slice ? `, ${slice}` : ''}`
+        : 'ERA5 reanalysis anomalies with your frozen band',
       poolTimeOfYear: false,
       cardHtml: (site) => `
         <span class="sc-card-top">
@@ -542,10 +553,13 @@ import BetaGate from '../../components/BetaGate.astro';
             const mm = (m0 % 12) + 1;
             monthly.push({ key: `${String(yy).padStart(4, '0')}-${String(mm).padStart(2, '0')}`, a, b });
           }
+          // Both series shown as anomalies about the shared 1991–2020 baseline, so
+          // the constant height-driven offset is removed and only the shape shows.
+          const anom = monthlyAnomalies(monthly);
           return {
-            monthly,
-            seasonal: seasonalPairsFromMonthly(monthly),
-            annual: annualPairsFromMonthly(monthly),
+            monthly: anom,
+            seasonal: seasonalPairsFromMonthly(anom),
+            annual: annualPairsFromMonthly(anom),
           };
         }
         const [csvResp, era5Resp] = await Promise.all([
@@ -560,10 +574,13 @@ import BetaGate from '../../components/BetaGate.astro';
           start: `${era5.start}`,
           modelled: era5.modelled,
         });
+        // Anomalies about the shared 1991–2020 baseline (see monthlyAnomalies):
+        // strips the constant station−ERA5 height offset, leaving the shape.
+        const anom = monthlyAnomalies(monthly);
         return {
-          monthly,
-          seasonal: seasonalPairsFromMonthly(monthly),
-          annual: annualPairsFromMonthly(monthly),
+          monthly: anom,
+          seasonal: seasonalPairsFromMonthly(anom),
+          annual: annualPairsFromMonthly(anom),
         };
       },
       sectionIds: [
