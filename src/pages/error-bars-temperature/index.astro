@@ -1,10 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import BetaGate from '../../components/BetaGate.astro';
 ---
-<BaseLayout title="Build Your Own Error Bars — Temperature — beta" description="Lab under beta testing, shared by invitation — not linked from the labs index." bodyClass="lab-page lab-error-bars lab-error-bars-temperature">
-
-  <BetaGate passwordHash="$2b$10$mwrFM4bvr88NlKPedKa/xuRZnl.pwqpjFG705S5qg47oVR7P0Hici" storageKey="error-bars-temperature-beta-unlocked" />
+<BaseLayout title="Build Your Own Error Bars — Temperature — klymot labs" description="Weather archives hold two kinds of number for the same place and month: what a thermometer recorded, and what a weather model reconstructs. Put a station's own record next to the model's reconstruction for the same spot, build the distribution of their disagreements, freeze an error band around it — then test whether that band holds at a station it has never seen." bodyClass="lab-page lab-error-bars lab-error-bars-temperature">
 
   <header class="site-header">
     <div class="container header-inner">
@@ -38,7 +35,7 @@ import BetaGate from '../../components/BetaGate.astro';
     <!-- ── Hero ──────────────────────────────────────────────────────── -->
     <div class="container">
       <div class="page-hero">
-        <span class="eyebrow" aria-hidden="true">Lab under beta testing — shared by invitation</span>
+        <span class="eyebrow" aria-hidden="true">Lab 05</span>
         <h1>Build Your Own Error Bars — Temperature</h1>
         <p class="hook">Weather archives hold two kinds of number for the same place and month: what a thermometer recorded, and what a weather model reconstructs. Here you measure the gap between them yourself — then test whether the gap you measured in one place tells you anything about another.</p>
         <p class="lede">Pick a station. Put its record next to the model's reconstruction for the same spot. Build the distribution of their disagreements, freeze a band around it, and carry that band to a second station to see how it holds up.</p>
