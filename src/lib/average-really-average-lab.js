@@ -352,7 +352,7 @@ export function initAverageLab(config) {
     'holdoutChart', 'holdoutChartContainer', 'holdoutTooltip', 'holdoutReadout',
     'holdoutTable', 'holdoutChoice', 'runHoldoutRow', 'holdoutResult', 'toS7',
     'endSummary', 'resetLab', 'resetLabEnd', 'resultsBlock', 'resultsTable', 'resultsClear',
-    'transferNote', 'transferExpander',
+    'transferNote', 'transferExpander', 'addAll', 'resultsPct',
   ].forEach((id) => { els[id] = document.getElementById(id); });
 
   const sections = {
@@ -937,7 +937,10 @@ export function initAverageLab(config) {
   // (and reshuffling) the grid — so a station tested on a repeat loop is marked as
   // soon as it lands in the histogram/table.
   function updateTriedBadges() {
-    const tried = new Set(loadResults().map((r) => r.id));
+    // Tried at the *current* hold-back fraction, so badges show what's left to do
+    // for this table.
+    const pct = currentPct();
+    const tried = new Set(loadResults().filter((r) => r.pct === pct).map((r) => r.id));
     document.querySelectorAll('#stationGrid .station-card').forEach((card) => {
       const done = tried.has(card.dataset.stationId);
       card.classList.toggle('tried', done);
@@ -1051,6 +1054,7 @@ export function initAverageLab(config) {
     updateRunHoldoutState();
     syncHoldoutGate();
     if (holdoutRun) drawHoldoutChart();
+    renderResults();  // move the highlighted column to the newly-chosen strategy
     if (!fromRestore) { beacon('02-strategy-selected'); pushState(); }
   }
 
@@ -1078,7 +1082,14 @@ export function initAverageLab(config) {
       btn.classList.toggle('active', active);
       btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
-    if (holdoutRun) drawHoldoutChart();
+    if (holdoutRun) {
+      // Re-score the current station at the new fraction and record it there; the
+      // table switches to this fraction's set of runs.
+      drawHoldoutChart();
+      recordResult();
+    } else if (!fromRestore) {
+      renderResults();  // switch the shown table to this fraction even before a run
+    }
     if (!fromRestore) pushState();
   }
 
@@ -1107,7 +1118,7 @@ export function initAverageLab(config) {
   }
 
   /* ── Results table (persists across repeats, this device only) ───────── */
-  const RESULTS_KEY = 'ara-results-v1';
+  const RESULTS_KEY = 'ara-results-v2';
 
   function loadResults() {
     try { return JSON.parse(localStorage.getItem(RESULTS_KEY)) || []; } catch (_) { return []; }
@@ -1115,66 +1126,96 @@ export function initAverageLab(config) {
   function saveResults(arr) {
     try { localStorage.setItem(RESULTS_KEY, JSON.stringify(arr)); } catch (_) {}
   }
+  function currentPct() { return Math.round(holdoutFrac * 100); }
 
-  // Append (or update) this station's result, then re-render. Keyed by station so
-  // re-running the same station replaces its row rather than piling up duplicates.
-  function recordResult() {
-    if (!stationData || !monthlySeries) return;
-    const res = runHoldout(monthlySeries, holdoutFrac, 'tail');
-    const key = stationData.id || stationId;
-    // Per-station gap summary (all months) so the transfer test can compare
-    // between-station vs within-station variation without re-loading each station.
-    const gaps = monthlySeries.map((p) => p.gap);
-    const nGap = gaps.length;
-    const meanGap = nGap ? gaps.reduce((s, x) => s + x, 0) / nGap : 0;
-    const varGap = nGap > 1
-      ? gaps.reduce((s, x) => s + (x - meanGap) ** 2, 0) / (nGap - 1)
-      : null;
-    const row = {
-      id: key,
-      name: stationData.name,
-      pct: Math.round(holdoutFrac * 100),
+  // A result row for one station at one hold-back fraction. Rows carry a gap
+  // summary too so the transfer ANOVA can run without re-loading each station.
+  function buildRow(id, name, series, frac) {
+    const res = runHoldout(series, frac, 'tail');
+    const gaps = series.map((p) => p.gap);
+    const n = gaps.length;
+    const mean = n ? gaps.reduce((s, x) => s + x, 0) / n : 0;
+    const varG = n > 1 ? gaps.reduce((s, x) => s + (x - mean) ** 2, 0) / (n - 1) : null;
+    return {
+      id, name, pct: Math.round(frac * 100),
       zero: res.results.zero.rmse,
       constant: res.results.constant.rmse,
       seasonal: res.results.seasonal.rmse,
-      nGap, meanGap, varGap,
+      nGap: n, meanGap: mean, varGap: varG,
     };
-    const arr = loadResults().filter((r) => r.id !== key);
+  }
+
+  // Upsert keyed by station AND hold-back % — each station can hold one row per
+  // fraction, so the reader can work through all stations × all fractions.
+  function upsertResult(row) {
+    const arr = loadResults().filter((r) => !(r.id === row.id && r.pct === row.pct));
     arr.push(row);
     saveResults(arr);
+  }
+
+  function recordResult() {
+    if (!stationData || !monthlySeries) return;
+    upsertResult(buildRow(stationData.id || stationId, stationData.name, monthlySeries, holdoutFrac));
     renderResults();
   }
 
   function renderResults() {
     if (!els.resultsTable) return;
-    const arr = loadResults();
-    // "Try another station" retires once every station has been tested.
+    const pct = currentPct();
+    const shown = loadResults().filter((r) => r.pct === pct);  // table for the current fraction
+    // "Try another station" retires once every station is in this fraction's table.
     if (els.resetLabEnd) {
-      const allTried = arr.length >= stations.length;
+      const allTried = shown.length >= stations.length;
       els.resetLabEnd.disabled = allTried;
       els.resetLabEnd.textContent = allTried ? "You've tried every station" : 'Try another station';
     }
+    if (els.addAll) els.addAll.disabled = !strategy || shown.length >= stations.length;
     updateTriedBadges();
     if (!els.resultsBlock) return;
-    if (!arr.length) { els.resultsBlock.hidden = true; return; }
+    if (!shown.length) { els.resultsBlock.hidden = true; return; }
     els.resultsBlock.hidden = false;
+    if (els.resultsPct) els.resultsPct.textContent = `${pct}%`;
     const tb = els.resultsTable.querySelector('tbody');
-    tb.innerHTML = arr.map((r) =>
+    tb.innerHTML = shown.map((r) =>
       `<tr><td>${r.name}</td><td>${r.pct}%</td>` +
       `<td>${fmtPlain(r.zero, 2)}</td><td>${fmtPlain(r.constant, 2)}</td>` +
       `<td>${fmtPlain(r.seasonal, 2)}</td></tr>`).join('');
-    // Highlight the reader's chosen strategy's column (zero/constant/seasonal).
+    highlightChoiceColumn();
+    renderTransfer(shown);
+  }
+
+  // Move the highlight to the currently-selected strategy's column.
+  function highlightChoiceColumn() {
+    if (!els.resultsTable) return;
     const colFor = { zero: 2, constant: 3, seasonal: 4 };
     els.resultsTable.querySelectorAll('.col-choice').forEach((c) => c.classList.remove('col-choice'));
     const ci = colFor[strategy];
-    if (ci != null) {
-      const th = els.resultsTable.querySelectorAll('thead th')[ci];
-      if (th) th.classList.add('col-choice');
-      els.resultsTable.querySelectorAll('tbody tr').forEach((tr) => {
-        if (tr.children[ci]) tr.children[ci].classList.add('col-choice');
-      });
+    if (ci == null) return;
+    const th = els.resultsTable.querySelectorAll('thead th')[ci];
+    if (th) th.classList.add('col-choice');
+    els.resultsTable.querySelectorAll('tbody tr').forEach((tr) => {
+      if (tr.children[ci]) tr.children[ci].classList.add('col-choice');
+    });
+  }
+
+  // Fill the current fraction's table with every station in one go (uses the
+  // chosen strategy for the highlight; each row still stores all three).
+  async function addAllStations() {
+    if (!strategy || !els.addAll) return;
+    const frac = holdoutFrac;
+    els.addAll.disabled = true;
+    const label = els.addAll.textContent;
+    els.addAll.textContent = 'Adding…';
+    for (const s of stations) {
+      try {
+        const resp = await fetch(`${dataBase}/${s.id}.json`);
+        if (!resp.ok) continue;
+        const data = await resp.json();
+        upsertResult(buildRow(s.id, s.name, monthlyGapSeries(data.monthly), frac));
+      } catch (_) { /* skip a station that fails to load */ }
     }
-    renderTransfer(arr);
+    els.addAll.textContent = label;
+    renderResults();
   }
 
   // Once ≥2 stations are in the table, test whether one station's fix could carry
@@ -1418,6 +1459,7 @@ export function initAverageLab(config) {
     if (els.resultsClear) {
       els.resultsClear.addEventListener('click', () => { saveResults([]); renderResults(); });
     }
+    if (els.addAll) els.addAll.addEventListener('click', () => addAllStations());
     renderResults();
 
     nearestXTooltip(els.wiggleChart, els.wiggleTooltip,

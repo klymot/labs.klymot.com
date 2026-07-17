@@ -304,8 +304,8 @@ import BetaGate from '../../components/BetaGate.astro';
         </div>
 
         <div class="results-block" id="resultsBlock" hidden>
-          <h3 class="results-heading">Your results so far</h3>
-          <p class="results-note">Every station you test is added here (kept on this device only) so you can line them up. Lower means a fix left less error on the years it never saw.</p>
+          <h3 class="results-heading">Your results so far — <span id="resultsPct">30%</span> held back</h3>
+          <p class="results-note">Every station you test at this hold-back lands here (kept on this device only) so you can line them up — lower means a fix left less error on the years it never saw. Change the hold-back amount above and you build a separate table for that fraction; work through them all to fill in every station × every fraction.</p>
           <div class="data-table-wrap">
             <table class="data-table" id="resultsTable">
               <thead><tr>
@@ -325,7 +325,10 @@ import BetaGate from '../../components/BetaGate.astro';
               <p>It is a one-way ANOVA. It asks whether the differences <em>between</em> your stations are bigger than we'd expect from the ordinary year-to-year variation <em>within</em> each one. A very small p-value (here, below 0.001) means it is highly unlikely that all your stations share exactly the same average gap — so a correction worked out in one place cannot simply be carried to another. A p-value near 1, or an F near 1, would mean the stations look alike and one fix might serve them all. The ± figures above are ordinary spreads (standard deviations) computed separately; the ANOVA is the significance test, not those numbers. The more stations you add, the more it has to go on.</p>
             </div>
           </details>
-          <button type="button" class="mini-tool" id="resultsClear">Clear my results</button>
+          <div class="results-actions">
+            <button type="button" class="mini-tool" id="addAll">Add every station</button>
+            <button type="button" class="mini-tool" id="resultsClear">Clear my results</button>
+          </div>
         </div>
 
         <details class="expander">
@@ -386,7 +389,7 @@ import BetaGate from '../../components/BetaGate.astro';
     .results-block { margin-top: 1.75rem; }
     .results-heading { font-size: 1.05rem; margin: 0 0 0.2rem; }
     .results-note { font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.65rem; }
-    #resultsClear { margin-top: 0.65rem; }
+    .results-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.65rem; }
     .control-label {
       font-size: 0.85rem;
       color: var(--text-secondary);
