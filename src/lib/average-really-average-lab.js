@@ -972,11 +972,12 @@ export function initAverageLab(config) {
         beacon('01-station-selected');
         if (hasCompleted && strategy) {
           // Repeat visit: everything was earned on the first run, so open it all
-          // and score this station straight away — no re-clicking through, and the
-          // charts and results table are there to scroll down to.
+          // and score this station straight away, then drop the reader at the end
+          // graph so comparing station after station is low-scroll.
           doRunHoldout({ fromRestore: true });
           revealUpTo(7);
-          if (sections.s3) sections.s3.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
+          const end = els.holdoutChartContainer;
+          if (end) end.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
         } else {
           revealUpTo(3, { scroll: true });
         }
@@ -1244,14 +1245,14 @@ export function initAverageLab(config) {
   }
 
   /* ── Reset ──────────────────────────────────────────────────────────── */
-  // keepChoice=true ("Try another station"): carry the correction strategy and the
-  // held-back amount so repeated stations compare like-for-like. false ("Reset lab"
-  // in the header): a full clean slate. Results (localStorage) persist either way.
-  function reset(keepChoice = false) {
+  // Full clean slate — the header "Reset lab" button. Re-locks every section,
+  // restores the Continue buttons, clears the correction choice, and goes to the
+  // top. (Saved results persist; only "Clear my results" removes those.)
+  function reset() {
     stationId = null;
     stationData = null;
     monthlySeries = null;
-    if (!keepChoice) strategy = null;
+    strategy = null;
     holdoutRun = false;
     progress = 2;
     introShow.mid = false;
@@ -1265,20 +1266,22 @@ export function initAverageLab(config) {
     if (els.stationPrompt) { els.stationPrompt.hidden = false; els.stationPrompt.textContent = 'Choose a station above to continue.'; }
     renderStationCards();
     renderStrategyCards();
-    if (els.strategyPrompt) els.strategyPrompt.hidden = !!strategy;
-    if (els.holdoutRow) els.holdoutRow.hidden = !strategy;
-    if (!keepChoice) holdoutFrac = HOLDOUT_OPTIONS[Math.floor(Math.random() * HOLDOUT_OPTIONS.length)];
+    if (els.strategyPrompt) els.strategyPrompt.hidden = false;
+    if (els.holdoutRow) els.holdoutRow.hidden = true;
+    holdoutFrac = HOLDOUT_OPTIONS[Math.floor(Math.random() * HOLDOUT_OPTIONS.length)];
     setHoldout(holdoutFrac, { fromRestore: true });
     updateRunHoldoutState();
     pushState();
-    // "Try another station" scrolls just to the chooser (not the whole way up);
-    // a full "Reset lab" goes back to the top to re-read the intro.
+    window.scrollTo({ top: 0, behavior: scrollBehavior });
+  }
+
+  // "Try another station": everything stays unlocked (the gates were opened on the
+  // first run and only "Reset lab" closes them again). Just scroll back up to the
+  // chooser so the reader can pick the next one; the pick auto-runs and drops them
+  // back at the results.
+  function goChooseAnother() {
     const stationSection = document.getElementById('station');
-    if (keepChoice && stationSection) {
-      stationSection.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
-    } else {
-      window.scrollTo({ top: 0, behavior: scrollBehavior });
-    }
+    if (stationSection) stationSection.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
   }
 
   /* ── Wiring / init ──────────────────────────────────────────────────── */
@@ -1356,8 +1359,8 @@ export function initAverageLab(config) {
       btn.addEventListener('click', () => setHoldout(Number(btn.getAttribute('data-holdout'))));
     });
     if (els.runHoldout) els.runHoldout.addEventListener('click', () => doRunHoldout());
-    if (els.resetLab) els.resetLab.addEventListener('click', () => reset(false));
-    if (els.resetLabEnd) els.resetLabEnd.addEventListener('click', () => reset(true));
+    if (els.resetLab) els.resetLab.addEventListener('click', () => reset());
+    if (els.resetLabEnd) els.resetLabEnd.addEventListener('click', () => goChooseAnother());
 
     // "your choice" legend: colour the reader's chosen strategy blue (on by default).
     if (els.holdoutChoice) {
