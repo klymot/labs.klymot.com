@@ -197,6 +197,58 @@ export function oneWayAnova(groups) {
   };
 }
 
+// Log-gamma (Lanczos) and the regularised incomplete beta (Numerical Recipes
+// betacf), enough to get an F-distribution p-value without a stats library.
+function gammaln(x) {
+  const c = [76.18009172947146, -86.50532032941677, 24.01409824083091,
+    -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+  let y = x;
+  let tmp = x + 5.5;
+  tmp -= (x + 0.5) * Math.log(tmp);
+  let ser = 1.000000000190015;
+  for (let j = 0; j < 6; j++) { y += 1; ser += c[j] / y; }
+  return -tmp + Math.log(2.5066282746310005 * ser / x);
+}
+function betacf(a, b, x) {
+  const FPMIN = 1e-300;
+  const qab = a + b;
+  const qap = a + 1;
+  const qam = a - 1;
+  let c = 1;
+  let d = 1 - qab * x / qap;
+  if (Math.abs(d) < FPMIN) d = FPMIN;
+  d = 1 / d;
+  let h = d;
+  for (let m = 1; m <= 200; m++) {
+    const m2 = 2 * m;
+    let aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+    d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d; h *= d * c;
+    aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+    d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d; const del = d * c; h *= del;
+    if (Math.abs(del - 1) < 3e-12) break;
+  }
+  return h;
+}
+export function betai(a, b, x) {
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+  const bt = Math.exp(gammaln(a + b) - gammaln(a) - gammaln(b)
+    + a * Math.log(x) + b * Math.log(1 - x));
+  return x < (a + 1) / (a + b + 2)
+    ? bt * betacf(a, b, x) / a
+    : 1 - bt * betacf(b, a, 1 - x) / b;
+}
+
+/** Upper-tail p-value of an F statistic (P(F ≥ f) under the null). */
+export function fPValue(f, dfB, dfW) {
+  if (!(f > 0) || dfB < 1 || dfW < 1) return 1;
+  return betai(dfW / 2, dfB / 2, dfW / (dfW + dfB * f));
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
  * Interactive driver (browser only)
  * ══════════════════════════════════════════════════════════════════════════ */
@@ -277,6 +329,7 @@ export function initAverageLab(config) {
   let holdoutFrac = HOLDOUT_OPTIONS[Math.floor(Math.random() * HOLDOUT_OPTIONS.length)];
   let progress = 2;            // furthest section index revealed (2 = station chooser onward)
   let holdoutRun = false;      // has the reader run the hidden-years test yet
+  let hasCompleted = false;    // have they finished a full run once (enables the fast repeat path)
   // Section 1 midpoint / true-average overlays start hidden so the reader
   // reveals each candidate average themselves.
   const introShow = { mid: false, avg: false };
@@ -917,7 +970,16 @@ export function initAverageLab(config) {
       drawAllStation();
       if (!fromRestore) {
         beacon('01-station-selected');
-        revealUpTo(3, { scroll: true });
+        if (hasCompleted && strategy) {
+          // Repeat visit: everything was earned on the first run, so open it all
+          // and score this station straight away — no re-clicking through, and the
+          // charts and results table are there to scroll down to.
+          doRunHoldout({ fromRestore: true });
+          revealUpTo(7);
+          if (sections.s3) sections.s3.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
+        } else {
+          revealUpTo(3, { scroll: true });
+        }
       }
     } catch (err) {
       if (token !== loadToken) return;
@@ -991,6 +1053,7 @@ export function initAverageLab(config) {
   function doRunHoldout({ fromRestore = false } = {}) {
     if (!strategy || !monthlySeries) return;
     holdoutRun = true;
+    hasCompleted = true;
     drawHoldoutChart();
     if (els.toS7) els.toS7.hidden = false;
     updateEndSummary();
@@ -1050,15 +1113,33 @@ export function initAverageLab(config) {
   }
 
   function renderResults() {
-    if (!els.resultsBlock || !els.resultsTable) return;
+    if (!els.resultsTable) return;
     const arr = loadResults();
-    const tb = els.resultsTable.querySelector('tbody');
+    // "Try another station" retires once every station has been tested.
+    if (els.resetLabEnd) {
+      const allTried = arr.length >= stations.length;
+      els.resetLabEnd.disabled = allTried;
+      els.resetLabEnd.textContent = allTried ? "You've tried every station" : 'Try another station';
+    }
+    if (!els.resultsBlock) return;
     if (!arr.length) { els.resultsBlock.hidden = true; return; }
     els.resultsBlock.hidden = false;
+    const tb = els.resultsTable.querySelector('tbody');
     tb.innerHTML = arr.map((r) =>
       `<tr><td>${r.name}</td><td>${r.pct}%</td>` +
       `<td>${fmtPlain(r.zero, 2)}</td><td>${fmtPlain(r.constant, 2)}</td>` +
       `<td>${fmtPlain(r.seasonal, 2)}</td></tr>`).join('');
+    // Highlight the reader's chosen strategy's column (zero/constant/seasonal).
+    const colFor = { zero: 2, constant: 3, seasonal: 4 };
+    els.resultsTable.querySelectorAll('.col-choice').forEach((c) => c.classList.remove('col-choice'));
+    const ci = colFor[strategy];
+    if (ci != null) {
+      const th = els.resultsTable.querySelectorAll('thead th')[ci];
+      if (th) th.classList.add('col-choice');
+      els.resultsTable.querySelectorAll('tbody tr').forEach((tr) => {
+        if (tr.children[ci]) tr.children[ci].classList.add('col-choice');
+      });
+    }
     renderTransfer(arr);
   }
 
@@ -1079,14 +1160,24 @@ export function initAverageLab(config) {
     if (els.transferExpander) els.transferExpander.hidden = false;
     const spread = a.meanSpread.toFixed(2);
     const within = a.withinSd.toFixed(2);
-    const F = a.F >= 100 ? Math.round(a.F) : a.F.toFixed(1);
+    const p = fPValue(a.F, a.dfB, a.dfW);
+    const pstr = p < 0.001 ? 'p < 0.001' : p < 0.01 ? 'p < 0.01'
+      : p < 0.05 ? 'p < 0.05' : `p = ${p.toFixed(2)}`;
+    const sig = p < 0.05;
+    const cmp = a.meanSpread > a.withinSd * 1.05 ? 'between &gt; within'
+      : a.withinSd > a.meanSpread * 1.05 ? 'within &gt; between'
+      : 'between ≈ within';
+    const desc = sig
+      ? `Between stations, each station's fix (its average gap) varies by ±${spread}°C; ` +
+        `within one station the gap wobbles ±${within}°C. The between-station difference is ` +
+        `real, not just noise — so a fix from one station won't be exact on another (off by ` +
+        `about ±${spread}°C).`
+      : `Between stations the fix varies by ±${spread}°C; within one station the gap wobbles ` +
+        `±${within}°C. That between-station difference is within the noise here, so one ` +
+        `station's fix is a reasonable stand-in — add more stations to be surer.`;
     els.transferNote.innerHTML =
-      `<strong>Does one station's fix carry to another?</strong> ` +
-      `Across the ${a.k} stations you've tested, each station's own fix (its average gap) ` +
-      `varies from station to station by about ±${spread}°C, while the gap wobbles ±${within}°C ` +
-      `within a single station. A one-way ANOVA of those gives F = ${F} ` +
-      `(df ${a.dfB}, ${a.dfW}). The bigger F is beyond about 1, the more the fix changes from ` +
-      `place to place — so reusing one station's fix on another would add roughly ±${spread}°C of error.`;
+      `<span class="transfer-pill${sig ? '' : ' quiet'}">variation ${cmp} · ${pstr}</span>` +
+      `<span class="transfer-desc">${desc}</span>`;
   }
 
   /* ── URL state ──────────────────────────────────────────────────────── */
@@ -1180,7 +1271,14 @@ export function initAverageLab(config) {
     setHoldout(holdoutFrac, { fromRestore: true });
     updateRunHoldoutState();
     pushState();
-    window.scrollTo({ top: 0, behavior: scrollBehavior });
+    // "Try another station" scrolls just to the chooser (not the whole way up);
+    // a full "Reset lab" goes back to the top to re-read the intro.
+    const stationSection = document.getElementById('station');
+    if (keepChoice && stationSection) {
+      stationSection.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: scrollBehavior });
+    }
   }
 
   /* ── Wiring / init ──────────────────────────────────────────────────── */

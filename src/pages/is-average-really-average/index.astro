@@ -434,10 +434,33 @@ import BetaGate from '../../components/BetaGate.astro';
       text-align: left;
       font-family: var(--font-sans);
     }
-    .lab-average-really-average .transfer-note {
-      margin-top: 0.75rem;
+    .lab-average-really-average .transfer-note { margin-top: 0.85rem; }
+    .lab-average-really-average .transfer-pill {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: rgba(212, 168, 85, 0.14);
+      border: 1px solid rgba(212, 168, 85, 0.45);
+      border-radius: 999px;
+      padding: 0.15rem 0.7rem;
+    }
+    .lab-average-really-average .transfer-pill.quiet {
+      color: var(--text-secondary);
+      background: transparent;
+      border-color: var(--border);
+    }
+    .lab-average-really-average .transfer-desc {
+      display: block;
+      margin-top: 0.5rem;
       font-size: 0.85rem;
       color: var(--text-secondary);
+    }
+    /* the reader's chosen strategy column, highlighted in the results table */
+    .lab-average-really-average #resultsTable th.col-choice,
+    .lab-average-really-average #resultsTable td.col-choice {
+      background: rgba(80, 144, 248, 0.12);
+      color: var(--text);
     }
   </style>
 

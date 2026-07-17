@@ -4,6 +4,7 @@ import {
   annualGapSeries,
   dailyGaps,
   monthOfYearClimatology,
+  fPValue,
   monthlyGapSeries,
   oneWayAnova,
   predictCorrection,
@@ -57,6 +58,37 @@ describe('oneWayAnova', () => {
     expect(a.F).toBeCloseTo(1, 6);
     expect(a.dfB).toBe(2);
     expect(a.dfW).toBe(3);
+  });
+});
+
+/* ── fPValue ───────────────────────────────────────────────────────────── */
+
+describe('fPValue', () => {
+  it('is ~0.5 at F=1 with equal degrees of freedom', () => {
+    expect(fPValue(1, 10, 10)).toBeCloseTo(0.5, 2);
+    expect(fPValue(1, 20, 20)).toBeCloseTo(0.5, 2);
+  });
+
+  it('shrinks toward 0 as F grows and toward 1 as F→0', () => {
+    expect(fPValue(50, 2, 100)).toBeLessThan(0.001);
+    expect(fPValue(0.01, 2, 100)).toBeGreaterThan(0.9);
+  });
+
+  it('is monotonically decreasing in F', () => {
+    const a = fPValue(2, 3, 60);
+    const b = fPValue(5, 3, 60);
+    const c = fPValue(10, 3, 60);
+    expect(a).toBeGreaterThan(b);
+    expect(b).toBeGreaterThan(c);
+  });
+
+  it('matches a known F critical value (F(2,10)=4.10 → p≈0.05)', () => {
+    expect(fPValue(4.10, 2, 10)).toBeCloseTo(0.05, 2);
+  });
+
+  it('guards degenerate input', () => {
+    expect(fPValue(0, 2, 10)).toBe(1);
+    expect(fPValue(-1, 2, 10)).toBe(1);
   });
 });
 
