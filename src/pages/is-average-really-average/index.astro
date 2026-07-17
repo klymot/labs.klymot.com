@@ -239,39 +239,41 @@ import BetaGate from '../../components/BetaGate.astro';
             <button type="button" class="toggle-btn" data-holdout="0.4" aria-pressed="false">the last 40%</button>
           </div>
           <p class="random-order-note">The starting amount is chosen at random each visit; it's yours to change.</p>
-          <div class="primary-cta-row">
+          <div class="primary-cta-row" id="runHoldoutRow">
             <button type="button" class="primary-cta" id="runHoldout" disabled>Test it on the hidden years</button>
             <p class="primary-cta-hint" id="runHoldoutHint">Pick a strategy above first.</p>
           </div>
 
-          <div class="chart-bleed" style="margin-top:0.5rem">
-            <div class="section-card" style="padding:1rem">
-              <div class="chart-header">
-                <span class="chart-title">How far off each fix is on the hidden years</span>
-                <span class="chart-meta">Typical miss (°C) — shorter is better</span>
+          <div id="holdoutResult" hidden>
+            <div class="chart-bleed" style="margin-top:0.5rem">
+              <div class="section-card" style="padding:1rem">
+                <div class="chart-header">
+                  <span class="chart-title">How far off each fix is on the hidden years</span>
+                  <span class="chart-meta">Typical miss (°C) — shorter is better</span>
+                </div>
+                <div class="chart-container" id="holdoutChartContainer">
+                  <canvas id="holdoutChart" style="display:block;width:100%;height:100%"></canvas>
+                  <div class="chart-tooltip" id="holdoutTooltip" hidden></div>
+                </div>
+                <div class="chart-legend" role="group" aria-label="Highlight your chosen strategy">
+                  <button type="button" class="legend-btn" id="holdoutChoice" aria-pressed="true">your choice</button>
+                </div>
+                <p class="lab-readout" id="holdoutReadout" aria-live="polite"></p>
               </div>
-              <div class="chart-container" id="holdoutChartContainer">
-                <canvas id="holdoutChart" style="display:block;width:100%;height:100%"></canvas>
-                <div class="chart-tooltip" id="holdoutTooltip" hidden></div>
-              </div>
-              <div class="chart-legend" role="group" aria-label="Highlight your chosen strategy">
-                <button type="button" class="legend-btn" id="holdoutChoice" aria-pressed="true">your choice</button>
-              </div>
-              <p class="lab-readout" id="holdoutReadout" aria-live="polite"></p>
             </div>
-          </div>
 
-          <details class="expander" id="holdoutTableExpander">
-            <summary>View the leftover errors as a table</summary>
-            <div class="expander-body">
-              <div class="data-table-wrap">
-                <table class="data-table" id="holdoutTable">
-                  <thead><tr><th scope="col">Strategy</th><th scope="col">Typical miss (RMS, °C)</th><th scope="col">Average size of miss (°C)</th></tr></thead>
-                  <tbody></tbody>
-                </table>
+            <details class="expander" id="holdoutTableExpander">
+              <summary>View the leftover errors as a table</summary>
+              <div class="expander-body">
+                <div class="data-table-wrap">
+                  <table class="data-table" id="holdoutTable">
+                    <thead><tr><th scope="col">Strategy</th><th scope="col">Typical miss (RMS, °C)</th><th scope="col">Average size of miss (°C)</th></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          </details>
+            </details>
+          </div>
         </div>
 
         <details class="expander">
@@ -320,7 +322,7 @@ import BetaGate from '../../components/BetaGate.astro';
           <details class="expander" id="transferExpander" hidden>
             <summary>What is this test?</summary>
             <div class="expander-body">
-              <p>It is a one-way ANOVA — a standard way to ask whether groups really differ, or whether the differences you see could just be the ordinary wobble inside each group. Here the groups are your stations. It compares how much the average gap changes <em>between</em> stations against how much the gap bounces around <em>within</em> a single station, and reports that as a ratio called F. An F near 1 would mean the stations look alike — one fix might serve them all. A large F means each station's fix is really its own, so a correction worked out in one place cannot simply be carried to another. The more stations you add, the more you have to go on.</p>
+              <p>It is a one-way ANOVA. It asks whether the differences <em>between</em> your stations are bigger than we'd expect from the ordinary year-to-year variation <em>within</em> each one. A very small p-value (here, below 0.001) means it is highly unlikely that all your stations share exactly the same average gap — so a correction worked out in one place cannot simply be carried to another. A p-value near 1, or an F near 1, would mean the stations look alike and one fix might serve them all. The ± figures above are ordinary spreads (standard deviations) computed separately; the ANOVA is the significance test, not those numbers. The more stations you add, the more it has to go on.</p>
             </div>
           </details>
           <button type="button" class="mini-tool" id="resultsClear">Clear my results</button>
@@ -434,17 +436,20 @@ import BetaGate from '../../components/BetaGate.astro';
       text-align: left;
       font-family: var(--font-sans);
     }
-    .lab-average-really-average .transfer-note { margin-top: 0.85rem; }
+    .lab-average-really-average .transfer-note { margin-top: 0.85rem; text-align: center; }
     .lab-average-really-average .transfer-pill {
-      display: inline-block;
-      font-size: 0.8rem;
-      font-weight: 600;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
       color: var(--accent);
       background: rgba(212, 168, 85, 0.14);
       border: 1px solid rgba(212, 168, 85, 0.45);
-      border-radius: 999px;
-      padding: 0.15rem 0.7rem;
+      border-radius: 14px;
+      padding: 0.45rem 1rem;
     }
+    .lab-average-really-average .transfer-pill .tp-main { font-size: 1rem; font-weight: 700; }
+    .lab-average-really-average .transfer-pill .tp-p { font-size: 0.78rem; font-weight: 500; opacity: 0.85; }
     .lab-average-really-average .transfer-pill.quiet {
       color: var(--text-secondary);
       background: transparent;
@@ -452,9 +457,10 @@ import BetaGate from '../../components/BetaGate.astro';
     }
     .lab-average-really-average .transfer-desc {
       display: block;
-      margin-top: 0.5rem;
+      margin-top: 0.6rem;
       font-size: 0.85rem;
       color: var(--text-secondary);
+      text-align: left;
     }
     /* the reader's chosen strategy column, highlighted in the results table */
     .lab-average-really-average #resultsTable th.col-choice,

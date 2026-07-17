@@ -350,7 +350,7 @@ export function initAverageLab(config) {
     'strategyGrid', 'strategyPrompt', 'holdoutRow', 'holdoutButtons',
     'runHoldout', 'runHoldoutHint',
     'holdoutChart', 'holdoutChartContainer', 'holdoutTooltip', 'holdoutReadout',
-    'holdoutTable', 'holdoutChoice', 'toS7',
+    'holdoutTable', 'holdoutChoice', 'runHoldoutRow', 'holdoutResult', 'toS7',
     'endSummary', 'resetLab', 'resetLabEnd', 'resultsBlock', 'resultsTable', 'resultsClear',
     'transferNote', 'transferExpander',
   ].forEach((id) => { els[id] = document.getElementById(id); });
@@ -933,6 +933,27 @@ export function initAverageLab(config) {
     });
   }
 
+  // Sync the "✓ tried" badges to the saved results in place — without re-rendering
+  // (and reshuffling) the grid — so a station tested on a repeat loop is marked as
+  // soon as it lands in the histogram/table.
+  function updateTriedBadges() {
+    const tried = new Set(loadResults().map((r) => r.id));
+    document.querySelectorAll('#stationGrid .station-card').forEach((card) => {
+      const done = tried.has(card.dataset.stationId);
+      card.classList.toggle('tried', done);
+      let badge = card.querySelector('.sc-tried');
+      if (done && !badge) {
+        badge = document.createElement('span');
+        badge.className = 'sc-tried';
+        badge.setAttribute('aria-label', 'already tried');
+        badge.textContent = '✓ tried';
+        card.appendChild(badge);
+      } else if (!done && badge) {
+        badge.remove();
+      }
+    });
+  }
+
   let loadToken = 0;
   async function chooseStation(id, { fromRestore = false } = {}) {
     const s = stationById(id);
@@ -966,6 +987,7 @@ export function initAverageLab(config) {
       if (els.holdoutRow) els.holdoutRow.hidden = !strategy;
       renderStrategyCards();
       updateRunHoldoutState();
+      syncHoldoutGate();
       if (els.toS7) els.toS7.hidden = true;
       drawAllStation();
       if (!fromRestore) {
@@ -1027,6 +1049,7 @@ export function initAverageLab(config) {
     if (els.strategyPrompt) els.strategyPrompt.hidden = true;
     if (els.holdoutRow) els.holdoutRow.hidden = false;
     updateRunHoldoutState();
+    syncHoldoutGate();
     if (holdoutRun) drawHoldoutChart();
     if (!fromRestore) { beacon('02-strategy-selected'); pushState(); }
   }
@@ -1037,6 +1060,14 @@ export function initAverageLab(config) {
     els.runHoldoutHint.textContent = strategy
       ? 'Fits all three strategies on the years you keep, then measures each one’s leftover error on the years held back.'
       : 'Pick a strategy above first.';
+  }
+
+  // The "Test it on the hidden years" button is a gate: the bar chart stays hidden
+  // until it is clicked, then the button retires (like the Continue gates) and the
+  // result is shown. After that, changing strategy/holdout updates the chart live.
+  function syncHoldoutGate() {
+    if (els.runHoldoutRow) els.runHoldoutRow.hidden = holdoutRun;
+    if (els.holdoutResult) els.holdoutResult.hidden = !holdoutRun;
   }
 
   function setHoldout(frac, { fromRestore = false } = {}) {
@@ -1055,6 +1086,7 @@ export function initAverageLab(config) {
     if (!strategy || !monthlySeries) return;
     holdoutRun = true;
     hasCompleted = true;
+    syncHoldoutGate();   // reveal the result card (and retire the run button) before drawing
     drawHoldoutChart();
     if (els.toS7) els.toS7.hidden = false;
     updateEndSummary();
@@ -1122,6 +1154,7 @@ export function initAverageLab(config) {
       els.resetLabEnd.disabled = allTried;
       els.resetLabEnd.textContent = allTried ? "You've tried every station" : 'Try another station';
     }
+    updateTriedBadges();
     if (!els.resultsBlock) return;
     if (!arr.length) { els.resultsBlock.hidden = true; return; }
     els.resultsBlock.hidden = false;
@@ -1165,19 +1198,24 @@ export function initAverageLab(config) {
     const pstr = p < 0.001 ? 'p < 0.001' : p < 0.01 ? 'p < 0.01'
       : p < 0.05 ? 'p < 0.05' : `p = ${p.toFixed(2)}`;
     const sig = p < 0.05;
-    const cmp = a.meanSpread > a.withinSd * 1.05 ? 'between &gt; within'
-      : a.withinSd > a.meanSpread * 1.05 ? 'within &gt; between'
-      : 'between ≈ within';
-    const desc = sig
-      ? `Between stations, each station's fix (its average gap) varies by ±${spread}°C; ` +
-        `within one station the gap wobbles ±${within}°C. The between-station difference is ` +
-        `real, not just noise — so a fix from one station won't be exact on another (off by ` +
-        `about ±${spread}°C).`
-      : `Between stations the fix varies by ±${spread}°C; within one station the gap wobbles ` +
-        `±${within}°C. That between-station difference is within the noise here, so one ` +
-        `station's fix is a reasonable stand-in — add more stations to be surer.`;
+    // Lay labels: within-station variation = year-to-year; between = station-to-station.
+    const line = a.meanSpread > a.withinSd * 1.05
+      ? 'station-to-station &gt; year-to-year'
+      : a.withinSd > a.meanSpread * 1.05
+        ? 'year-to-year &gt; station-to-station'
+        : 'station-to-station ≈ year-to-year';
+    const desc = `The average gap differs between these stations by about ±${spread}°C, while ` +
+      `within a single station it varies by about ±${within}°C from year to year. ` +
+      (sig
+        ? `The test says those between-station differences are very unlikely to be chance ` +
+          `(${pstr}), so using one station's correction on another would typically add about ` +
+          `±${spread}°C of error.`
+        : `Those between-station differences are within what the year-to-year wobble could ` +
+          `produce (${pstr}), so one station's correction is a reasonable stand-in — add more ` +
+          `stations to be surer.`);
     els.transferNote.innerHTML =
-      `<span class="transfer-pill${sig ? '' : ' quiet'}">variation ${cmp} · ${pstr}</span>` +
+      `<span class="transfer-pill${sig ? '' : ' quiet'}">` +
+      `<span class="tp-main">${line}</span><span class="tp-p">${pstr}</span></span>` +
       `<span class="transfer-desc">${desc}</span>`;
   }
 
@@ -1276,6 +1314,7 @@ export function initAverageLab(config) {
     holdoutFrac = HOLDOUT_OPTIONS[Math.floor(Math.random() * HOLDOUT_OPTIONS.length)];
     setHoldout(holdoutFrac, { fromRestore: true });
     updateRunHoldoutState();
+    syncHoldoutGate();
     pushState();
     window.scrollTo({ top: 0, behavior: scrollBehavior });
   }
