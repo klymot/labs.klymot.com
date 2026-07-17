@@ -326,6 +326,9 @@ export function initAverageLab(config) {
   let sampleMonths = [];       // distinct 'YYYY-MM' present in daily_sample
   let currentSampleMonth = null;
   let strategy = null;         // blocking choice within the game (equal footing)
+  // One shuffled order for this session, shared by the option cards, the bar chart,
+  // and the results-table columns so they always line up (re-shuffled on Reset lab).
+  let strategyOrder = shuffle(STRATEGIES.slice());
   let holdoutFrac = HOLDOUT_OPTIONS[Math.floor(Math.random() * HOLDOUT_OPTIONS.length)];
   let progress = 2;            // furthest section index revealed (2 = station chooser onward)
   let holdoutRun = false;      // has the reader run the hidden-years test yet
@@ -352,7 +355,7 @@ export function initAverageLab(config) {
     'holdoutChart', 'holdoutChartContainer', 'holdoutTooltip', 'holdoutReadout',
     'holdoutTable', 'holdoutChoice', 'runHoldoutRow', 'holdoutResult', 'toS7',
     'endSummary', 'resetLab', 'resetLabEnd', 'resultsBlock', 'resultsTable',
-    'transferNote', 'transferExpander', 'addAll', 'resultsPct',
+    'transferNote', 'transferExpander', 'addAll', 'resultsPct', 'resultsHead',
   ].forEach((id) => { els[id] = document.getElementById(id); });
 
   const sections = {
@@ -753,7 +756,7 @@ export function initAverageLab(config) {
     if (!container || !canvas || !monthlySeries || !holdoutRun) return;
     const { ctx, W, H } = setupCanvas(container, canvas);
     const res = runHoldout(monthlySeries, holdoutFrac, 'tail');
-    const bars = STRATEGIES.map((s) => ({ s, rmse: res.results[s].rmse }));
+    const bars = strategyOrder.map((s) => ({ s, rmse: res.results[s].rmse }));
     const zeroRmse = res.results.zero ? res.results.zero.rmse : null;
     const maxRmse = Math.max(...bars.map((b) => b.rmse || 0), 0.01);
     const pad = { top: 18, right: 18, bottom: 52, left: 46 };
@@ -866,7 +869,7 @@ export function initAverageLab(config) {
   function fillHoldoutTable(res) {
     if (!els.holdoutTable) return;
     const tbody = els.holdoutTable.querySelector('tbody');
-    tbody.innerHTML = STRATEGIES.map((s) => {
+    tbody.innerHTML = strategyOrder.map((s) => {
       const r = res.results[s];
       const chosen = s === strategy ? ' (your choice)' : '';
       return `<tr><td>${STRATEGY_META[s].label}${chosen}</td>` +
@@ -1030,7 +1033,7 @@ export function initAverageLab(config) {
     const grid = els.strategyGrid;
     if (!grid) return;
     grid.innerHTML = '';
-    shuffle(STRATEGIES).forEach((s) => {
+    strategyOrder.forEach((s) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'prediction-card' + (s === strategy ? ' chosen' : '');
@@ -1169,28 +1172,41 @@ export function initAverageLab(config) {
       els.resetLabEnd.disabled = allTried;
       els.resetLabEnd.textContent = allTried ? "You've tried every station" : 'Try another station';
     }
-    if (els.addAll) els.addAll.disabled = !strategy || shown.length >= stations.length;
+    // No point offering "add every station" once they're all in this table.
+    if (els.addAll) {
+      els.addAll.hidden = shown.length >= stations.length;
+      els.addAll.disabled = !strategy;
+    }
     updateTriedBadges();
     if (!els.resultsBlock) return;
     if (!shown.length) { els.resultsBlock.hidden = true; return; }
     els.resultsBlock.hidden = false;
     if (els.resultsPct) els.resultsPct.textContent = `${pct}%`;
+    // Header + cells follow the session's shuffled option order, so the columns
+    // line up with the option cards and the bar chart.
+    if (els.resultsHead) {
+      els.resultsHead.innerHTML =
+        '<th scope="col">Station</th><th scope="col">Held back</th>' +
+        strategyOrder.map((s) => `<th scope="col">${RESULTS_COL[s]}</th>`).join('');
+    }
     const tb = els.resultsTable.querySelector('tbody');
     tb.innerHTML = shown.map((r) =>
       `<tr><td>${r.name}</td><td>${r.pct}%</td>` +
-      `<td>${fmtPlain(r.zero, 2)}</td><td>${fmtPlain(r.constant, 2)}</td>` +
-      `<td>${fmtPlain(r.seasonal, 2)}</td></tr>`).join('');
+      strategyOrder.map((s) => `<td>${fmtPlain(r[s], 2)}</td>`).join('') +
+      '</tr>').join('');
     highlightChoiceColumn();
     renderTransfer(shown);
   }
 
-  // Move the highlight to the currently-selected strategy's column.
+  const RESULTS_COL = { zero: 'Doing nothing', constant: 'Average gap', seasonal: 'Season-shaped' };
+
+  // Move the highlight to the currently-selected strategy's column (its position in
+  // the session order, after the Station and Held-back columns).
   function highlightChoiceColumn() {
     if (!els.resultsTable) return;
-    const colFor = { zero: 2, constant: 3, seasonal: 4 };
     els.resultsTable.querySelectorAll('.col-choice').forEach((c) => c.classList.remove('col-choice'));
-    const ci = colFor[strategy];
-    if (ci == null) return;
+    if (!strategy) return;
+    const ci = 2 + strategyOrder.indexOf(strategy);
     const th = els.resultsTable.querySelectorAll('thead th')[ci];
     if (th) th.classList.add('col-choice');
     els.resultsTable.querySelectorAll('tbody tr').forEach((tr) => {
@@ -1335,6 +1351,7 @@ export function initAverageLab(config) {
     holdoutRun = false;
     hasCompleted = false;
     progress = 2;
+    strategyOrder = shuffle(STRATEGIES.slice());  // fresh random option order
     saveResults([]);
     introShow.mid = false;
     introShow.avg = false;

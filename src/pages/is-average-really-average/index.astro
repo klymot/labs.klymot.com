@@ -230,8 +230,21 @@ import BetaGate from '../../components/BetaGate.astro';
 
         <div id="holdoutRow" hidden>
           <div class="prose" style="margin-top:1rem">
-            <p>Now the honest test. We keep some of the station's years back. The correction is worked out from the years we keep — then measured against the years it never saw. The lower a strategy's leftover error on those hidden years, the better it did. Choose how many years to hold back:</p>
+            <p>Now the honest test. We keep some of the station's years back. The correction is worked out from the years we keep — then measured against the years it never saw. The lower a strategy's leftover error on those hidden years, the better it did.</p>
           </div>
+          <details class="expander">
+            <summary>Why hold years back at all?</summary>
+            <div class="expander-body">
+              <p>If you check a fix using the same years you built it from, you are marking your own homework — of course it looks good, you tuned it to those years. The honest way is to build the fix on some years, then try it on other years it has never seen. Whatever leftover error shows up on those hidden years is a fairer guess at how the fix would do on records you can't check.</p>
+            </div>
+          </details>
+          <details class="expander">
+            <summary>What is the "leftover"?</summary>
+            <div class="expander-body">
+              <p>Even the best calendar-based fix can't know what the weather did on a particular day — a stormy week, a still clear night — and that day-to-day wobble is what's left after any correction. It's the part no fix built from the calendar can remove. It gets smaller when you average more days or more years together, because the wobbles partly cancel out.</p>
+            </div>
+          </details>
+          <div class="prose"><p>Choose how many years to hold back:</p></div>
           <div class="control-row">
             <span class="control-label">Hold back</span>
             <button type="button" class="toggle-btn" data-holdout="0.2" aria-pressed="false">the last 20%</button>
@@ -275,19 +288,6 @@ import BetaGate from '../../components/BetaGate.astro';
             </details>
           </div>
         </div>
-
-        <details class="expander">
-          <summary>Why test on hidden years?</summary>
-          <div class="expander-body">
-            <p>If you check a fix using the same data you built it from, you are marking your own homework — of course it looks good, you tuned it to those years. The honest way is to build the fix on some years, then try it on other years it has never seen. Whatever leftover error shows up on those hidden years is a fairer guess at how the fix would do on records you can't check.</p>
-          </div>
-        </details>
-        <details class="expander">
-          <summary>What is the "leftover"?</summary>
-          <div class="expander-body">
-            <p>Even the best calendar-based fix can't know what the weather did on a particular day — a stormy week, a still clear night — and that day-to-day wobble is what's left after any correction. It's the part no fix built from the calendar can remove. It gets smaller when you average more days or more years together, because the wobbles partly cancel out.</p>
-          </div>
-        </details>
       </div>
     </section>
 
@@ -300,6 +300,7 @@ import BetaGate from '../../components/BetaGate.astro';
           <p>You've now seen one station's answer. It may not be the next station's — the size, the direction, the seasonal shape and the year-to-year wander can all be different somewhere else. The only way to know is to look.</p>
           <div class="primary-cta-row">
             <button type="button" class="primary-cta" id="resetLabEnd">Try another station</button>
+            <button type="button" class="primary-cta secondary" id="addAll">Add every station</button>
           </div>
         </div>
 
@@ -308,13 +309,7 @@ import BetaGate from '../../components/BetaGate.astro';
           <p class="results-note">Every station you test at this hold-back lands here (kept on this device only) so you can line them up — lower means a fix left less error on the years it never saw. Change the hold-back amount above and you build a separate table for that fraction; work through them all to fill in every station × every fraction.</p>
           <div class="data-table-wrap">
             <table class="data-table" id="resultsTable">
-              <thead><tr>
-                <th scope="col">Station</th>
-                <th scope="col">Held back</th>
-                <th scope="col">Doing nothing</th>
-                <th scope="col">Average gap</th>
-                <th scope="col">Season-shaped</th>
-              </tr></thead>
+              <thead><tr id="resultsHead"></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -325,9 +320,6 @@ import BetaGate from '../../components/BetaGate.astro';
               <p>It is a one-way ANOVA. It asks whether the differences <em>between</em> your stations are bigger than we'd expect from the ordinary year-to-year variation <em>within</em> each one. A very small p-value (here, below 0.001) means it is highly unlikely that all your stations share exactly the same average gap — so a correction worked out in one place cannot simply be carried to another. A p-value near 1, or an F near 1, would mean the stations look alike and one fix might serve them all. The ± figures above are ordinary spreads (standard deviations) computed separately; the ANOVA is the significance test, not those numbers. The more stations you add, the more it has to go on.</p>
             </div>
           </details>
-          <div class="results-actions">
-            <button type="button" class="mini-tool" id="addAll">Add every station</button>
-          </div>
         </div>
 
         <details class="expander">
@@ -388,7 +380,16 @@ import BetaGate from '../../components/BetaGate.astro';
     .results-block { margin-top: 1.75rem; }
     .results-heading { font-size: 1.05rem; margin: 0 0 0.2rem; }
     .results-note { font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.65rem; }
-    .results-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.65rem; }
+    /* Secondary CTA beside "Try another station": same surface/border as the
+       strategy cards rather than the gold primary colour. */
+    .lab-average-really-average .primary-cta.secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .lab-average-really-average .primary-cta.secondary:hover:not(:disabled) {
+      border-color: var(--accent);
+    }
     .control-label {
       font-size: 0.85rem;
       color: var(--text-secondary);
