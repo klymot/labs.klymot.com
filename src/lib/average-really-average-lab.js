@@ -1254,7 +1254,11 @@ export function initAverageLab(config) {
     monthlySeries = null;
     strategy = null;
     holdoutRun = false;
+    hasCompleted = false;
     progress = 2;
+    // A full reset also empties the saved comparison, so the "tried" badges clear
+    // too. ("Clear my results" empties the table without disturbing the walkthrough.)
+    saveResults([]);
     introShow.mid = false;
     introShow.avg = false;
     setIntroToggleVisual(els.introToggleMid, false, GOLD());
@@ -1265,6 +1269,7 @@ export function initAverageLab(config) {
     if (els.stationChosen) els.stationChosen.hidden = true;
     if (els.stationPrompt) { els.stationPrompt.hidden = false; els.stationPrompt.textContent = 'Choose a station above to continue.'; }
     renderStationCards();
+    renderResults();  // saved comparison is now empty → hides the table, clears badges/button
     renderStrategyCards();
     if (els.strategyPrompt) els.strategyPrompt.hidden = false;
     if (els.holdoutRow) els.holdoutRow.hidden = true;
