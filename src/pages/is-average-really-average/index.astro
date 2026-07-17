@@ -244,7 +244,7 @@ import BetaGate from '../../components/BetaGate.astro';
               <p>Even the best calendar-based fix can't know what the weather did on a particular day — a stormy week, a still clear night — and that day-to-day wobble is what's left after any correction. It's the part no fix built from the calendar can remove. It gets smaller when you average more days or more years together, because the wobbles partly cancel out.</p>
             </div>
           </details>
-          <div class="prose"><p>Choose how many years to hold back:</p></div>
+          <div class="prose" style="margin-top:1.5rem"><p>Choose how many years to hold back:</p></div>
           <div class="control-row">
             <span class="control-label">Hold back</span>
             <button type="button" class="toggle-btn" data-holdout="0.2" aria-pressed="false">the last 20%</button>
@@ -298,9 +298,9 @@ import BetaGate from '../../components/BetaGate.astro';
           <h2 id="endcard-heading">So — is "average" really the average?</h2>
           <p id="endSummary"></p>
           <p>You've now seen one station's answer. It may not be the next station's — the size, the direction, the seasonal shape and the year-to-year wander can all be different somewhere else. The only way to know is to look.</p>
-          <div class="primary-cta-row">
-            <button type="button" class="primary-cta" id="resetLabEnd">Try another station</button>
-            <button type="button" class="primary-cta secondary" id="addAll">Add every station</button>
+          <div class="primary-cta-row primary-cta-row--pair">
+            <button type="button" class="primary-cta" id="resetLabEnd">Pick another</button>
+            <button type="button" class="primary-cta secondary" id="addAll">Add all</button>
           </div>
         </div>
 
@@ -380,16 +380,6 @@ import BetaGate from '../../components/BetaGate.astro';
     .results-block { margin-top: 1.75rem; }
     .results-heading { font-size: 1.05rem; margin: 0 0 0.2rem; }
     .results-note { font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.65rem; }
-    /* Secondary CTA beside "Try another station": same surface/border as the
-       strategy cards rather than the gold primary colour. */
-    .lab-average-really-average .primary-cta.secondary {
-      background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-    .lab-average-really-average .primary-cta.secondary:hover:not(:disabled) {
-      border-color: var(--accent);
-    }
     .control-label {
       font-size: 0.85rem;
       color: var(--text-secondary);
@@ -421,6 +411,26 @@ import BetaGate from '../../components/BetaGate.astro';
        (station cards, results-table rows), which Astro's scoped styles never
        match. Namespaced under the lab body class so nothing leaks. -->
   <style is:global>
+    /* These target the <body> class (rendered by BaseLayout, not this page), so
+       they must be global — Astro's scoped styles never reach the body. */
+    /* Secondary CTA: surface/border like the strategy cards, not the gold primary. */
+    .lab-average-really-average .primary-cta.secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .lab-average-really-average .primary-cta.secondary:hover:not(:disabled) {
+      border-color: var(--accent);
+    }
+    /* The end-card pair sits on one line (short labels fit even on mobile). */
+    .lab-average-really-average .primary-cta-row--pair {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    /* Hold-back options are toggle-btns; give the inactive ones a visible border. */
+    .lab-average-really-average .toggle-btn { border: 1px solid var(--border); }
+    .lab-average-really-average .toggle-btn.active { border-color: var(--accent); }
     .lab-average-really-average .station-card { position: relative; }
     .lab-average-really-average .sc-tried {
       position: absolute;

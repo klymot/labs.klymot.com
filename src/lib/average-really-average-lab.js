@@ -1170,7 +1170,7 @@ export function initAverageLab(config) {
     if (els.resetLabEnd) {
       const allTried = shown.length >= stations.length;
       els.resetLabEnd.disabled = allTried;
-      els.resetLabEnd.textContent = allTried ? "You've tried every station" : 'Try another station';
+      els.resetLabEnd.textContent = allTried ? 'Every station tried' : 'Pick another';
     }
     // No point offering "add every station" once they're all in this table.
     if (els.addAll) {
