@@ -1783,6 +1783,7 @@ select:focus {
 
 /* Data-table fallback (accessibility / "just give me the numbers"). */
 .lab-cherry-picking .data-table-wrap,
+.lab-average-really-average .data-table-wrap,
 .lab-error-bars .data-table-wrap {
   max-height: 320px;
   overflow: auto;
@@ -1790,6 +1791,7 @@ select:focus {
   border-radius: 6px;
 }
 .lab-cherry-picking .data-table,
+.lab-average-really-average .data-table,
 .lab-error-bars .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -1797,8 +1799,10 @@ select:focus {
 }
 .lab-cherry-picking .data-table th,
 .lab-error-bars .data-table th,
+.lab-average-really-average .data-table th,
 .lab-cherry-picking .data-table td,
-.lab-error-bars .data-table td {
+.lab-error-bars .data-table td,
+.lab-average-really-average .data-table td {
   padding: 0.25rem 0.75rem;
   text-align: right;
   border-bottom: 1px solid var(--border);
@@ -1807,7 +1811,8 @@ select:focus {
   color: var(--text-secondary);
 }
 .lab-cherry-picking .data-table th,
-.lab-error-bars .data-table th {
+.lab-error-bars .data-table th,
+.lab-average-really-average .data-table th {
   position: sticky;
   top: 0;
   background: var(--bg-secondary);
