@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-07-17T19:39:23Z",
+  "delta_definition": "Delta = (Tmax+Tmin)/2 minus the true daily mean, per day; the client aggregates.",
+  "source": "Valentia: Met \u00c9ireann hourly + daily (CC BY 4.0), true mean = 24-hour mean. USCRN: NOAA daily01, true mean = T_DAILY_AVG from sub-hourly data, midpoint = T_DAILY_MEAN.",
+  "stations": [
+    {
+      "id": "valentia",
+      "name": "Valentia Observatory",
+      "place": "Co. Kerry, Ireland",
+      "climate": "Atlantic coast",
+      "kind": "valentia",
+      "n_months": 1014
+    },
+    {
+      "id": "NC_Asheville_13_S",
+      "name": "Asheville",
+      "place": "North Carolina, USA",
+      "climate": "southern Appalachian valley",
+      "kind": "uscrn",
+      "n_months": 299
+    },
+    {
+      "id": "MT_Wolf_Point_29_ENE",
+      "name": "Wolf Point",
+      "place": "Montana, USA",
+      "climate": "northern Great Plains",
+      "kind": "uscrn",
+      "n_months": 294
+    },
+    {
+      "id": "RI_Kingston_1_NW",
+      "name": "Kingston",
+      "place": "Rhode Island, USA",
+      "climate": "coastal New England",
+      "kind": "uscrn",
+      "n_months": 290
+    },
+    {
+      "id": "OK_Stillwater_2_W",
+      "name": "Stillwater",
+      "place": "Oklahoma, USA",
+      "climate": "southern Great Plains",
+      "kind": "uscrn",
+      "n_months": 291
+    },
+    {
+      "id": "AZ_Elgin_5_S",
+      "name": "Elgin",
+      "place": "Arizona, USA",
+      "climate": "high desert grassland",
+      "kind": "uscrn",
+      "n_months": 285
+    },
+    {
+      "id": "IL_Champaign_9_SW",
+      "name": "Champaign",
+      "place": "Illinois, USA",
+      "climate": "Midwest farmland",
+      "kind": "uscrn",
+      "n_months": 279
+    },
+    {
+      "id": "GA_Newton_11_SW",
+      "name": "Newton",
+      "place": "Georgia, USA",
+      "climate": "southeastern coastal plain",
+      "kind": "uscrn",
+      "n_months": 285
+    }
+  ]
+}

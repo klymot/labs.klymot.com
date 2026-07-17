@@ -1,0 +1,395 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BetaGate from '../../components/BetaGate.astro';
+---
+<BaseLayout title="Is &quot;Average&quot; Really the Average? — klymot labs" description="Every daily temperature in the old records is the day's highest and lowest, added and halved. This lab lets you check, for a real weather station you choose, whether that matches averaging the temperature all day — and what you could do about it if it doesn't." bodyClass="lab-page lab-average-really-average">
+  <BetaGate passwordHash="$2b$10$sq/nOSPg83l0QtIkJmPOB.aDcFp2a6j14q1FF8JuwXJYj5bfCult6" storageKey="is-average-really-average-beta-unlocked" />
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <nav class="header-nav" aria-label="Site navigation">
+        <a class="brand-link" href="https://klymot.com" aria-label="klymot home">
+          <span class="brand-logo" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="22" height="22">
+              <circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.25"/>
+              <ellipse cx="16" cy="16" rx="13" ry="4.2" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="9.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="22.5" rx="10" ry="2.8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="16" rx="3" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="16" cy="16" rx="9" ry="13" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+              <circle cx="19.5" cy="10.5" r="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/>
+              <circle cx="19.5" cy="10.5" r="2" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="brand-title">klymot</span>
+          <span class="brand-sub">· labs</span>
+        </a>
+        <a href="/" class="back-link" aria-label="Back to labs index">← Labs</a>
+      </nav>
+      <div class="header-actions">
+        <button class="reset-btn" id="resetLab" type="button" aria-label="Reset all choices">Reset lab</button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" type="button">◐</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ── Hero ──────────────────────────────────────────────────────── -->
+    <div class="container">
+      <div class="page-hero">
+        <span class="eyebrow" aria-hidden="true">Lab under beta testing — shared by invitation</span>
+        <h1>Is "Average" Really the Average?</h1>
+        <p class="hook">Every daily temperature in the old weather books is just the day's highest and lowest, added together and halved. This lab lets you check, for a real weather station, whether that matches averaging the temperature all day long — and what you could do about it if it doesn't.</p>
+        <p class="lede">Pick a station. Measure the gap between the two kinds of average yourself, day by day and month by month, see whether it has a shape, then test whether a fix built on part of the record still works on years you kept back.</p>
+        <ul class="learn-list">
+          <li>What a daily "average" temperature even is — and that there is more than one way to work it out.</li>
+          <li>How to measure the gap between the two, for a station you choose.</li>
+          <li>How to test a fix honestly, on data it has never seen.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── Section 1 — What is a day's average? (generic) ─────────────── -->
+    <section class="lab-section" id="intro" aria-labelledby="intro-heading">
+      <div class="container">
+        <div class="prose">
+          <h2 id="intro-heading">What is a day's "average", anyway?</h2>
+          <p>Here is one real day: the temperature at a weather station, hour by hour, for twenty-four hours. The dashed lines mark the day's highest and lowest reading.</p>
+          <p>There is more than one way to turn a whole day of temperature into a single number. Reveal each one on the chart and see where it lands:</p>
+        </div>
+
+        <div class="control-row">
+          <button type="button" class="toggle-btn" id="introToggleMid" aria-pressed="false">Show the midpoint (high + low) ÷ 2</button>
+          <button type="button" class="toggle-btn" id="introToggleAvg" aria-pressed="false">Show the all-day average</button>
+        </div>
+
+        <div class="chart-bleed" style="margin-top:1rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-header">
+              <span class="chart-title">One day, hour by hour</span>
+              <span class="chart-meta">Temperature (°C)</span>
+            </div>
+            <div class="chart-container" id="introChartContainer">
+              <canvas id="introChart" style="display:block;width:100%;height:100%"></canvas>
+              <div class="chart-tooltip" id="introTooltip" hidden></div>
+            </div>
+            <p class="lab-readout" id="introReadout" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <details class="expander">
+          <summary>Why did anyone ever use just the highest and lowest?</summary>
+          <div class="expander-body">
+            <p>For most of the history of weather-keeping, the thermometer you could afford recorded only two things about a day: the highest it got and the lowest it fell to. A special pair of thermometers held onto those two marks until someone came round once a day to read and reset them. Nobody was standing there taking a reading every hour. So the day's "average" became the one thing those instruments made easy: the high and the low, added together and halved. Billions of daily records — the backbone of the temperature history — were built that way.</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>What do we mean by the "true" all-day average?</summary>
+          <div class="expander-body">
+            <p>On this page the all-day average means adding up the readings taken through the day and dividing by how many there were — so every part of the day gets a say, not just the two extremes. It is still only a sampling of a smooth curve (readings every hour, or every few minutes, rather than truly continuous), so it is not perfect either — but it uses far more of the day than two numbers do.</p>
+          </div>
+        </details>
+
+        <details class="expander" id="introTableExpander">
+          <summary>View this day's hourly readings as a table</summary>
+          <div class="expander-body">
+            <div class="data-table-wrap">
+              <table class="data-table" id="introTable">
+                <thead><tr><th scope="col">Hour</th><th scope="col">Temperature (°C)</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── Section 2 — Choose a station (BLOCKING) ────────────────────── -->
+    <section class="lab-section" id="station" aria-labelledby="station-heading">
+      <div class="container">
+        <div class="prose">
+          <h2 id="station-heading">Choose a station</h2>
+          <p>From here on, everything uses the station you pick. Each card shows its setting and roughly how long its record runs — nothing about what you will find. The order is shuffled every visit, and there is no "recommended" one.</p>
+        </div>
+        <p class="random-order-note">Stations are shown in a random order to avoid nudging your choice.</p>
+        <div class="station-grid" id="stationGrid" role="group" aria-label="Choose a station"></div>
+        <div id="stationChosen" class="chosen-banner" hidden>
+          <span class="check" aria-hidden="true">✓</span>
+          <span>You chose: <strong id="stationChosenName"></strong></span>
+        </div>
+        <p id="stationPrompt" class="select-prompt" aria-live="polite">Choose a station above to continue.</p>
+      </div>
+    </section>
+
+    <!-- ── Section 3 — Measure the gap, day by day ────────────────────── -->
+    <section class="lab-section" id="measure" aria-labelledby="measure-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="measure-heading">Measure the gap yourself, day by day</h2>
+          <p>For a month of real days at your station, here are both kinds of average: the <span class="swatch-gold">midpoint</span> and the <span class="swatch-blue">all-day average</span>. The faint bar on each day is the gap between them. Step through the months and watch what the gap does from one day to the next.</p>
+        </div>
+
+        <div class="control-row">
+          <button type="button" class="mini-tool" id="wigglePrev" aria-label="Previous month">‹</button>
+          <span class="month-label" id="wiggleMonth">—</span>
+          <button type="button" class="mini-tool" id="wiggleNext" aria-label="Next month">›</button>
+        </div>
+
+        <div class="chart-bleed" style="margin-top:0.75rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-header">
+              <span class="chart-title">Midpoint and all-day average, day by day</span>
+              <span class="chart-meta">Temperature (°C)</span>
+            </div>
+            <div class="chart-container" id="wiggleChartContainer">
+              <canvas id="wiggleChart" style="display:block;width:100%;height:100%"></canvas>
+              <div class="chart-tooltip" id="wiggleTooltip" hidden></div>
+            </div>
+            <p class="lab-readout" id="wiggleReadout" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="prose" style="margin-top:1rem">
+          <p>A single day's gap is jumpy: sometimes the midpoint is above the all-day average, sometimes below, and the size jumps around. One day tells you very little.</p>
+        </div>
+        <div class="primary-cta-row">
+          <button type="button" class="primary-cta" id="toS3">Continue — does the gap have a shape?</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section 4 — Shape across the year (seasonal) ───────────────── -->
+    <section class="lab-section" id="seasonal" aria-labelledby="seasonal-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="seasonal-heading">Does the gap have a shape across the year?</h2>
+          <p>This averages the gap for each calendar month across your station's whole record — every January together, every February together, and so on. The faint lines behind are individual years; the bold bars are the averages. See whether a shape appears once you look across many years.</p>
+        </div>
+        <div class="control-row">
+          <button type="button" class="toggle-btn" id="seasonTraces" aria-pressed="true">Show individual years</button>
+        </div>
+        <div class="chart-bleed" style="margin-top:0.75rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-header">
+              <span class="chart-title">Average gap by calendar month</span>
+              <span class="chart-meta">Gap = midpoint − all-day average (°C)</span>
+            </div>
+            <div class="chart-container" id="seasonChartContainer">
+              <canvas id="seasonChart" style="display:block;width:100%;height:100%"></canvas>
+              <div class="chart-tooltip" id="seasonTooltip" hidden></div>
+            </div>
+          </div>
+        </div>
+        <details class="expander">
+          <summary>Why might the seasons differ?</summary>
+          <div class="expander-body">
+            <p>Here is one idea to hold in mind — not the answer. A day's shape depends on things that change with the season: how long the sun is up, how quickly the air warms in the morning versus how slowly it cools at night. If the shape of the day changes through the year, the gap between the two averages might change with it too. Whether that is what is going on at your station — and which way it goes — is for the chart to show, not this box to tell.</p>
+          </div>
+        </details>
+        <div class="primary-cta-row">
+          <button type="button" class="primary-cta" id="toS4">Continue — does the gap change over the years?</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section 5 — The long view (year by year) ───────────────────── -->
+    <section class="lab-section" id="yearly" aria-labelledby="yearly-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="yearly-heading">Does the gap change over the years?</h2>
+          <p>Now one point per year: the average gap for each year of your station's record. Some records are short and steady; longer ones have more room to wander. See which yours is.</p>
+        </div>
+        <div class="chart-bleed" style="margin-top:0.75rem">
+          <div class="section-card" style="padding:1rem">
+            <div class="chart-header">
+              <span class="chart-title">Year-by-year average gap</span>
+              <span class="chart-meta">Gap = midpoint − all-day average (°C)</span>
+            </div>
+            <div class="chart-container" id="yearChartContainer">
+              <canvas id="yearChart" style="display:block;width:100%;height:100%"></canvas>
+              <div class="chart-tooltip" id="yearTooltip" hidden></div>
+            </div>
+            <p class="lab-readout" id="yearReadout" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="primary-cta-row">
+          <button type="button" class="primary-cta" id="toS5">Continue — could you fix the old records?</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section 6 — The correction game (holdout) ──────────────────── -->
+    <section class="lab-section" id="correct" aria-labelledby="correct-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="correct-heading">Could you fix the old records?</h2>
+          <p>The old records treat the midpoint as the day's average — the same as assuming the gap is zero. Could you do better? Pick a way to correct the record. Each one is a real option; none is the "right" one here.</p>
+        </div>
+        <p class="random-order-note">The three options are shown in a random order to avoid nudging your choice.</p>
+        <div class="prediction-grid" id="strategyGrid" role="group" aria-label="Choose a correction strategy"></div>
+        <p id="strategyPrompt" class="select-prompt" aria-live="polite">Choose a strategy above to continue.</p>
+
+        <div id="holdoutRow" hidden>
+          <div class="prose" style="margin-top:1rem">
+            <p>Now the honest test. We keep some of the station's years back. The correction is worked out from the years we keep — then measured against the years it never saw. The lower a strategy's leftover error on those hidden years, the better it did. Choose how many years to hold back:</p>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Hold back</span>
+            <button type="button" class="toggle-btn" data-holdout="0.2" aria-pressed="false">the last 20%</button>
+            <button type="button" class="toggle-btn" data-holdout="0.3" aria-pressed="false">the last 30%</button>
+            <button type="button" class="toggle-btn" data-holdout="0.4" aria-pressed="false">the last 40%</button>
+          </div>
+          <p class="random-order-note">The starting amount is chosen at random each visit; it's yours to change.</p>
+          <div class="primary-cta-row">
+            <button type="button" class="primary-cta" id="runHoldout" disabled>Test it on the hidden years</button>
+            <p class="primary-cta-hint" id="runHoldoutHint">Pick a strategy above first.</p>
+          </div>
+
+          <div class="chart-bleed" style="margin-top:0.5rem">
+            <div class="section-card" style="padding:1rem">
+              <div class="chart-header">
+                <span class="chart-title">Leftover error on the hidden years</span>
+                <span class="chart-meta">Root-mean-square leftover (°C) — lower means closer</span>
+              </div>
+              <div class="chart-container" id="holdoutChartContainer">
+                <canvas id="holdoutChart" style="display:block;width:100%;height:100%"></canvas>
+                <div class="chart-tooltip" id="holdoutTooltip" hidden></div>
+              </div>
+              <p class="lab-readout" id="holdoutReadout" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <details class="expander" id="holdoutTableExpander">
+            <summary>View the leftover errors as a table</summary>
+            <div class="expander-body">
+              <div class="data-table-wrap">
+                <table class="data-table" id="holdoutTable">
+                  <thead><tr><th scope="col">Strategy</th><th scope="col">Leftover error (RMS, °C)</th><th scope="col">Average size of miss (°C)</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <details class="expander">
+          <summary>Why test on hidden years?</summary>
+          <div class="expander-body">
+            <p>If you check a fix using the same data you built it from, you are marking your own homework — of course it looks good, you tuned it to those years. The honest way is to build the fix on some years, then try it on other years it has never seen. Whatever leftover error shows up on those hidden years is a fairer guess at how the fix would do on records you can't check.</p>
+          </div>
+        </details>
+        <details class="expander">
+          <summary>What is the "leftover"?</summary>
+          <div class="expander-body">
+            <p>Even the best calendar-based fix can't know what the weather did on a particular day — a stormy week, a still clear night — and that day-to-day wobble is what's left after any correction. It's the part no fix built from the calendar can remove. It gets smaller when you average more days or more years together, because the wobbles partly cancel out.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── Section 7 — End card (NO verdict) ──────────────────────────── -->
+    <section class="lab-section" id="endcard" aria-labelledby="endcard-heading" hidden>
+      <div class="container">
+        <div class="prose">
+          <h2 id="endcard-heading">So — is "average" really the average?</h2>
+          <p id="endSummary"></p>
+          <p>You've now seen one station's answer. It may not be the next station's — the size, the direction, the seasonal shape and the year-to-year wander can all be different somewhere else. The only way to know is to look.</p>
+          <div class="primary-cta-row">
+            <button type="button" class="primary-cta" id="resetLabEnd" onclick="document.getElementById('resetLab').click()">Try another station</button>
+          </div>
+        </div>
+
+        <details class="expander">
+          <summary>A puzzle we can't settle (for the curious)</summary>
+          <div class="expander-body">
+            <p>At one of the long stations, the year-to-year gap doesn't just wander — it swings up and down slowly, over decades, in a way that happens to line up with a known back-and-forth cycle in North Atlantic ocean temperatures (called the AMO). Intriguing — but two very different stories could explain it, and this lab can't tell them apart:</p>
+            <ul>
+              <li>It could be a real ocean-and-climate signal, showing up in the day's true extremes in a way the old thermometers caught.</li>
+              <li>Or it could be slow changes in the instruments and how the station was run over the decades, which happen to follow a similar curve.</li>
+            </ul>
+            <p>The record is also too short to be sure the swing is even a repeating cycle rather than a single long wander. It's left here unresolved, on purpose — a real open question, not a tidy ending.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── Data sources (always reachable) ────────────────────────────── -->
+    <section class="lab-section" id="sources">
+      <div class="container">
+        <details class="expander sources-expander">
+          <summary>Data sources &amp; methodology</summary>
+          <div class="expander-body">
+            <dl class="sources-list">
+              <dt>Valentia Observatory — Met Éireann</dt>
+              <dd>Hourly and daily temperature at Valentia Observatory, Co. Kerry, Ireland. The all-day average is the mean of the 24 hourly readings; the midpoint is (Tmax+Tmin)/2 from the daily record. Copyright Met Éireann, source <a href="https://www.met.ie" target="_blank" rel="noopener">www.met.ie</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Met Éireann accepts no liability for any error or omission in the data or for any loss arising from its use. Modified from the original (daily aggregation as described).</dd>
+              <dt>U.S. Climate Reference Network (USCRN) — NOAA</dt>
+              <dd>The <code>daily01</code> product from NOAA's U.S. Climate Reference Network. Here the all-day average is NOAA's <code>T_DAILY_AVG</code> (built from the station's sub-hourly measurements) and the midpoint is <code>T_DAILY_MEAN</code>, defined by NOAA as (T_DAILY_MAX + T_DAILY_MIN)/2 — both over the same day and the same instruments. <a href="https://www.ncei.noaa.gov/products/land-based-station/us-climate-reference-network" target="_blank" rel="noopener">NOAA NCEI, USCRN</a>.</dd>
+              <dt>What the lab computes</dt>
+              <dd>For each station, the gap is the daily midpoint minus the all-day average. The lab aggregates that gap by calendar month (the seasonal shape), by year (the long view), and runs the correction test by fitting each strategy on one block of years and measuring its leftover error on a held-back block — never scoring a fix on the years it was built from.</dd>
+            </dl>
+            <p class="sources-footer">This is a neutral exploration tool. No way of averaging is endorsed as the true one, and no correction strategy is endorsed as the right one.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© Klymot</p>
+    </div>
+  </footer>
+
+  <style>
+    .lab-section { overflow-x: clip; }
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-block: 1rem 0.5rem;
+    }
+    .control-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-right: 0.15rem;
+    }
+    .month-label {
+      min-width: 9rem;
+      text-align: center;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .lab-readout {
+      margin: 0.75rem 0 0;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .lab-average-really-average .random-order-note {
+      font-size: 0.74rem;
+      color: var(--muted);
+      margin-block: 0.25rem 0.75rem;
+      font-style: italic;
+    }
+    .swatch-gold, .swatch-blue { font-weight: 600; }
+    .swatch-gold { color: var(--accent); }
+    .swatch-blue { color: var(--series-obs, #5090f8); }
+  </style>
+
+  <script>
+    import manifest from '../../../public/is-average-really-average/data/manifest.json';
+    import introDay from '../../../public/is-average-really-average/data/intro-day.json';
+    import { sendFeatureBeacon } from '../../lib/analytics.js';
+    import { initAverageLab } from '../../lib/average-really-average-lab.js';
+
+    sendFeatureBeacon('labs/is-average-really-average/00-visited');
+
+    initAverageLab({
+      stations: manifest.stations,
+      introDay,
+      dataBase: '/is-average-really-average/data',
+      funnelPrefix: 'labs/is-average-really-average',
+      sendFeatureBeacon,
+    });
+  </script>
+</BaseLayout>
