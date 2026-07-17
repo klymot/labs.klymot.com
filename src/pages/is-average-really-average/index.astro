@@ -254,6 +254,9 @@ import BetaGate from '../../components/BetaGate.astro';
                 <canvas id="holdoutChart" style="display:block;width:100%;height:100%"></canvas>
                 <div class="chart-tooltip" id="holdoutTooltip" hidden></div>
               </div>
+              <div class="chart-legend" role="group" aria-label="Highlight your chosen strategy">
+                <button type="button" class="legend-btn" id="holdoutChoice" aria-pressed="true">your choice</button>
+              </div>
               <p class="lab-readout" id="holdoutReadout" aria-live="polite"></p>
             </div>
           </div>
@@ -296,6 +299,24 @@ import BetaGate from '../../components/BetaGate.astro';
           <div class="primary-cta-row">
             <button type="button" class="primary-cta" id="resetLabEnd" onclick="document.getElementById('resetLab').click()">Try another station</button>
           </div>
+        </div>
+
+        <div class="results-block" id="resultsBlock" hidden>
+          <h3 class="results-heading">Your results so far</h3>
+          <p class="results-note">Every station you test is added here (kept on this device only) so you can line them up. Lower means a fix left less error on the years it never saw.</p>
+          <div class="data-table-wrap">
+            <table class="data-table" id="resultsTable">
+              <thead><tr>
+                <th scope="col">Station</th>
+                <th scope="col">Held back</th>
+                <th scope="col">Doing nothing</th>
+                <th scope="col">Average gap</th>
+                <th scope="col">Season-shaped</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <button type="button" class="mini-tool" id="resultsClear">Clear my results</button>
         </div>
 
         <details class="expander">
@@ -352,6 +373,16 @@ import BetaGate from '../../components/BetaGate.astro';
     .control-row--chart {
       justify-content: center;
       margin-block: 0.75rem 0;
+    }
+    .results-block { margin-top: 1.75rem; }
+    .results-heading { font-size: 1.05rem; margin: 0 0 0.2rem; }
+    .results-note { font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.65rem; }
+    #resultsClear { margin-top: 0.65rem; }
+    /* Station name reads better left-aligned in prose type than the numeric columns. */
+    .lab-average-really-average #resultsTable th:first-child,
+    .lab-average-really-average #resultsTable td:first-child {
+      text-align: left;
+      font-family: var(--font-sans);
     }
     .control-label {
       font-size: 0.85rem;

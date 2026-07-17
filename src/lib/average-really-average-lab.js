@@ -269,8 +269,8 @@ export function initAverageLab(config) {
     'strategyGrid', 'strategyPrompt', 'holdoutRow', 'holdoutButtons',
     'runHoldout', 'runHoldoutHint',
     'holdoutChart', 'holdoutChartContainer', 'holdoutTooltip', 'holdoutReadout',
-    'holdoutTable', 'toS7',
-    'endSummary', 'resetLab',
+    'holdoutTable', 'holdoutChoice', 'toS7',
+    'endSummary', 'resetLab', 'resultsBlock', 'resultsTable', 'resultsClear',
   ].forEach((id) => { els[id] = document.getElementById(id); });
 
   const sections = {
@@ -663,6 +663,8 @@ export function initAverageLab(config) {
   let yearLayout = null;
 
   /* ── Section 6: correction game ─────────────────────────────────────── */
+  let showChoice = true;  // colour the reader's chosen strategy blue (a label, not a claim)
+
   function drawHoldoutChart() {
     const container = els.holdoutChartContainer;
     const canvas = els.holdoutChart;
@@ -695,7 +697,7 @@ export function initAverageLab(config) {
       const cx = pad.left + slot * (i + 0.5);
       const h = b.rmse == null ? 0 : (b.rmse / yTop) * cH;
       const top = pad.top + cH - h;
-      const chosen = b.s === strategy;
+      const chosen = showChoice && b.s === strategy;
       ctx.fillStyle = chosen ? 'rgba(80,144,248,0.55)' : 'rgba(212,168,85,0.45)';
       ctx.strokeStyle = chosen ? BLUE() : GOLD();
       ctx.lineWidth = chosen ? 2 : 1;
@@ -733,9 +735,11 @@ export function initAverageLab(config) {
       ctx.beginPath(); ctx.moveTo(pad.left, yref); ctx.lineTo(pad.left + cW, yref); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = cssVar('--text-secondary') || '#a8a090';
-      ctx.textAlign = 'left';
+      // Right-aligned at the far end so it never collides with the "doing nothing"
+      // (zero) bar's own value label, which sits centred over the left-most bar.
+      ctx.textAlign = 'right';
       ctx.font = '10px system-ui, sans-serif';
-      ctx.fillText('doing nothing', pad.left + 4, yref - 4);
+      ctx.fillText('doing nothing', pad.left + cW, yref - 4);
       ctx.restore();
     }
     holdoutLayout = { bars: layoutBars, res };
@@ -796,6 +800,7 @@ export function initAverageLab(config) {
       if (!sec) return;
       if (i <= progress) sec.hidden = false;
     });
+    syncContinueButtons();
     if (scroll && !fromRestore) {
       const target = SECTION_ORDER.find((s) => s.idx === idx);
       if (target && sections[target.key]) {
@@ -803,6 +808,14 @@ export function initAverageLab(config) {
       }
     }
     if (!fromRestore) pushState();
+  }
+
+  // A "Continue" button has done its job once the section it opens is showing;
+  // hide it so it doesn't linger, and the section it opened stays open.
+  function syncContinueButtons() {
+    if (els.toS3) els.toS3.hidden = progress >= 4;
+    if (els.toS4) els.toS4.hidden = progress >= 5;
+    if (els.toS5) els.toS5.hidden = progress >= 6;
   }
 
   /* ── Station choice (blocking) ──────────────────────────────────────── */
@@ -949,6 +962,7 @@ export function initAverageLab(config) {
     drawHoldoutChart();
     if (els.toS7) els.toS7.hidden = false;
     updateEndSummary();
+    recordResult();
     if (!fromRestore) {
       beacon('03-holdout-run');
       revealUpTo(7);
@@ -962,6 +976,48 @@ export function initAverageLab(config) {
     els.endSummary.textContent =
       `You measured the gap at ${stationData.name}, saw its shape across the year and across the record, ` +
       `and tested three ways of correcting it on years the fit never saw.`;
+  }
+
+  /* ── Results table (persists across repeats, this device only) ───────── */
+  const RESULTS_KEY = 'ara-results-v1';
+
+  function loadResults() {
+    try { return JSON.parse(localStorage.getItem(RESULTS_KEY)) || []; } catch (_) { return []; }
+  }
+  function saveResults(arr) {
+    try { localStorage.setItem(RESULTS_KEY, JSON.stringify(arr)); } catch (_) {}
+  }
+
+  // Append (or update) this station's result, then re-render. Keyed by station so
+  // re-running the same station replaces its row rather than piling up duplicates.
+  function recordResult() {
+    if (!stationData || !monthlySeries) return;
+    const res = runHoldout(monthlySeries, holdoutFrac, 'tail');
+    const key = stationData.id || stationId;
+    const row = {
+      id: key,
+      name: stationData.name,
+      pct: Math.round(holdoutFrac * 100),
+      zero: res.results.zero.rmse,
+      constant: res.results.constant.rmse,
+      seasonal: res.results.seasonal.rmse,
+    };
+    const arr = loadResults().filter((r) => r.id !== key);
+    arr.push(row);
+    saveResults(arr);
+    renderResults();
+  }
+
+  function renderResults() {
+    if (!els.resultsBlock || !els.resultsTable) return;
+    const arr = loadResults();
+    const tb = els.resultsTable.querySelector('tbody');
+    if (!arr.length) { els.resultsBlock.hidden = true; return; }
+    els.resultsBlock.hidden = false;
+    tb.innerHTML = arr.map((r) =>
+      `<tr><td>${r.name}</td><td>${r.pct}%</td>` +
+      `<td>${fmtPlain(r.zero, 2)}</td><td>${fmtPlain(r.constant, 2)}</td>` +
+      `<td>${fmtPlain(r.seasonal, 2)}</td></tr>`).join('');
   }
 
   /* ── URL state ──────────────────────────────────────────────────────── */
@@ -1041,6 +1097,7 @@ export function initAverageLab(config) {
     setIntroToggleVisual(els.introToggleAvg, false, BLUE());
     drawIntroChart();
     SECTION_ORDER.forEach(({ key }) => { if (sections[key]) sections[key].hidden = true; });
+    syncContinueButtons();  // restore the Continue buttons for the next run through
     if (els.stationChosen) els.stationChosen.hidden = true;
     if (els.stationPrompt) { els.stationPrompt.hidden = false; els.stationPrompt.textContent = 'Choose a station above to continue.'; }
     renderStationCards();
@@ -1129,6 +1186,20 @@ export function initAverageLab(config) {
     });
     if (els.runHoldout) els.runHoldout.addEventListener('click', () => doRunHoldout());
     if (els.resetLab) els.resetLab.addEventListener('click', reset);
+
+    // "your choice" legend: colour the reader's chosen strategy blue (on by default).
+    if (els.holdoutChoice) {
+      setIntroToggleVisual(els.holdoutChoice, showChoice, BLUE());
+      els.holdoutChoice.addEventListener('click', () => {
+        showChoice = !showChoice;
+        setIntroToggleVisual(els.holdoutChoice, showChoice, BLUE());
+        if (holdoutRun) drawHoldoutChart();
+      });
+    }
+    if (els.resultsClear) {
+      els.resultsClear.addEventListener('click', () => { saveResults([]); renderResults(); });
+    }
+    renderResults();
 
     nearestXTooltip(els.wiggleChart, els.wiggleTooltip,
       () => (wiggleLayout ? { xp: wiggleLayout.xp, points: wiggleLayout.days.map((d, i) => ({ x: wiggleLayout.dayNums[i], d })) } : null),
