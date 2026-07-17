@@ -351,7 +351,7 @@ export function initAverageLab(config) {
     'runHoldout', 'runHoldoutHint',
     'holdoutChart', 'holdoutChartContainer', 'holdoutTooltip', 'holdoutReadout',
     'holdoutTable', 'holdoutChoice', 'runHoldoutRow', 'holdoutResult', 'toS7',
-    'endSummary', 'resetLab', 'resetLabEnd', 'resultsBlock', 'resultsTable', 'resultsClear',
+    'endSummary', 'resetLab', 'resetLabEnd', 'resultsBlock', 'resultsTable',
     'transferNote', 'transferExpander', 'addAll', 'resultsPct',
   ].forEach((id) => { els[id] = document.getElementById(id); });
 
@@ -1325,8 +1325,8 @@ export function initAverageLab(config) {
 
   /* ── Reset ──────────────────────────────────────────────────────────── */
   // Full clean slate — the header "Reset lab" button. Re-locks every section,
-  // restores the Continue buttons, clears the correction choice, and goes to the
-  // top. (Saved results persist; only "Clear my results" removes those.)
+  // restores the Continue buttons, clears the correction choice and the saved
+  // results (so the "tried" badges clear too), and goes to the top.
   function reset() {
     stationId = null;
     stationData = null;
@@ -1335,8 +1335,6 @@ export function initAverageLab(config) {
     holdoutRun = false;
     hasCompleted = false;
     progress = 2;
-    // A full reset also empties the saved comparison, so the "tried" badges clear
-    // too. ("Clear my results" empties the table without disturbing the walkthrough.)
     saveResults([]);
     introShow.mid = false;
     introShow.avg = false;
@@ -1455,9 +1453,6 @@ export function initAverageLab(config) {
         setIntroToggleVisual(els.holdoutChoice, showChoice, BLUE());
         if (holdoutRun) drawHoldoutChart();
       });
-    }
-    if (els.resultsClear) {
-      els.resultsClear.addEventListener('click', () => { saveResults([]); renderResults(); });
     }
     if (els.addAll) els.addAll.addEventListener('click', () => addAllStations());
     renderResults();
