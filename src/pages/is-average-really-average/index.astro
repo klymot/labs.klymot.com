@@ -58,11 +58,6 @@ import BetaGate from '../../components/BetaGate.astro';
           <p>There is more than one way to turn a whole day of temperature into a single number. Reveal each one on the chart and see where it lands:</p>
         </div>
 
-        <div class="control-row">
-          <button type="button" class="toggle-btn" id="introToggleMid" aria-pressed="false">Show the midpoint (high + low) ÷ 2</button>
-          <button type="button" class="toggle-btn" id="introToggleAvg" aria-pressed="false">Show the all-day average</button>
-        </div>
-
         <div class="chart-bleed" style="margin-top:1rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
@@ -72,6 +67,10 @@ import BetaGate from '../../components/BetaGate.astro';
             <div class="chart-container" id="introChartContainer">
               <canvas id="introChart" style="display:block;width:100%;height:100%"></canvas>
               <div class="chart-tooltip" id="introTooltip" hidden></div>
+            </div>
+            <div class="chart-legend" role="group" aria-label="Reveal an average on the chart">
+              <button type="button" class="legend-btn series-off" id="introToggleMid" aria-pressed="false">midpoint (high + low) ÷ 2</button>
+              <button type="button" class="legend-btn series-off" id="introToggleAvg" aria-pressed="false">all-day average</button>
             </div>
             <p class="lab-readout" id="introReadout" aria-live="polite"></p>
           </div>
@@ -129,12 +128,6 @@ import BetaGate from '../../components/BetaGate.astro';
           <p>For a month of real days at your station, here are both kinds of average: the <span class="swatch-gold">midpoint</span> and the <span class="swatch-blue">all-day average</span>. The faint bar on each day is the gap between them. Step through the months and watch what the gap does from one day to the next.</p>
         </div>
 
-        <div class="control-row">
-          <button type="button" class="mini-tool" id="wigglePrev" aria-label="Previous month">‹</button>
-          <span class="month-label" id="wiggleMonth">—</span>
-          <button type="button" class="mini-tool" id="wiggleNext" aria-label="Next month">›</button>
-        </div>
-
         <div class="chart-bleed" style="margin-top:0.75rem">
           <div class="section-card" style="padding:1rem">
             <div class="chart-header">
@@ -144,6 +137,11 @@ import BetaGate from '../../components/BetaGate.astro';
             <div class="chart-container" id="wiggleChartContainer">
               <canvas id="wiggleChart" style="display:block;width:100%;height:100%"></canvas>
               <div class="chart-tooltip" id="wiggleTooltip" hidden></div>
+            </div>
+            <div class="control-row control-row--chart">
+              <button type="button" class="mini-tool" id="wigglePrev" aria-label="Previous month">‹</button>
+              <span class="month-label" id="wiggleMonth">—</span>
+              <button type="button" class="mini-tool" id="wiggleNext" aria-label="Next month">›</button>
             </div>
             <p class="lab-readout" id="wiggleReadout" aria-live="polite"></p>
           </div>
@@ -348,6 +346,11 @@ import BetaGate from '../../components/BetaGate.astro';
       align-items: center;
       gap: 0.5rem;
       margin-block: 1rem 0.5rem;
+    }
+    /* Chart-embedded control (e.g. the month stepper): centred under the graph. */
+    .control-row--chart {
+      justify-content: center;
+      margin-block: 0.75rem 0;
     }
     .control-label {
       font-size: 0.85rem;

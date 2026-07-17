@@ -980,8 +980,8 @@ export function initAverageLab(config) {
     progress = 2;
     introShow.mid = false;
     introShow.avg = false;
-    if (els.introToggleMid) { els.introToggleMid.classList.remove('active'); els.introToggleMid.setAttribute('aria-pressed', 'false'); }
-    if (els.introToggleAvg) { els.introToggleAvg.classList.remove('active'); els.introToggleAvg.setAttribute('aria-pressed', 'false'); }
+    setIntroToggleVisual(els.introToggleMid, false, GOLD());
+    setIntroToggleVisual(els.introToggleAvg, false, BLUE());
     drawIntroChart();
     SECTION_ORDER.forEach(({ key }) => { if (sections[key]) sections[key].hidden = true; });
     if (els.stationChosen) els.stationChosen.hidden = true;
@@ -997,20 +997,29 @@ export function initAverageLab(config) {
   }
 
   /* ── Wiring / init ──────────────────────────────────────────────────── */
+  // Style the intro series toggles like the site's standard legend buttons:
+  // a coloured border/label matching the line they reveal when on, greyed
+  // (series-off) when off. Both start off, so the reader reveals each.
+  function setIntroToggleVisual(btn, on, color) {
+    if (!btn) return;
+    btn.classList.toggle('series-off', !on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.style.borderColor = on ? color : '';
+    btn.style.color = on ? color : '';
+  }
+
   function wireIntroToggles() {
     if (els.introToggleMid) {
       els.introToggleMid.addEventListener('click', () => {
         introShow.mid = !introShow.mid;
-        els.introToggleMid.classList.toggle('active', introShow.mid);
-        els.introToggleMid.setAttribute('aria-pressed', introShow.mid ? 'true' : 'false');
+        setIntroToggleVisual(els.introToggleMid, introShow.mid, GOLD());
         drawIntroChart();
       });
     }
     if (els.introToggleAvg) {
       els.introToggleAvg.addEventListener('click', () => {
         introShow.avg = !introShow.avg;
-        els.introToggleAvg.classList.toggle('active', introShow.avg);
-        els.introToggleAvg.setAttribute('aria-pressed', introShow.avg ? 'true' : 'false');
+        setIntroToggleVisual(els.introToggleAvg, introShow.avg, BLUE());
         drawIntroChart();
       });
     }
