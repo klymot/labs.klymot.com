@@ -264,7 +264,7 @@ export function initAverageLab(config) {
     'toS3',
     'wiggleChart', 'wiggleChartContainer', 'wiggleTooltip', 'wiggleMonth',
     'wigglePrev', 'wiggleNext', 'wiggleReadout', 'toS4',
-    'seasonChart', 'seasonChartContainer', 'seasonTooltip', 'seasonTraces', 'toS5',
+    'seasonChart', 'seasonChartContainer', 'seasonTooltip', 'seasonTraces', 'seasonBars', 'toS5',
     'yearChart', 'yearChartContainer', 'yearTooltip', 'yearReadout', 'toS6',
     'strategyGrid', 'strategyPrompt', 'holdoutRow', 'holdoutButtons',
     'runHoldout', 'runHoldoutHint',
@@ -550,6 +550,11 @@ export function initAverageLab(config) {
 
   /* ── Section 4: seasonal shape ──────────────────────────────────────── */
   let showTraces = true;
+  let showBars = true;
+  // "on" colour for the individual-years toggle — the secondary text tone, so the
+  // active chip is clearly distinct from the greyed/half-opacity "off" state (a
+  // literal light grey read almost the same as off).
+  const TRACE_SWATCH = () => cssVar('--text-secondary') || '#8a8a8a';
 
   function drawSeasonChart() {
     const container = els.seasonChartContainer;
@@ -558,12 +563,19 @@ export function initAverageLab(config) {
     const { ctx, W, H } = setupCanvas(container, canvas);
     const clim = monthOfYearClimatology(monthlySeries);
     const means = clim.byMonth.map((b) => b.mean).filter((v) => v != null);
-    const traceVals = showTraces
-      ? clim.traces.flatMap((t) => t.values.filter((v) => v != null))
-      : [];
-    const yExt = symExtent(means.concat(traceVals), 0.3);
+    // Always size the y-axis to the per-year spread, whether or not the traces
+    // are shown, so toggling them never rescales the axis (that motion reads as
+    // distracting and makes the two views hard to compare).
+    const allTraceVals = clim.traces.flatMap((t) => t.values.filter((v) => v != null));
+    const yExt = symExtent(means.concat(allTraceVals), 0.3);
     const pad = { top: 16, right: 18, bottom: 34, left: 46 };
-    const xTicks = MONTH_LABELS.map((label, i) => ({ v: i + 1, label }));
+    // Thin the month labels on narrow screens so Jan…Dec don't overlap (bars are
+    // still drawn for every month — only the axis labels drop out).
+    const availW = W - pad.left - pad.right;
+    const kEvery = Math.max(1, Math.ceil(12 / Math.max(3, Math.floor(availW / 34))));
+    const xTicks = MONTH_LABELS
+      .map((label, i) => ({ v: i + 1, label }))
+      .filter((_, i) => i % kEvery === 0);
     const frame = drawFrame(ctx, W, H, pad, 0.5, 12.5, yExt.lo, yExt.hi, xTicks, '°');
     drawZero(ctx, frame.xp, frame.yp, 0.5, 12.5, frame.cW, pad);
 
@@ -585,19 +597,21 @@ export function initAverageLab(config) {
     }
 
     // Bold month-of-year average bars.
-    const barW = (frame.cW / 12) * 0.6;
-    clim.byMonth.forEach((b) => {
-      if (b.mean == null) return;
-      const x = frame.xp(b.mon);
-      const y0 = frame.yp(0);
-      const y1 = frame.yp(b.mean);
-      ctx.fillStyle = 'rgba(212,168,85,0.55)';
-      ctx.strokeStyle = GOLD();
-      ctx.lineWidth = 1;
-      const top = Math.min(y0, y1);
-      ctx.fillRect(x - barW / 2, top, barW, Math.abs(y1 - y0));
-      ctx.strokeRect(x - barW / 2, top, barW, Math.abs(y1 - y0));
-    });
+    if (showBars) {
+      const barW = (frame.cW / 12) * 0.6;
+      clim.byMonth.forEach((b) => {
+        if (b.mean == null) return;
+        const x = frame.xp(b.mon);
+        const y0 = frame.yp(0);
+        const y1 = frame.yp(b.mean);
+        ctx.fillStyle = 'rgba(212,168,85,0.55)';
+        ctx.strokeStyle = GOLD();
+        ctx.lineWidth = 1;
+        const top = Math.min(y0, y1);
+        ctx.fillRect(x - barW / 2, top, barW, Math.abs(y1 - y0));
+        ctx.strokeRect(x - barW / 2, top, barW, Math.abs(y1 - y0));
+      });
+    }
 
     seasonLayout = { xp: frame.xp, clim };
     container.setAttribute('role', 'img');
@@ -620,7 +634,11 @@ export function initAverageLab(config) {
     const xLo = annual[0].year;
     const xHi = annual[annual.length - 1].year;
     const span = Math.max(1, xHi - xLo);
-    const step = niceStep(span, 6);
+    // Fewer year labels on narrow screens — a 4-digit year needs ~56px, so on a
+    // phone we show 2–3 rather than 6 to stop the labels overlapping.
+    const availW = W - pad.left - pad.right;
+    const maxTicks = Math.max(2, Math.floor(availW / 56));
+    const step = niceStep(span, Math.min(6, maxTicks));
     const xTicks = [];
     for (let yr = Math.ceil(xLo / step) * step; yr <= xHi; yr += step) {
       xTicks.push({ v: yr, label: String(yr) });
@@ -652,6 +670,7 @@ export function initAverageLab(config) {
     const { ctx, W, H } = setupCanvas(container, canvas);
     const res = runHoldout(monthlySeries, holdoutFrac, 'tail');
     const bars = STRATEGIES.map((s) => ({ s, rmse: res.results[s].rmse }));
+    const zeroRmse = res.results.zero ? res.results.zero.rmse : null;
     const maxRmse = Math.max(...bars.map((b) => b.rmse || 0), 0.01);
     const pad = { top: 18, right: 18, bottom: 52, left: 46 };
     const cW = W - pad.left - pad.right;
@@ -682,12 +701,21 @@ export function initAverageLab(config) {
       ctx.lineWidth = chosen ? 2 : 1;
       ctx.fillRect(cx - barW / 2, top, barW, h);
       ctx.strokeRect(cx - barW / 2, top, barW, h);
-      // value label
-      ctx.fillStyle = cssVar('--text') || '#e8e4d8';
+      // value label: the miss in °C, plus how it compares to doing nothing
       ctx.textAlign = 'center';
-      ctx.font = '11px system-ui, sans-serif';
-      if (b.rmse != null) ctx.fillText(b.rmse.toFixed(3), cx, top - 5);
+      if (b.rmse != null) {
+        if (b.s !== 'zero' && zeroRmse) {
+          const pct = Math.round((b.rmse / zeroRmse - 1) * 100);
+          ctx.fillStyle = cssVar('--text-secondary') || '#a8a090';
+          ctx.font = '10px system-ui, sans-serif';
+          ctx.fillText(`${pct >= 0 ? '+' : ''}${pct}% vs nothing`, cx, top - 18);
+        }
+        ctx.fillStyle = cssVar('--text') || '#e8e4d8';
+        ctx.font = '600 12px system-ui, sans-serif';
+        ctx.fillText(`${b.rmse.toFixed(2)}°`, cx, top - 5);
+      }
       // strategy short label (wrapped)
+      ctx.font = '11px system-ui, sans-serif';
       ctx.fillStyle = cssVar('--text-secondary') || '#a8a090';
       const words = STRATEGY_SHORT[b.s].split('\n');
       words.forEach((w, li) => {
@@ -695,6 +723,21 @@ export function initAverageLab(config) {
       });
       layoutBars.push({ ...b, cx, top, barW });
     });
+    // Reference line at the "doing nothing" level, so every bar reads against it.
+    if (zeroRmse != null) {
+      const yref = yp(zeroRmse);
+      ctx.save();
+      ctx.strokeStyle = cssVar('--text-secondary') || '#a8a090';
+      ctx.setLineDash([4, 3]);
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(pad.left, yref); ctx.lineTo(pad.left + cW, yref); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = cssVar('--text-secondary') || '#a8a090';
+      ctx.textAlign = 'left';
+      ctx.font = '10px system-ui, sans-serif';
+      ctx.fillText('doing nothing', pad.left + 4, yref - 4);
+      ctx.restore();
+    }
     holdoutLayout = { bars: layoutBars, res };
     container.setAttribute('role', 'img');
     container.setAttribute('aria-label',
@@ -705,9 +748,23 @@ export function initAverageLab(config) {
       const nTest = res.test.length;
       const first = res.test[0] ? res.test[0].month : '';
       const last = res.test[res.test.length - 1] ? res.test[res.test.length - 1].month : '';
-      els.holdoutReadout.textContent =
-        `Held back ${nTest} months (${first} to ${last}). Bars show the leftover error ` +
-        `(root-mean-square, °C) each strategy left on those hidden months.`;
+      const chosenR = strategy && res.results[strategy] ? res.results[strategy].rmse : null;
+      let msg = `Each fix was built on the earlier years, then checked on ${nTest} hidden months ` +
+        `(${first} to ${last}). Each bar is the typical amount it was still off by on those ` +
+        `unseen months — shorter is better.`;
+      if (chosenR != null && zeroRmse != null) {
+        if (strategy === 'zero') {
+          msg += ` You chose to change nothing: a typical miss of ±${zeroRmse.toFixed(2)}°C.`;
+        } else {
+          const pct = Math.round((1 - chosenR / zeroRmse) * 100);
+          const cmp = pct > 0 ? `${pct}% less than doing nothing`
+            : pct < 0 ? `${-pct}% more than doing nothing` : `about the same as doing nothing`;
+          msg += ` Doing nothing leaves ±${zeroRmse.toFixed(2)}°C; your fix leaves ` +
+            `±${chosenR.toFixed(2)}°C — ${cmp}.`;
+        }
+        msg += ` For scale, reading a thermometer to the nearest whole degree is already a ±0.5°C step.`;
+      }
+      els.holdoutReadout.textContent = msg;
     }
     fillHoldoutTable(res);
   }
@@ -1048,15 +1105,21 @@ export function initAverageLab(config) {
 
     if (els.wigglePrev) els.wigglePrev.addEventListener('click', () => stepSampleMonth(-1));
     if (els.wiggleNext) els.wiggleNext.addEventListener('click', () => stepSampleMonth(1));
-    if (els.seasonTraces) {
-      els.seasonTraces.addEventListener('click', () => {
-        showTraces = !showTraces;
-        els.seasonTraces.classList.toggle('active', showTraces);
-        els.seasonTraces.setAttribute('aria-pressed', showTraces ? 'true' : 'false');
+    if (els.seasonBars) {
+      setIntroToggleVisual(els.seasonBars, showBars, GOLD());
+      els.seasonBars.addEventListener('click', () => {
+        showBars = !showBars;
+        setIntroToggleVisual(els.seasonBars, showBars, GOLD());
         drawSeasonChart();
       });
-      els.seasonTraces.classList.toggle('active', showTraces);
-      els.seasonTraces.setAttribute('aria-pressed', showTraces ? 'true' : 'false');
+    }
+    if (els.seasonTraces) {
+      setIntroToggleVisual(els.seasonTraces, showTraces, TRACE_SWATCH());
+      els.seasonTraces.addEventListener('click', () => {
+        showTraces = !showTraces;
+        setIntroToggleVisual(els.seasonTraces, showTraces, TRACE_SWATCH());
+        drawSeasonChart();
+      });
     }
     if (els.toS3) els.toS3.addEventListener('click', () => revealUpTo(4, { scroll: true }));
     if (els.toS4) els.toS4.addEventListener('click', () => revealUpTo(5, { scroll: true }));
