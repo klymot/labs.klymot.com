@@ -169,6 +169,34 @@ export function runHoldout(series, holdoutFrac, end = 'tail') {
   return { train, test, results, stats: trainStats(train) };
 }
 
+/** One-way ANOVA from per-group summaries (n, mean, sample variance) — enough to
+ *  compare how much the gap differs *between* stations against how much it wobbles
+ *  *within* each, i.e. whether one station's correction could carry to another.
+ *  Returns null if fewer than two groups have ≥2 observations. */
+export function oneWayAnova(groups) {
+  const g = (groups || []).filter((x) => x && x.n >= 2 && x.var != null);
+  const k = g.length;
+  const N = g.reduce((s, x) => s + x.n, 0);
+  if (k < 2 || N - k < 1) return null;
+  const grand = g.reduce((s, x) => s + x.n * x.mean, 0) / N;
+  const ssB = g.reduce((s, x) => s + x.n * (x.mean - grand) ** 2, 0);
+  const ssW = g.reduce((s, x) => s + (x.n - 1) * x.var, 0);
+  const dfB = k - 1;
+  const dfW = N - k;
+  const msB = ssB / dfB;
+  const msW = ssW / dfW;
+  // sd of the station mean gaps — the scale of error from reusing one on another.
+  const meanSpread = Math.sqrt(
+    g.reduce((s, x) => s + (x.mean - grand) ** 2, 0) / (k - 1)
+  );
+  return {
+    k, N, dfB, dfW,
+    F: msW > 0 ? msB / msW : Infinity,
+    withinSd: Math.sqrt(msW),
+    meanSpread,
+  };
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
  * Interactive driver (browser only)
  * ══════════════════════════════════════════════════════════════════════════ */
@@ -270,7 +298,8 @@ export function initAverageLab(config) {
     'runHoldout', 'runHoldoutHint',
     'holdoutChart', 'holdoutChartContainer', 'holdoutTooltip', 'holdoutReadout',
     'holdoutTable', 'holdoutChoice', 'toS7',
-    'endSummary', 'resetLab', 'resultsBlock', 'resultsTable', 'resultsClear',
+    'endSummary', 'resetLab', 'resetLabEnd', 'resultsBlock', 'resultsTable', 'resultsClear',
+    'transferNote', 'transferExpander',
   ].forEach((id) => { els[id] = document.getElementById(id); });
 
   const sections = {
@@ -822,10 +851,12 @@ export function initAverageLab(config) {
   function renderStationCards() {
     const grid = els.stationGrid;
     grid.innerHTML = '';
+    const tried = new Set(loadResults().map((r) => r.id));
     shuffle(stations).forEach((s) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'station-card' + (s.id === stationId ? ' active' : '');
+      const done = tried.has(s.id);
+      btn.className = 'station-card' + (s.id === stationId ? ' active' : '') + (done ? ' tried' : '');
       btn.dataset.stationId = s.id;
       btn.setAttribute('aria-pressed', s.id === stationId ? 'true' : 'false');
       const years = (s.n_months / 12);
@@ -834,7 +865,8 @@ export function initAverageLab(config) {
         `<span class="sc-since">${s.climate}</span>` +
         `<span class="sc-name">${s.name}</span>` +
         `<span class="sc-caveat">${s.place} · about ${years < 10 ? years.toFixed(0) : Math.round(years)} years of daily records</span>` +
-        `</span>`;
+        `</span>` +
+        (done ? `<span class="sc-tried" aria-label="already tried">✓ tried</span>` : '');
       btn.addEventListener('click', () => chooseStation(s.id));
       grid.appendChild(btn);
     });
@@ -874,11 +906,11 @@ export function initAverageLab(config) {
         currentSampleMonth = sampleMonths[Math.floor(Math.random() * sampleMonths.length)];
       }
       updateWiggleMonthLabel();
-      // Reset the downstream game whenever the station changes.
-      strategy = null;
+      // Carry the reader's correction choice across stations so repeats compare
+      // like-for-like; only the run itself must be redone for the new station's data.
       holdoutRun = false;
-      if (els.strategyPrompt) els.strategyPrompt.hidden = false;
-      if (els.holdoutRow) els.holdoutRow.hidden = true;
+      if (els.strategyPrompt) els.strategyPrompt.hidden = !!strategy;
+      if (els.holdoutRow) els.holdoutRow.hidden = !strategy;
       renderStrategyCards();
       updateRunHoldoutState();
       if (els.toS7) els.toS7.hidden = true;
@@ -994,6 +1026,14 @@ export function initAverageLab(config) {
     if (!stationData || !monthlySeries) return;
     const res = runHoldout(monthlySeries, holdoutFrac, 'tail');
     const key = stationData.id || stationId;
+    // Per-station gap summary (all months) so the transfer test can compare
+    // between-station vs within-station variation without re-loading each station.
+    const gaps = monthlySeries.map((p) => p.gap);
+    const nGap = gaps.length;
+    const meanGap = nGap ? gaps.reduce((s, x) => s + x, 0) / nGap : 0;
+    const varGap = nGap > 1
+      ? gaps.reduce((s, x) => s + (x - meanGap) ** 2, 0) / (nGap - 1)
+      : null;
     const row = {
       id: key,
       name: stationData.name,
@@ -1001,6 +1041,7 @@ export function initAverageLab(config) {
       zero: res.results.zero.rmse,
       constant: res.results.constant.rmse,
       seasonal: res.results.seasonal.rmse,
+      nGap, meanGap, varGap,
     };
     const arr = loadResults().filter((r) => r.id !== key);
     arr.push(row);
@@ -1018,6 +1059,34 @@ export function initAverageLab(config) {
       `<tr><td>${r.name}</td><td>${r.pct}%</td>` +
       `<td>${fmtPlain(r.zero, 2)}</td><td>${fmtPlain(r.constant, 2)}</td>` +
       `<td>${fmtPlain(r.seasonal, 2)}</td></tr>`).join('');
+    renderTransfer(arr);
+  }
+
+  // Once ≥2 stations are in the table, test whether one station's fix could carry
+  // to another: a one-way ANOVA of the gap, between stations vs within each.
+  function renderTransfer(arr) {
+    if (!els.transferNote) return;
+    const groups = arr
+      .filter((r) => r.varGap != null && r.nGap >= 2)
+      .map((r) => ({ n: r.nGap, mean: r.meanGap, var: r.varGap }));
+    const a = oneWayAnova(groups);
+    if (!a) {
+      els.transferNote.hidden = true;
+      if (els.transferExpander) els.transferExpander.hidden = true;
+      return;
+    }
+    els.transferNote.hidden = false;
+    if (els.transferExpander) els.transferExpander.hidden = false;
+    const spread = a.meanSpread.toFixed(2);
+    const within = a.withinSd.toFixed(2);
+    const F = a.F >= 100 ? Math.round(a.F) : a.F.toFixed(1);
+    els.transferNote.innerHTML =
+      `<strong>Does one station's fix carry to another?</strong> ` +
+      `Across the ${a.k} stations you've tested, each station's own fix (its average gap) ` +
+      `varies from station to station by about ±${spread}°C, while the gap wobbles ±${within}°C ` +
+      `within a single station. A one-way ANOVA of those gives F = ${F} ` +
+      `(df ${a.dfB}, ${a.dfW}). The bigger F is beyond about 1, the more the fix changes from ` +
+      `place to place — so reusing one station's fix on another would add roughly ±${spread}°C of error.`;
   }
 
   /* ── URL state ──────────────────────────────────────────────────────── */
@@ -1084,11 +1153,14 @@ export function initAverageLab(config) {
   }
 
   /* ── Reset ──────────────────────────────────────────────────────────── */
-  function reset() {
+  // keepChoice=true ("Try another station"): carry the correction strategy and the
+  // held-back amount so repeated stations compare like-for-like. false ("Reset lab"
+  // in the header): a full clean slate. Results (localStorage) persist either way.
+  function reset(keepChoice = false) {
     stationId = null;
     stationData = null;
     monthlySeries = null;
-    strategy = null;
+    if (!keepChoice) strategy = null;
     holdoutRun = false;
     progress = 2;
     introShow.mid = false;
@@ -1102,10 +1174,11 @@ export function initAverageLab(config) {
     if (els.stationPrompt) { els.stationPrompt.hidden = false; els.stationPrompt.textContent = 'Choose a station above to continue.'; }
     renderStationCards();
     renderStrategyCards();
-    if (els.strategyPrompt) els.strategyPrompt.hidden = false;
-    if (els.holdoutRow) els.holdoutRow.hidden = true;
-    holdoutFrac = HOLDOUT_OPTIONS[Math.floor(Math.random() * HOLDOUT_OPTIONS.length)];
+    if (els.strategyPrompt) els.strategyPrompt.hidden = !!strategy;
+    if (els.holdoutRow) els.holdoutRow.hidden = !strategy;
+    if (!keepChoice) holdoutFrac = HOLDOUT_OPTIONS[Math.floor(Math.random() * HOLDOUT_OPTIONS.length)];
     setHoldout(holdoutFrac, { fromRestore: true });
+    updateRunHoldoutState();
     pushState();
     window.scrollTo({ top: 0, behavior: scrollBehavior });
   }
@@ -1185,7 +1258,8 @@ export function initAverageLab(config) {
       btn.addEventListener('click', () => setHoldout(Number(btn.getAttribute('data-holdout'))));
     });
     if (els.runHoldout) els.runHoldout.addEventListener('click', () => doRunHoldout());
-    if (els.resetLab) els.resetLab.addEventListener('click', reset);
+    if (els.resetLab) els.resetLab.addEventListener('click', () => reset(false));
+    if (els.resetLabEnd) els.resetLabEnd.addEventListener('click', () => reset(true));
 
     // "your choice" legend: colour the reader's chosen strategy blue (on by default).
     if (els.holdoutChoice) {

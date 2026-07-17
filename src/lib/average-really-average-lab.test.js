@@ -5,6 +5,7 @@ import {
   dailyGaps,
   monthOfYearClimatology,
   monthlyGapSeries,
+  oneWayAnova,
   predictCorrection,
   rmse,
   runHoldout,
@@ -12,6 +13,52 @@ import {
   splitByFraction,
   trainStats,
 } from './average-really-average-lab.js';
+
+/* ── oneWayAnova ───────────────────────────────────────────────────────── */
+
+describe('oneWayAnova', () => {
+  it('returns null with fewer than two usable groups', () => {
+    expect(oneWayAnova([])).toBeNull();
+    expect(oneWayAnova([{ n: 10, mean: 1, var: 0.5 }])).toBeNull();
+    expect(oneWayAnova([{ n: 1, mean: 1, var: null }, { n: 1, mean: 2, var: null }])).toBeNull();
+  });
+
+  it('gives F near 0 when group means are identical', () => {
+    const a = oneWayAnova([
+      { n: 30, mean: 0.2, var: 0.5 },
+      { n: 30, mean: 0.2, var: 0.5 },
+      { n: 30, mean: 0.2, var: 0.5 },
+    ]);
+    expect(a.k).toBe(3);
+    expect(a.F).toBeCloseTo(0, 6);
+    expect(a.meanSpread).toBeCloseTo(0, 6);
+  });
+
+  it('gives a large F when means differ far more than within-group spread', () => {
+    const a = oneWayAnova([
+      { n: 100, mean: -0.3, var: 0.01 },
+      { n: 100, mean: 0.0, var: 0.01 },
+      { n: 100, mean: 0.4, var: 0.01 },
+    ]);
+    expect(a.F).toBeGreaterThan(100);
+    expect(a.meanSpread).toBeGreaterThan(0.3);
+    expect(a.withinSd).toBeCloseTo(0.1, 6);
+    expect(a.dfB).toBe(2);
+    expect(a.dfW).toBe(297);
+  });
+
+  it('matches a hand-computed F for a simple balanced case', () => {
+    // n=2 each, means 1/2/3, var=2 each → SSb=4 (MSb=2), SSw=6 (MSw=2), F=1
+    const a = oneWayAnova([
+      { n: 2, mean: 1, var: 2 },
+      { n: 2, mean: 2, var: 2 },
+      { n: 2, mean: 3, var: 2 },
+    ]);
+    expect(a.F).toBeCloseTo(1, 6);
+    expect(a.dfB).toBe(2);
+    expect(a.dfW).toBe(3);
+  });
+});
 
 /* ── dailyGaps ─────────────────────────────────────────────────────────── */
 

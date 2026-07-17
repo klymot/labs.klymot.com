@@ -297,7 +297,7 @@ import BetaGate from '../../components/BetaGate.astro';
           <p id="endSummary"></p>
           <p>You've now seen one station's answer. It may not be the next station's — the size, the direction, the seasonal shape and the year-to-year wander can all be different somewhere else. The only way to know is to look.</p>
           <div class="primary-cta-row">
-            <button type="button" class="primary-cta" id="resetLabEnd" onclick="document.getElementById('resetLab').click()">Try another station</button>
+            <button type="button" class="primary-cta" id="resetLabEnd">Try another station</button>
           </div>
         </div>
 
@@ -316,6 +316,13 @@ import BetaGate from '../../components/BetaGate.astro';
               <tbody></tbody>
             </table>
           </div>
+          <p class="transfer-note" id="transferNote" aria-live="polite" hidden></p>
+          <details class="expander" id="transferExpander" hidden>
+            <summary>What is this test?</summary>
+            <div class="expander-body">
+              <p>It is a one-way ANOVA — a standard way to ask whether groups really differ, or whether the differences you see could just be the ordinary wobble inside each group. Here the groups are your stations. It compares how much the average gap changes <em>between</em> stations against how much the gap bounces around <em>within</em> a single station, and reports that as a ratio called F. An F near 1 would mean the stations look alike — one fix might serve them all. A large F means each station's fix is really its own, so a correction worked out in one place cannot simply be carried to another. The more stations you add, the more you have to go on.</p>
+            </div>
+          </details>
           <button type="button" class="mini-tool" id="resultsClear">Clear my results</button>
         </div>
 
@@ -378,12 +385,6 @@ import BetaGate from '../../components/BetaGate.astro';
     .results-heading { font-size: 1.05rem; margin: 0 0 0.2rem; }
     .results-note { font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.65rem; }
     #resultsClear { margin-top: 0.65rem; }
-    /* Station name reads better left-aligned in prose type than the numeric columns. */
-    .lab-average-really-average #resultsTable th:first-child,
-    .lab-average-really-average #resultsTable td:first-child {
-      text-align: left;
-      font-family: var(--font-sans);
-    }
     .control-label {
       font-size: 0.85rem;
       color: var(--text-secondary);
@@ -409,6 +410,35 @@ import BetaGate from '../../components/BetaGate.astro';
     .swatch-gold, .swatch-blue { font-weight: 600; }
     .swatch-gold { color: var(--accent); }
     .swatch-blue { color: var(--series-obs, #5090f8); }
+  </style>
+
+  <!-- Global block: these target nodes the client JS builds with innerHTML
+       (station cards, results-table rows), which Astro's scoped styles never
+       match. Namespaced under the lab body class so nothing leaks. -->
+  <style is:global>
+    .lab-average-really-average .station-card { position: relative; }
+    .lab-average-really-average .sc-tried {
+      position: absolute;
+      bottom: 0.5rem;
+      right: 0.5rem;
+      font-size: 0.66rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: rgba(212, 168, 85, 0.14);
+      border: 1px solid rgba(212, 168, 85, 0.4);
+      border-radius: 999px;
+      padding: 0.08rem 0.45rem;
+    }
+    .lab-average-really-average #resultsTable th:first-child,
+    .lab-average-really-average #resultsTable td:first-child {
+      text-align: left;
+      font-family: var(--font-sans);
+    }
+    .lab-average-really-average .transfer-note {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
   </style>
 
   <script>
