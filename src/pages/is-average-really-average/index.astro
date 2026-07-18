@@ -267,7 +267,6 @@ import BetaGate from '../../components/BetaGate.astro';
                 </div>
                 <div class="chart-container" id="holdoutChartContainer">
                   <canvas id="holdoutChart" style="display:block;width:100%;height:100%"></canvas>
-                  <div class="chart-tooltip" id="holdoutTooltip" hidden></div>
                 </div>
                 <div class="chart-legend" role="group" aria-label="Highlight your chosen strategy">
                   <button type="button" class="legend-btn" id="holdoutChoice" aria-pressed="true">your choice</button>
@@ -318,7 +317,7 @@ import BetaGate from '../../components/BetaGate.astro';
           <details class="expander" id="transferExpander" hidden>
             <summary>What is this test?</summary>
             <div class="expander-body">
-              <p>It is a one-way ANOVA. It asks whether the differences <em>between</em> your stations are bigger than we'd expect from the ordinary year-to-year variation <em>within</em> each one. A very small p-value (here, below 0.001) means it is highly unlikely that all your stations share exactly the same average gap — so a correction worked out in one place cannot simply be carried to another. A p-value near 1, or an F near 1, would mean the stations look alike and one fix might serve them all. The ± figures above are ordinary spreads (standard deviations) computed separately; the ANOVA is the significance test, not those numbers. The more stations you add, the more it has to go on.</p>
+              <p>It is a one-way ANOVA. It asks whether the differences <em>between</em> your stations are bigger than we'd expect from the ordinary year-to-year variation <em>within</em> each one. A very small p-value (here, below 0.001) means it is highly unlikely that all your stations share exactly the same average gap — so a correction worked out in one place cannot simply be carried to another. A p-value near 1, or an F near 1, would mean the stations look alike and one fix might serve them all. The ± figures above are ordinary spreads (standard deviations) computed separately; the ANOVA is the significance test, not those numbers. One honesty adjustment: where a station's gap drifts slowly, one year looks a lot like the year before it, so those years aren't really independent pieces of evidence — the test counts such a station's years as fewer than the calendar says. The more stations you add, the more it has to go on.</p>
             </div>
           </details>
         </div>

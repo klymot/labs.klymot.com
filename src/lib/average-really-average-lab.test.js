@@ -3,6 +3,8 @@ import {
   STRATEGIES,
   annualGapSeries,
   dailyGaps,
+  effectiveN,
+  lag1Autocorr,
   monthOfYearClimatology,
   fPValue,
   monthlyGapSeries,
@@ -58,6 +60,50 @@ describe('oneWayAnova', () => {
     expect(a.F).toBeCloseTo(1, 6);
     expect(a.dfB).toBe(2);
     expect(a.dfW).toBe(3);
+  });
+});
+
+/* ── lag1Autocorr / effectiveN ─────────────────────────────────────────── */
+
+describe('lag1Autocorr', () => {
+  it('returns null for short or constant series', () => {
+    expect(lag1Autocorr([])).toBeNull();
+    expect(lag1Autocorr([1, 2])).toBeNull();
+    expect(lag1Autocorr([3, 3, 3, 3])).toBeNull();
+  });
+
+  it('is strongly positive for a slow drift', () => {
+    const drift = Array.from({ length: 40 }, (_, i) => i / 40);
+    expect(lag1Autocorr(drift)).toBeGreaterThan(0.8);
+  });
+
+  it('is negative for a strictly alternating series', () => {
+    expect(lag1Autocorr([1, -1, 1, -1, 1, -1, 1, -1])).toBeLessThan(-0.5);
+  });
+
+  it('is near zero for white noise', () => {
+    // Fixed pseudo-random series (deterministic, no RNG in tests).
+    const noise = Array.from({ length: 200 }, (_, i) => Math.sin(i * i * 12.9898) % 1);
+    expect(Math.abs(lag1Autocorr(noise))).toBeLessThan(0.2);
+  });
+});
+
+describe('effectiveN', () => {
+  it('leaves n alone for zero, negative, or null autocorrelation', () => {
+    expect(effectiveN(50, null)).toBe(50);
+    expect(effectiveN(50, 0)).toBe(50);
+    expect(effectiveN(50, -0.4)).toBe(50);
+  });
+
+  it('applies n(1−r)/(1+r) for positive r', () => {
+    expect(effectiveN(100, 0.5)).toBeCloseTo(100 / 3, 6);
+    // The long station's regime: r ≈ 0.77 shrinks ~85 years to ~11.
+    expect(effectiveN(85, 0.77)).toBeCloseTo(85 * (0.23 / 1.77), 6);
+  });
+
+  it('never exceeds n and never drops below 2', () => {
+    expect(effectiveN(10, 0.99)).toBeGreaterThanOrEqual(2);
+    expect(effectiveN(3, 0.9)).toBe(2);
   });
 });
 

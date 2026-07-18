@@ -169,6 +169,32 @@ export function runHoldout(series, holdoutFrac, end = 'tail') {
   return { train, test, results, stats: trainStats(train) };
 }
 
+/** Lag-1 autocorrelation of a series (null if fewer than 3 values or no
+ *  variance). Used to discount slowly-drifting annual gap series in the
+ *  transfer test: consecutive years of a drifting gap are not independent. */
+export function lag1Autocorr(values) {
+  const n = values.length;
+  if (n < 3) return null;
+  const mean = values.reduce((s, x) => s + x, 0) / n;
+  let num = 0;
+  let den = 0;
+  for (let i = 0; i < n; i++) {
+    const d = values[i] - mean;
+    den += d * d;
+    if (i > 0) num += d * (values[i - 1] - mean);
+  }
+  return den > 0 ? num / den : null;
+}
+
+/** Effective number of independent observations in an autocorrelated series:
+ *  n_eff = n(1−r)/(1+r) for positive lag-1 r (the same adjustment the
+ *  investigation's trend analysis uses). No inflation for negative r; floored
+ *  at 2 so a heavily-drifting station still enters the ANOVA, just weakly. */
+export function effectiveN(n, r) {
+  if (r == null || r <= 0) return n;
+  return Math.max(2, Math.min(n, (n * (1 - r)) / (1 + r)));
+}
+
 /** One-way ANOVA from per-group summaries (n, mean, sample variance) — enough to
  *  compare how much the gap differs *between* stations against how much it wobbles
  *  *within* each, i.e. whether one station's correction could carry to another.
@@ -352,7 +378,7 @@ export function initAverageLab(config) {
     'yearChart', 'yearChartContainer', 'yearTooltip', 'yearReadout', 'toS6',
     'strategyGrid', 'strategyPrompt', 'holdoutRow', 'holdoutButtons',
     'runHoldout', 'runHoldoutHint',
-    'holdoutChart', 'holdoutChartContainer', 'holdoutTooltip', 'holdoutReadout',
+    'holdoutChart', 'holdoutChartContainer', 'holdoutReadout',
     'holdoutTable', 'holdoutChoice', 'runHoldoutRow', 'holdoutResult', 'toS7',
     'endSummary', 'resetLab', 'resetLabEnd', 'resultsBlock', 'resultsTable',
     'transferNote', 'transferExpander', 'addAll', 'resultsPct', 'resultsHead',
@@ -1148,12 +1174,17 @@ export function initAverageLab(config) {
     const varY = nY > 1
       ? annual.reduce((s, a) => s + (a.gap - meanY) ** 2, 0) / (nY - 1)
       : null;
+    // Annual means of a drifting gap are autocorrelated (the long station's
+    // lag-1 r is ~+0.8), so nY overstates the independent evidence. Store the
+    // effective count too and let the ANOVA use it, so slow drift doesn't get
+    // mistaken for between-station certainty.
+    const rY = lag1Autocorr(annual.map((a) => a.gap));
     return {
       id, name, pct: Math.round(frac * 100),
       zero: res.results.zero.rmse,
       constant: res.results.constant.rmse,
       seasonal: res.results.seasonal.rmse,
-      nYears: nY, meanGap: meanY, varYear: varY,
+      nYears: nY, nEffYears: effectiveN(nY, rY), meanGap: meanY, varYear: varY,
     };
   }
 
@@ -1249,7 +1280,13 @@ export function initAverageLab(config) {
     if (!els.transferNote) return;
     const groups = arr
       .filter((r) => r.varYear != null && r.nYears >= 2)
-      .map((r) => ({ n: r.nYears, mean: r.meanGap, var: r.varYear }));
+      // Use the autocorrelation-discounted year count (rows saved before that
+      // field existed fall back to the raw count).
+      .map((r) => ({
+        n: r.nEffYears != null ? r.nEffYears : r.nYears,
+        mean: r.meanGap,
+        var: r.varYear,
+      }));
     const a = oneWayAnova(groups);
     if (!a) {
       els.transferNote.hidden = true;
@@ -1487,6 +1524,11 @@ export function initAverageLab(config) {
     nearestXTooltip(els.wiggleChart, els.wiggleTooltip,
       () => (wiggleLayout ? { xp: wiggleLayout.xp, points: wiggleLayout.days.map((d, i) => ({ x: wiggleLayout.dayNums[i], d })) } : null),
       (p) => `${p.d.d}  midpoint ${p.d.mid.toFixed(2)} · all-day ${p.d.avg.toFixed(2)} · gap ${fmtSigned(p.d.mid - p.d.avg)}°`);
+    nearestXTooltip(els.seasonChart, els.seasonTooltip,
+      () => (seasonLayout
+        ? { xp: seasonLayout.xp, points: seasonLayout.clim.byMonth.filter((b) => b.mean != null).map((b) => ({ x: b.mon, b })) }
+        : null),
+      (p) => `${MONTH_FULL[p.b.mon - 1]}  average gap ${fmtSigned(p.b.mean)}° (${p.b.n} years)`);
     nearestXTooltip(els.yearChart, els.yearTooltip,
       () => (yearLayout ? { xp: yearLayout.xp, points: yearLayout.annual.map((a) => ({ x: a.year, a })) } : null),
       (p) => `${p.a.year}  average gap ${fmtSigned(p.a.gap)}° (${p.a.n} months)`);
