@@ -348,7 +348,7 @@ export function initAverageLab(config) {
     'toS3',
     'wiggleChart', 'wiggleChartContainer', 'wiggleTooltip', 'wiggleMonth',
     'wigglePrev', 'wiggleNext', 'wiggleReadout', 'toS4',
-    'seasonChart', 'seasonChartContainer', 'seasonTooltip', 'seasonTraces', 'seasonBars', 'toS5',
+    'seasonChart', 'seasonChartContainer', 'seasonTooltip', 'seasonTraces', 'seasonBars', 'seasonReadout', 'toS5',
     'yearChart', 'yearChartContainer', 'yearTooltip', 'yearReadout', 'toS6',
     'strategyGrid', 'strategyPrompt', 'holdoutRow', 'holdoutButtons',
     'runHoldout', 'runHoldoutHint',
@@ -702,6 +702,13 @@ export function initAverageLab(config) {
     container.setAttribute('role', 'img');
     container.setAttribute('aria-label',
       `Average gap for each calendar month at ${stationData.name}, with faint per-year traces behind.`);
+    if (els.seasonReadout && means.length) {
+      const lo = Math.min(...means);
+      const hi = Math.max(...means);
+      els.seasonReadout.textContent =
+        `Across the record, the month-by-month average gap runs from ${fmtSigned(lo)} to ` +
+        `${fmtSigned(hi)}° depending on the calendar month.`;
+    }
   }
 
   let seasonLayout = null;
@@ -788,18 +795,14 @@ export function initAverageLab(config) {
       ctx.lineWidth = chosen ? 2 : 1;
       ctx.fillRect(cx - barW / 2, top, barW, h);
       ctx.strokeRect(cx - barW / 2, top, barW, h);
-      // value label: the miss in °C, plus how it compares to doing nothing
+      // value label: the miss in °C on top of each bar (the "% vs nothing" delta
+      // lived here too, but it collided with the reference line at 320px — the
+      // comparison now lives only in the readout below the chart).
       ctx.textAlign = 'center';
       if (b.rmse != null) {
-        if (b.s !== 'zero' && zeroRmse) {
-          const pct = Math.round((b.rmse / zeroRmse - 1) * 100);
-          ctx.fillStyle = cssVar('--text-secondary') || '#a8a090';
-          ctx.font = '10px system-ui, sans-serif';
-          ctx.fillText(`${pct >= 0 ? '+' : ''}${pct}% vs nothing`, cx, top - 18);
-        }
         ctx.fillStyle = cssVar('--text') || '#e8e4d8';
         ctx.font = '600 12px system-ui, sans-serif';
-        ctx.fillText(`${b.rmse.toFixed(2)}°`, cx, top - 5);
+        ctx.fillText(`${b.rmse.toFixed(2)}°`, cx, top - 6);
       }
       // strategy short label (wrapped)
       ctx.font = '11px system-ui, sans-serif';
@@ -810,7 +813,9 @@ export function initAverageLab(config) {
       });
       layoutBars.push({ ...b, cx, top, barW });
     });
-    // Reference line at the "doing nothing" level, so every bar reads against it.
+    // Reference line at the gap-=-zero level, so the other bars can be read against
+    // the unchanged-midpoint option. Neutral label, right-aligned clear of the bars'
+    // value labels.
     if (zeroRmse != null) {
       const yref = yp(zeroRmse);
       ctx.save();
@@ -820,11 +825,9 @@ export function initAverageLab(config) {
       ctx.beginPath(); ctx.moveTo(pad.left, yref); ctx.lineTo(pad.left + cW, yref); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = cssVar('--text-secondary') || '#a8a090';
-      // Right-aligned at the far end so it never collides with the "doing nothing"
-      // (zero) bar's own value label, which sits centred over the left-most bar.
       ctx.textAlign = 'right';
       ctx.font = '10px system-ui, sans-serif';
-      ctx.fillText('doing nothing', pad.left + cW, yref - 4);
+      ctx.fillText('gap = zero', pad.left + cW, yref - 4);
       ctx.restore();
     }
     holdoutLayout = { bars: layoutBars, res };
@@ -848,10 +851,9 @@ export function initAverageLab(config) {
           const pct = Math.round((1 - chosenR / zeroRmse) * 100);
           const cmp = pct > 0 ? `${pct}% less than doing nothing`
             : pct < 0 ? `${-pct}% more than doing nothing` : `about the same as doing nothing`;
-          msg += ` Doing nothing leaves ±${zeroRmse.toFixed(2)}°C; your fix leaves ` +
-            `±${chosenR.toFixed(2)}°C — ${cmp}.`;
+          msg += ` Leaving the midpoint unchanged gives a typical miss of ±${zeroRmse.toFixed(2)}°C; ` +
+            `your fix gives ±${chosenR.toFixed(2)}°C — ${cmp}.`;
         }
-        msg += ` For scale, reading a thermometer to the nearest whole degree is already a ±0.5°C step.`;
       }
       els.holdoutReadout.textContent = msg;
     }
@@ -1135,16 +1137,23 @@ export function initAverageLab(config) {
   // summary too so the transfer ANOVA can run without re-loading each station.
   function buildRow(id, name, series, frac) {
     const res = runHoldout(series, frac, 'tail');
-    const gaps = series.map((p) => p.gap);
-    const n = gaps.length;
-    const mean = n ? gaps.reduce((s, x) => s + x, 0) / n : 0;
-    const varG = n > 1 ? gaps.reduce((s, x) => s + (x - mean) ** 2, 0) / (n - 1) : null;
+    // Transfer test summary from ANNUAL-mean gaps, not monthly. Monthly gaps run to
+    // hundreds per station and are autocorrelated, which makes the between-station
+    // F-test significant for any real spread (verdict predetermined by sample size).
+    // Annual means (~20–85 per station, near-independent) let the test land on the
+    // data, and make the between-vs-within comparison agree with its own p-value.
+    const annual = annualGapSeries(series, 6);
+    const nY = annual.length;
+    const meanY = nY ? annual.reduce((s, a) => s + a.gap, 0) / nY : 0;
+    const varY = nY > 1
+      ? annual.reduce((s, a) => s + (a.gap - meanY) ** 2, 0) / (nY - 1)
+      : null;
     return {
       id, name, pct: Math.round(frac * 100),
       zero: res.results.zero.rmse,
       constant: res.results.constant.rmse,
       seasonal: res.results.seasonal.rmse,
-      nGap: n, meanGap: mean, varGap: varG,
+      nYears: nY, meanGap: meanY, varYear: varY,
     };
   }
 
@@ -1239,8 +1248,8 @@ export function initAverageLab(config) {
   function renderTransfer(arr) {
     if (!els.transferNote) return;
     const groups = arr
-      .filter((r) => r.varGap != null && r.nGap >= 2)
-      .map((r) => ({ n: r.nGap, mean: r.meanGap, var: r.varGap }));
+      .filter((r) => r.varYear != null && r.nYears >= 2)
+      .map((r) => ({ n: r.nYears, mean: r.meanGap, var: r.varYear }));
     const a = oneWayAnova(groups);
     if (!a) {
       els.transferNote.hidden = true;
@@ -1251,25 +1260,25 @@ export function initAverageLab(config) {
     if (els.transferExpander) els.transferExpander.hidden = false;
     const spread = a.meanSpread.toFixed(2);
     const within = a.withinSd.toFixed(2);
+    // Reusing station A's constant on station B misses by (mean_B − mean_A); over
+    // random pairs that has SD ≈ √2 × the spread of station means.
+    const reuse = (a.meanSpread * Math.SQRT2).toFixed(2);
     const p = fPValue(a.F, a.dfB, a.dfW);
     const pstr = p < 0.001 ? 'p < 0.001' : p < 0.01 ? 'p < 0.01'
       : p < 0.05 ? 'p < 0.05' : `p = ${p.toFixed(2)}`;
     const sig = p < 0.05;
-    // Lay labels: within-station variation = year-to-year; between = station-to-station.
-    const line = a.meanSpread > a.withinSd * 1.05
-      ? 'station-to-station &gt; year-to-year'
-      : a.withinSd > a.meanSpread * 1.05
-        ? 'year-to-year &gt; station-to-station'
-        : 'station-to-station ≈ year-to-year';
-    const desc = `The average gap differs between these stations by about ±${spread}°C, while ` +
-      `within a single station it varies by about ±${within}°C from year to year. ` +
+    // The headline is the test's own verdict, so it can never fight the p-value.
+    const line = sig ? 'stations really differ' : 'no clear difference between stations';
+    const desc = `Station to station, the average gap varies by about ±${spread}°C; within a ` +
+      `single station it varies about ±${within}°C from year to year. ` +
       (sig
-        ? `The test says those between-station differences are very unlikely to be chance ` +
-          `(${pstr}), so using one station's correction on another would typically add about ` +
-          `±${spread}°C of error.`
-        : `Those between-station differences are within what the year-to-year wobble could ` +
-          `produce (${pstr}), so one station's correction is a reasonable stand-in — add more ` +
-          `stations to be surer.`);
+        ? `That between-station difference is more than the year-to-year wobble can explain ` +
+          `(${pstr}), so borrowing one station's average-gap fix for another would typically ` +
+          `be off by about ±${reuse}°C. (This is about reusing one raw number — not whether ` +
+          `the gap could be predicted from a station's climate.)`
+        : `That between-station difference is within what the year-to-year wobble could ` +
+          `produce (${pstr}), so one station's average-gap fix is a reasonable stand-in here ` +
+          `— add more stations to be surer.`);
     els.transferNote.innerHTML =
       `<span class="transfer-pill${sig ? '' : ' quiet'}">` +
       `<span class="tp-main">${line}</span><span class="tp-p">${pstr}</span></span>` +
@@ -1350,6 +1359,7 @@ export function initAverageLab(config) {
     strategy = null;
     holdoutRun = false;
     hasCompleted = false;
+    currentSampleMonth = null;   // don't leave a stale month in the URL after reset
     progress = 2;
     strategyOrder = shuffle(STRATEGIES.slice());  // fresh random option order
     saveResults([]);

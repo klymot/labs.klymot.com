@@ -39,7 +39,7 @@ import BetaGate from '../../components/BetaGate.astro';
       <div class="page-hero">
         <span class="eyebrow" aria-hidden="true">Lab under beta testing — shared by invitation</span>
         <h1>Is "Average" Really the Average?</h1>
-        <p class="hook">Every daily temperature in the old weather books is just the day's highest and lowest, added together and halved. This lab lets you check, for a real weather station, whether that matches averaging the temperature all day long — and what you could do about it if it doesn't.</p>
+        <p class="hook">Every daily temperature in the old weather books is the day's highest and lowest, added together and halved. This lab lets you check, for a real weather station, whether that matches averaging the temperature all day long — and what you could do about it if it doesn't.</p>
         <p class="lede">Pick a station. Measure the gap between the two kinds of average yourself, day by day and month by month, see whether it has a shape, then test whether a fix built on part of the record still works on years you kept back.</p>
         <ul class="learn-list">
           <li>What a daily "average" temperature even is — and that there is more than one way to work it out.</li>
@@ -83,7 +83,7 @@ import BetaGate from '../../components/BetaGate.astro';
           </div>
         </details>
         <details class="expander">
-          <summary>What do we mean by the "true" all-day average?</summary>
+          <summary>What do we mean by the all-day average?</summary>
           <div class="expander-body">
             <p>On this page the all-day average means adding up the readings taken through the day and dividing by how many there were — so every part of the day gets a say, not just the two extremes. It is still only a sampling of a smooth curve (readings every hour, or every few minutes, rather than truly continuous), so it is not perfect either — but it uses far more of the day than two numbers do.</p>
           </div>
@@ -177,6 +177,7 @@ import BetaGate from '../../components/BetaGate.astro';
               <button type="button" class="legend-btn" id="seasonBars" aria-pressed="true">monthly average</button>
               <button type="button" class="legend-btn" id="seasonTraces" aria-pressed="true">individual years</button>
             </div>
+            <p class="lab-readout" id="seasonReadout" aria-live="polite"></p>
           </div>
         </div>
         <details class="expander">
@@ -212,7 +213,7 @@ import BetaGate from '../../components/BetaGate.astro';
           </div>
         </div>
         <div class="primary-cta-row">
-          <button type="button" class="primary-cta" id="toS5">Continue — could you fix the old records?</button>
+          <button type="button" class="primary-cta" id="toS5">Continue — what could you do about the gap?</button>
         </div>
       </div>
     </section>
@@ -221,8 +222,8 @@ import BetaGate from '../../components/BetaGate.astro';
     <section class="lab-section" id="correct" aria-labelledby="correct-heading" hidden>
       <div class="container">
         <div class="prose">
-          <h2 id="correct-heading">Could you fix the old records?</h2>
-          <p>The old records treat the midpoint as the day's average — the same as assuming the gap is zero. Could you do better? Pick a way to correct the record. Each one is a real option; none is the "right" one here.</p>
+          <h2 id="correct-heading">What could you do about the gap?</h2>
+          <p>The old records treat the midpoint as the day's average — the same as assuming the gap is zero. One option is to leave it that way; another is to adjust it using the gap you measured. Pick a way and test it on years it hasn't seen. Each one is a real option; none is the "right" one here.</p>
         </div>
         <p class="random-order-note">The three options are shown in a random order to avoid nudging your choice.</p>
         <div class="prediction-grid" id="strategyGrid" role="group" aria-label="Choose a correction strategy"></div>
@@ -344,7 +345,7 @@ import BetaGate from '../../components/BetaGate.astro';
           <div class="expander-body">
             <dl class="sources-list">
               <dt>Valentia Observatory — Met Éireann</dt>
-              <dd>Hourly and daily temperature at Valentia Observatory, Co. Kerry, Ireland. The all-day average is the mean of the 24 hourly readings; the midpoint is (Tmax+Tmin)/2 from the daily record. Copyright Met Éireann, source <a href="https://www.met.ie" target="_blank" rel="noopener">www.met.ie</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Met Éireann accepts no liability for any error or omission in the data or for any loss arising from its use. Modified from the original (daily aggregation as described).</dd>
+              <dd>Hourly and daily temperature at Valentia Observatory, Co. Kerry, Ireland. The all-day average is the mean of the 24 hourly readings; the midpoint is (Tmax+Tmin)/2 from the daily record. Note that for Valentia the daily highest and lowest come from continuously-registering thermometers while the all-day average is sampled hourly, so part of the gap here reflects that difference in sampling, not only the two-point estimate. Copyright Met Éireann, source <a href="https://www.met.ie" target="_blank" rel="noopener">www.met.ie</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Met Éireann accepts no liability for any error or omission in the data or for any loss arising from its use. Modified from the original (daily aggregation as described).</dd>
               <dt>U.S. Climate Reference Network (USCRN) — NOAA</dt>
               <dd>The <code>daily01</code> product from NOAA's U.S. Climate Reference Network. Here the all-day average is NOAA's <code>T_DAILY_AVG</code> (built from the station's sub-hourly measurements) and the midpoint is <code>T_DAILY_MEAN</code>, defined by NOAA as (T_DAILY_MAX + T_DAILY_MIN)/2 — both over the same day and the same instruments. <a href="https://www.ncei.noaa.gov/products/land-based-station/us-climate-reference-network" target="_blank" rel="noopener">NOAA NCEI, USCRN</a>.</dd>
               <dt>What the lab computes</dt>
@@ -431,6 +432,11 @@ import BetaGate from '../../components/BetaGate.astro';
     /* Hold-back options are toggle-btns; give the inactive ones a visible border. */
     .lab-average-really-average .toggle-btn { border: 1px solid var(--border); }
     .lab-average-really-average .toggle-btn.active { border-color: var(--accent); }
+    /* WCAG-ish 44px minimum tap targets (STYLE-GUIDE accessibility). */
+    .lab-average-really-average .legend-btn,
+    .lab-average-really-average .mini-tool,
+    .lab-average-really-average .toggle-btn,
+    .lab-average-really-average .reset-btn { min-height: 44px; }
     .lab-average-really-average .station-card { position: relative; }
     .lab-average-really-average .sc-tried {
       position: absolute;
