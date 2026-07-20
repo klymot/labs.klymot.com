@@ -5,10 +5,10 @@
   "lon": -10.2219,
   "source": "Open-Meteo Historical Weather API (placeholder \u2014 gridded model/reanalysis data; real pyranometer records not freely accessible without registration for this station)",
   "source_type": "open_meteo",
-  "generated_at": "2026-07-13T06:47:34+00:00",
-  "updated": "2026-07-13",
+  "generated_at": "2026-07-20T06:40:18+00:00",
+  "updated": "2026-07-20",
   "start_date": "1940-01-01",
-  "end_date": "2026-07-12",
+  "end_date": "2026-07-19",
   "temperature_station": {
     "id": "EI000003953",
     "name": "VALENTIA OBSERVATORY",
@@ -210684,15 +210684,64 @@
     },
     {
       "date": "2026-07-10",
-      "shortwave_mj_m2": 24.2
+      "shortwave_mj_m2": 24.2,
+      "tmax_c": 26.0,
+      "tmin_c": 16.4,
+      "tavg_c": 21.2
     },
     {
       "date": "2026-07-11",
-      "shortwave_mj_m2": 27.25
+      "shortwave_mj_m2": 27.25,
+      "tmax_c": 26.6,
+      "tmin_c": 18.0,
+      "tavg_c": 22.3
     },
     {
       "date": "2026-07-12",
-      "shortwave_mj_m2": 28.83
+      "shortwave_mj_m2": 28.83,
+      "tmax_c": 29.7,
+      "tmin_c": 17.7,
+      "tavg_c": 23.7
+    },
+    {
+      "date": "2026-07-13",
+      "shortwave_mj_m2": 28.3,
+      "tmax_c": 28.2,
+      "tmin_c": 16.5,
+      "tavg_c": 22.4
+    },
+    {
+      "date": "2026-07-14",
+      "shortwave_mj_m2": 27.83,
+      "tmax_c": 25.9,
+      "tmin_c": 13.2,
+      "tavg_c": 19.5
+    },
+    {
+      "date": "2026-07-15",
+      "shortwave_mj_m2": 22.83,
+      "tmax_c": 24.8,
+      "tmin_c": 14.9,
+      "tavg_c": 19.9
+    },
+    {
+      "date": "2026-07-16",
+      "shortwave_mj_m2": 25.9,
+      "tmax_c": 25.6,
+      "tmin_c": 13.3,
+      "tavg_c": 19.5
+    },
+    {
+      "date": "2026-07-17",
+      "shortwave_mj_m2": 28.03
+    },
+    {
+      "date": "2026-07-18",
+      "shortwave_mj_m2": 28.84
+    },
+    {
+      "date": "2026-07-19",
+      "shortwave_mj_m2": 28.48
     }
   ]
 }

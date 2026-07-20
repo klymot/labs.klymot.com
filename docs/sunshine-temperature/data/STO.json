@@ -5,10 +5,10 @@
   "lon": 18.0686,
   "source": "Swedish Meteorological and Hydrological Institute (SMHI) \u2014 hourly global irradiance aggregated to daily MJ/m\u00b2, station 98735 Stockholm Sol (real pyranometer measurements from 1983)",
   "source_type": "smhi",
-  "generated_at": "2026-07-13T06:47:34+00:00",
-  "updated": "2026-07-13",
+  "generated_at": "2026-07-20T06:40:18+00:00",
+  "updated": "2026-07-20",
   "start_date": "1940-01-01",
-  "end_date": "2026-07-12",
+  "end_date": "2026-07-19",
   "temperature_station": {
     "id": "SWM00002485",
     "name": "STOCKHOLM",
