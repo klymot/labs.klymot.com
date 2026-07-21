@@ -1,8 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import BetaGate from '../../components/BetaGate.astro';
 ---
-<BaseLayout title="Airless Body Thermal Model — beta" description="Lab under beta testing, shared by invitation — not linked from the labs index." bodyClass="lab-page lab-airless-body">
+<BaseLayout title="Airless Body Thermal Model — klymot labs" description="How much of the Moon's temperature can sunlight, conduction, and radiation alone explain? Choose a conductivity model, set the parameters, run the simulation in your browser, and compare the result with NASA's measured lunar temperatures." bodyClass="lab-page lab-airless-body">
   <Fragment slot="head">
     <script>
       import { sendFeatureBeacon } from '../../lib/analytics.js';
@@ -14,8 +13,6 @@ import BetaGate from '../../components/BetaGate.astro';
       window.createSectionTracker = createSectionTracker;
     </script>
   </Fragment>
-
-  <BetaGate passwordHash="$2b$10$0vahA5WGqY4CAXBCoebSY.lKVIQYci69Sgq.eJKBqLGccRT2CXJfC" storageKey="airless-body-beta-unlocked" />
 
   <header class="site-header">
     <div class="container header-inner">
@@ -56,7 +53,7 @@ import BetaGate from '../../components/BetaGate.astro';
     </div>
     <div class="container">
       <div class="page-hero">
-        <span class="eyebrow" aria-hidden="true">Lab under beta testing — shared by invitation</span>
+        <span class="eyebrow" aria-hidden="true">Lab 06</span>
         <h1>Airless Body Thermal Model</h1>
         <p class="hook">How much of the Moon's temperature can be explained by nothing more than sunlight, conduction, and radiation — on a body with no atmosphere at all?</p>
         <p class="lede">A bare, rotating body heated only by direct sunlight. Set the parameters, run it, and see what time-averaged surface temperature comes out.</p>
