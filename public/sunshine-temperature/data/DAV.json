@@ -5,10 +5,10 @@
   "lon": 9.85,
   "source": "Open-Meteo Historical Weather API (placeholder \u2014 gridded model/reanalysis data; real pyranometer records not freely accessible without registration for this station)",
   "source_type": "open_meteo",
-  "generated_at": "2026-07-20T06:40:18+00:00",
-  "updated": "2026-07-20",
+  "generated_at": "2026-07-27T06:56:46+00:00",
+  "updated": "2026-07-27",
   "start_date": "1940-01-01",
-  "end_date": "2026-07-19",
+  "end_date": "2026-07-26",
   "temperature_station": {
     "id": "SZ000002220",
     "name": "SAENTIS",
@@ -221177,15 +221177,58 @@
     },
     {
       "date": "2026-07-17",
-      "shortwave_mj_m2": 26.07
+      "shortwave_mj_m2": 26.07,
+      "tmax_c": 12.8,
+      "tmin_c": 7.3,
+      "tavg_c": 10.1
     },
     {
       "date": "2026-07-18",
-      "shortwave_mj_m2": 24.88
+      "shortwave_mj_m2": 24.88,
+      "tmax_c": 8.9,
+      "tmin_c": 5.8,
+      "tavg_c": 7.3
     },
     {
       "date": "2026-07-19",
-      "shortwave_mj_m2": 23.64
+      "shortwave_mj_m2": 23.64,
+      "tmax_c": 5.9,
+      "tmin_c": 3.2,
+      "tavg_c": 4.6
+    },
+    {
+      "date": "2026-07-20",
+      "shortwave_mj_m2": 25.93
+    },
+    {
+      "date": "2026-07-21",
+      "shortwave_mj_m2": 25.92
+    },
+    {
+      "date": "2026-07-22",
+      "shortwave_mj_m2": 28.91,
+      "tmax_c": 6.9,
+      "tmin_c": 2.2,
+      "tavg_c": 4.6
+    },
+    {
+      "date": "2026-07-23",
+      "shortwave_mj_m2": 27.39,
+      "tmax_c": 6.5,
+      "tmin_c": 3.1,
+      "tavg_c": 4.8
+    },
+    {
+      "date": "2026-07-24",
+      "shortwave_mj_m2": 30.02
+    },
+    {
+      "date": "2026-07-25",
+      "shortwave_mj_m2": 25.87
+    },
+    {
+      "date": "2026-07-26",
+      "shortwave_mj_m2": 21.78
     }
   ]
 }
