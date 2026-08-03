@@ -5,10 +5,10 @@
   "lon": 4.3583,
   "source": "Open-Meteo Historical Weather API (placeholder \u2014 gridded model/reanalysis data; real pyranometer records not freely accessible without registration for this station)",
   "source_type": "open_meteo",
-  "generated_at": "2026-07-27T06:56:46+00:00",
-  "updated": "2026-07-27",
+  "generated_at": "2026-08-03T06:53:40+00:00",
+  "updated": "2026-08-03",
   "start_date": "1951-01-01",
-  "end_date": "2026-07-26",
+  "end_date": "2026-08-02",
   "temperature_station": {
     "id": "BE000006447",
     "name": "UCCLE",
@@ -184269,15 +184269,64 @@
     },
     {
       "date": "2026-07-24",
-      "shortwave_mj_m2": 21.65
+      "shortwave_mj_m2": 21.65,
+      "tmax_c": 24.2,
+      "tmin_c": 12.7,
+      "tavg_c": 18.4
     },
     {
       "date": "2026-07-25",
-      "shortwave_mj_m2": 23.66
+      "shortwave_mj_m2": 23.66,
+      "tmax_c": 27.5,
+      "tmin_c": 14.6,
+      "tavg_c": 21.1
     },
     {
       "date": "2026-07-26",
-      "shortwave_mj_m2": 12.26
+      "shortwave_mj_m2": 12.26,
+      "tmax_c": 23.0,
+      "tmin_c": 16.2,
+      "tavg_c": 19.6
+    },
+    {
+      "date": "2026-07-27",
+      "shortwave_mj_m2": 17.02,
+      "tmax_c": 22.2,
+      "tmin_c": 15.3,
+      "tavg_c": 18.8
+    },
+    {
+      "date": "2026-07-28",
+      "shortwave_mj_m2": 26.51,
+      "tmax_c": 29.4,
+      "tmin_c": 13.0,
+      "tavg_c": 21.2
+    },
+    {
+      "date": "2026-07-29",
+      "shortwave_mj_m2": 26.69,
+      "tmax_c": 34.1,
+      "tmin_c": 17.8,
+      "tavg_c": 26.0
+    },
+    {
+      "date": "2026-07-30",
+      "shortwave_mj_m2": 15.8,
+      "tmax_c": 25.2,
+      "tmin_c": 18.9,
+      "tavg_c": 22.0
+    },
+    {
+      "date": "2026-07-31",
+      "shortwave_mj_m2": 21.3
+    },
+    {
+      "date": "2026-08-01",
+      "shortwave_mj_m2": 26.17
+    },
+    {
+      "date": "2026-08-02",
+      "shortwave_mj_m2": 26.06
     }
   ]
 }
