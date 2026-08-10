@@ -5,10 +5,10 @@
   "lon": 13.0639,
   "source": "Deutscher Wetterdienst (DWD) Climate Data Centre \u2014 daily global radiation FG_STRAHL, station 03987 Potsdam (real pyranometer measurements from 1947)",
   "source_type": "dwd",
-  "generated_at": "2026-08-03T06:53:40+00:00",
-  "updated": "2026-08-03",
+  "generated_at": "2026-08-10T05:18:56+00:00",
+  "updated": "2026-08-10",
   "start_date": "1940-01-01",
-  "end_date": "2026-08-02",
+  "end_date": "2026-08-09",
   "temperature_station": {
     "id": "GM000003342",
     "name": "POTSDAM",
