@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import BetaGate from '../../components/BetaGate.astro';
 // The product cards are rendered from the same catalogue the simulation
 // runs, so the specs a reader shops from can never drift from the model.
 import { CATALOGUE, EXPOSURES, LOCATIONS, WIND_REGIMES } from '../../lib/thermometer-shop-model.js';
@@ -45,9 +44,7 @@ const WIND_ICONS = {
   hurricane: svgWind('<path d="M17.5 12a2.5 2.5 0 1 0-2.5 2.5 5.5 5.5 0 1 0-5.5-5.5 9 9 0 1 0 9-3.8" stroke-width="1.6"/>'),
 };
 ---
-<BaseLayout title="The Thermometer Shop — beta" description="Lab under beta testing, shared by invitation — not linked from the labs index." bodyClass="lab-page lab-thermometer-shop">
-  <BetaGate passwordHash="$2b$10$e85MWv0HzdzYCB0ZcqDGeO0t/tzCoce48wDouglrwP.yNssCTaLKy" storageKey="thermometer-shop-beta-unlocked" />
-
+<BaseLayout title="The Thermometer Shop — klymot labs" description="Every daily max and min in the historical record was written down by a particular instrument, in a particular shelter, on a particular schedule. Fill a cart with real instrument designs from the 1780s to today, run one identical simulated day through all of them, and read what each receipt says." bodyClass="lab-page lab-thermometer-shop">
   <header class="site-header">
     <div class="container header-inner">
       <nav class="header-nav" aria-label="Site navigation">
@@ -79,7 +76,7 @@ const WIND_ICONS = {
   <main>
     <div class="container">
       <div class="page-hero" id="introHero">
-        <span class="eyebrow" aria-hidden="true">Lab under beta testing — shared by invitation</span>
+        <span class="eyebrow" aria-hidden="true">Lab 07</span>
         <h1>The Thermometer Shop</h1>
         <p class="hook">Every daily max and min ever written into a weather ledger was read off a particular instrument, hanging in a particular shelter, on a particular schedule. Would a different thermometer have written down a different day?</p>
         <p class="lede">Fill a cart with two to four instrument-and-shelter combinations — their specifications are real and cited, from 1780s liquid-in-glass to reference-network platinum — then run one identical simulated day through all of them and read the receipt.</p>
