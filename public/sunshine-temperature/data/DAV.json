@@ -5,10 +5,10 @@
   "lon": 9.85,
   "source": "Open-Meteo Historical Weather API (placeholder \u2014 gridded model/reanalysis data; real pyranometer records not freely accessible without registration for this station)",
   "source_type": "open_meteo",
-  "generated_at": "2026-08-17T04:33:44+00:00",
-  "updated": "2026-08-17",
+  "generated_at": "2026-08-24T15:11:10+00:00",
+  "updated": "2026-08-24",
   "start_date": "1940-01-01",
-  "end_date": "2026-08-16",
+  "end_date": "2026-08-23",
   "temperature_station": {
     "id": "SZ000002220",
     "name": "SAENTIS",
@@ -221065,79 +221065,136 @@
     },
     {
       "date": "2026-07-01",
-      "shortwave_mj_m2": 11.91
+      "shortwave_mj_m2": 11.91,
+      "tmax_c": 9.7,
+      "tmin_c": 3.2,
+      "tavg_c": 6.4
     },
     {
       "date": "2026-07-02",
-      "shortwave_mj_m2": 24.83
+      "shortwave_mj_m2": 24.83,
+      "tmax_c": 7.6,
+      "tmin_c": 3.4,
+      "tavg_c": 5.5
     },
     {
       "date": "2026-07-03",
-      "shortwave_mj_m2": 27.23
+      "shortwave_mj_m2": 27.23,
+      "tmax_c": 7.4,
+      "tmin_c": 5.2,
+      "tavg_c": 6.3
     },
     {
       "date": "2026-07-04",
-      "shortwave_mj_m2": 30.7
+      "shortwave_mj_m2": 30.7,
+      "tmax_c": 8.6,
+      "tmin_c": 4.8,
+      "tavg_c": 6.7
     },
     {
       "date": "2026-07-05",
-      "shortwave_mj_m2": 27.8
+      "shortwave_mj_m2": 27.8,
+      "tmax_c": 9.1,
+      "tmin_c": 4.8,
+      "tavg_c": 6.9
     },
     {
       "date": "2026-07-06",
-      "shortwave_mj_m2": 24.66
+      "shortwave_mj_m2": 24.66,
+      "tmax_c": 9.3,
+      "tmin_c": 4.8,
+      "tavg_c": 7.1
     },
     {
       "date": "2026-07-07",
-      "shortwave_mj_m2": 28.92
+      "shortwave_mj_m2": 28.92,
+      "tmax_c": 12.5,
+      "tmin_c": 6.6,
+      "tavg_c": 9.6
     },
     {
       "date": "2026-07-08",
-      "shortwave_mj_m2": 27.17
+      "shortwave_mj_m2": 27.17,
+      "tmax_c": 9.7,
+      "tmin_c": 6.8,
+      "tavg_c": 8.2
     },
     {
       "date": "2026-07-09",
-      "shortwave_mj_m2": 30.68
+      "shortwave_mj_m2": 30.68,
+      "tmax_c": 11.6,
+      "tmin_c": 6.2,
+      "tavg_c": 8.9
     },
     {
       "date": "2026-07-10",
-      "shortwave_mj_m2": 28.92
+      "shortwave_mj_m2": 28.92,
+      "tmax_c": 14.5,
+      "tmin_c": 10.8,
+      "tavg_c": 12.7
     },
     {
       "date": "2026-07-11",
-      "shortwave_mj_m2": 29.37
+      "shortwave_mj_m2": 29.37,
+      "tmax_c": 12.5,
+      "tmin_c": 9.7,
+      "tavg_c": 11.1
     },
     {
       "date": "2026-07-12",
-      "shortwave_mj_m2": 31.18
+      "shortwave_mj_m2": 31.18,
+      "tmax_c": 12.1,
+      "tmin_c": 9.2,
+      "tavg_c": 10.6
     },
     {
       "date": "2026-07-13",
-      "shortwave_mj_m2": 22.96
+      "shortwave_mj_m2": 22.96,
+      "tmax_c": 16.3,
+      "tmin_c": 11.9,
+      "tavg_c": 14.1
     },
     {
       "date": "2026-07-14",
-      "shortwave_mj_m2": 24.92
+      "shortwave_mj_m2": 24.92,
+      "tmax_c": 14.7,
+      "tmin_c": 10.3,
+      "tavg_c": 12.5
     },
     {
       "date": "2026-07-15",
-      "shortwave_mj_m2": 21.48
+      "shortwave_mj_m2": 21.48,
+      "tmax_c": 11.4,
+      "tmin_c": 6.9,
+      "tavg_c": 9.2
     },
     {
       "date": "2026-07-16",
-      "shortwave_mj_m2": 25.69
+      "shortwave_mj_m2": 25.69,
+      "tmax_c": 15.6,
+      "tmin_c": 6.7,
+      "tavg_c": 11.2
     },
     {
       "date": "2026-07-17",
-      "shortwave_mj_m2": 26.07
+      "shortwave_mj_m2": 26.07,
+      "tmax_c": 12.8,
+      "tmin_c": 7.3,
+      "tavg_c": 10.1
     },
     {
       "date": "2026-07-18",
-      "shortwave_mj_m2": 24.88
+      "shortwave_mj_m2": 24.88,
+      "tmax_c": 8.9,
+      "tmin_c": 5.8,
+      "tavg_c": 7.3
     },
     {
       "date": "2026-07-19",
-      "shortwave_mj_m2": 23.64
+      "shortwave_mj_m2": 23.64,
+      "tmax_c": 5.9,
+      "tmin_c": 3.2,
+      "tavg_c": 4.6
     },
     {
       "date": "2026-07-20",
@@ -221149,107 +221206,225 @@
     },
     {
       "date": "2026-07-22",
-      "shortwave_mj_m2": 28.91
+      "shortwave_mj_m2": 28.91,
+      "tmax_c": 6.9,
+      "tmin_c": 2.2,
+      "tavg_c": 4.6
     },
     {
       "date": "2026-07-23",
-      "shortwave_mj_m2": 27.39
+      "shortwave_mj_m2": 27.39,
+      "tmax_c": 6.5,
+      "tmin_c": 3.1,
+      "tavg_c": 4.8
     },
     {
       "date": "2026-07-24",
-      "shortwave_mj_m2": 30.02
+      "shortwave_mj_m2": 30.02,
+      "tmax_c": 10.3,
+      "tmin_c": 5.0,
+      "tavg_c": 7.7
     },
     {
       "date": "2026-07-25",
-      "shortwave_mj_m2": 25.87
+      "shortwave_mj_m2": 25.87,
+      "tmax_c": 11.8,
+      "tmin_c": 8.9,
+      "tavg_c": 10.4
     },
     {
       "date": "2026-07-26",
-      "shortwave_mj_m2": 21.78
+      "shortwave_mj_m2": 21.78,
+      "tmax_c": 6.4,
+      "tmin_c": 5.3,
+      "tavg_c": 5.8
     },
     {
       "date": "2026-07-27",
-      "shortwave_mj_m2": 22.99
+      "shortwave_mj_m2": 22.99,
+      "tmax_c": 7.6,
+      "tmin_c": 5.3,
+      "tavg_c": 6.4
     },
     {
       "date": "2026-07-28",
-      "shortwave_mj_m2": 28.32
+      "shortwave_mj_m2": 28.32,
+      "tmax_c": 15.2,
+      "tmin_c": 9.5,
+      "tavg_c": 12.3
     },
     {
       "date": "2026-07-29",
-      "shortwave_mj_m2": 25.59
+      "shortwave_mj_m2": 25.59,
+      "tmax_c": 15.5,
+      "tmin_c": 11.5,
+      "tavg_c": 13.5
     },
     {
       "date": "2026-07-30",
-      "shortwave_mj_m2": 28.41
+      "shortwave_mj_m2": 28.41,
+      "tmax_c": 15.6,
+      "tmin_c": 12.7,
+      "tavg_c": 14.1
     },
     {
       "date": "2026-07-31",
-      "shortwave_mj_m2": 23.76
+      "shortwave_mj_m2": 23.76,
+      "tmax_c": 16.0,
+      "tmin_c": 10.8,
+      "tavg_c": 13.4
     },
     {
       "date": "2026-08-01",
-      "shortwave_mj_m2": 22.46
+      "shortwave_mj_m2": 22.46,
+      "tmax_c": 10.8,
+      "tmin_c": 10.1,
+      "tavg_c": 10.4
     },
     {
       "date": "2026-08-02",
-      "shortwave_mj_m2": 23.48
+      "shortwave_mj_m2": 23.48,
+      "tmax_c": 14.9,
+      "tmin_c": 11.8,
+      "tavg_c": 13.4
     },
     {
       "date": "2026-08-03",
-      "shortwave_mj_m2": 25.08
+      "shortwave_mj_m2": 25.08,
+      "tmax_c": 16.1,
+      "tmin_c": 13.7,
+      "tavg_c": 14.9
     },
     {
       "date": "2026-08-04",
-      "shortwave_mj_m2": 25.82
+      "shortwave_mj_m2": 25.82,
+      "tmax_c": 16.3,
+      "tmin_c": 12.3,
+      "tavg_c": 14.3
     },
     {
       "date": "2026-08-05",
-      "shortwave_mj_m2": 23.92
+      "shortwave_mj_m2": 23.92,
+      "tmax_c": 12.5,
+      "tmin_c": 10.8,
+      "tavg_c": 11.7
     },
     {
       "date": "2026-08-06",
-      "shortwave_mj_m2": 20.43
+      "shortwave_mj_m2": 20.43,
+      "tmax_c": 10.2,
+      "tmin_c": 9.0,
+      "tavg_c": 9.6
     },
     {
       "date": "2026-08-07",
-      "shortwave_mj_m2": 20.24
+      "shortwave_mj_m2": 20.24,
+      "tmax_c": 12.1,
+      "tmin_c": 9.1,
+      "tavg_c": 10.6
     },
     {
       "date": "2026-08-08",
-      "shortwave_mj_m2": 25.15
+      "shortwave_mj_m2": 25.15,
+      "tmax_c": 14.7,
+      "tmin_c": 8.7,
+      "tavg_c": 11.7
     },
     {
       "date": "2026-08-09",
-      "shortwave_mj_m2": 25.0
+      "shortwave_mj_m2": 25.0,
+      "tmax_c": 15.6,
+      "tmin_c": 11.3,
+      "tavg_c": 13.4
     },
     {
       "date": "2026-08-10",
-      "shortwave_mj_m2": 24.98
+      "shortwave_mj_m2": 24.98,
+      "tmax_c": 13.9,
+      "tmin_c": 10.3,
+      "tavg_c": 12.1
     },
     {
       "date": "2026-08-11",
-      "shortwave_mj_m2": 25.36
+      "shortwave_mj_m2": 25.36,
+      "tmax_c": 15.4,
+      "tmin_c": 10.4,
+      "tavg_c": 12.9
     },
     {
       "date": "2026-08-12",
-      "shortwave_mj_m2": 24.46
+      "shortwave_mj_m2": 24.46,
+      "tmax_c": 16.6,
+      "tmin_c": 11.1,
+      "tavg_c": 13.9
     },
     {
       "date": "2026-08-13",
-      "shortwave_mj_m2": 26.46
+      "shortwave_mj_m2": 26.46,
+      "tmax_c": 15.1,
+      "tmin_c": 13.4,
+      "tavg_c": 14.2
     },
     {
       "date": "2026-08-14",
-      "shortwave_mj_m2": 26.72
+      "shortwave_mj_m2": 26.72,
+      "tmax_c": 15.7,
+      "tmin_c": 12.9,
+      "tavg_c": 14.3
     },
     {
       "date": "2026-08-15",
-      "shortwave_mj_m2": 24.03
+      "shortwave_mj_m2": 24.03,
+      "tmax_c": 13.7,
+      "tmin_c": 11.2,
+      "tavg_c": 12.4
     },
     {
       "date": "2026-08-16",
-      "shortwave_mj_m2": 22.52
+      "shortwave_mj_m2": 22.52,
+      "tmax_c": 11.8,
+      "tmin_c": 9.4,
+      "tavg_c": 10.6
+    },
+    {
+      "date": "2026-08-17",
+      "shortwave_mj_m2": 11.83,
+      "tmax_c": 8.8,
+      "tmin_c": 6.0,
+      "tavg_c": 7.4
+    },
+    {
+      "date": "2026-08-18",
+      "shortwave_mj_m2": 19.1,
+      "tmax_c": 8.4,
+      "tmin_c": 6.8,
+      "tavg_c": 7.6
+    },
+    {
+      "date": "2026-08-19",
+      "shortwave_mj_m2": 23.62,
+      "tmax_c": 13.2,
+      "tmin_c": 7.8,
+      "tavg_c": 10.5
+    },
+    {
+      "date": "2026-08-20",
+      "shortwave_mj_m2": 13.73,
+      "tmax_c": 10.6,
+      "tmin_c": 6.4,
+      "tavg_c": 8.5
+    },
+    {
+      "date": "2026-08-21",
+      "shortwave_mj_m2": 5.57
+    },
+    {
+      "date": "2026-08-22",
+      "shortwave_mj_m2": 20.49
+    },
+    {
+      "date": "2026-08-23",
+      "shortwave_mj_m2": 22.14
     }
   ]
 }
