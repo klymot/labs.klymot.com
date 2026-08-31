@@ -121,7 +121,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <p>Sunlight arrives as parallel rays. Straight overhead, that bundle of rays lands on the smallest possible patch of ground — maximum energy per square metre. Tilt the same bundle to a shallower angle and it spreads over a wider patch, so the same total energy gets diluted over more area. This is Lambert's cosine law: the sunlight a patch of ground actually receives scales with <code>cos(angle from directly overhead)</code> — full strength with the Sun straight up, tapering smoothly to zero right at sunrise and sunset, where the rays graze the surface edge-on.</p>
             <p>That angle isn't just "time of day" — it comes from three things combined: latitude, the Sun's declination (how far north or south of the equator it's shining, cycling with the orbit and the axial tilt), and the hour angle (how far the rotation has carried this point since local noon). Put those three together and you get how high the Sun sits in the sky, for any latitude, at any time of day, at any point in the year — and that's exactly what multiplies against the raw solar constant to give the sunlight a given box actually receives right now.</p>
             <p>It's this smooth cosine taper, not a day/night on-off switch, that shapes sunrise and sunset in the simulated temperature curve.</p>
-            <p>In this model the declination cycles over a ~365-day year — the year of a body orbiting the Sun at the Moon's distance — and stays on that cycle no matter what you set the rotation period to: spinning the body faster changes its day length, not its orbit. The real Moon's seasonal cycle is a little shorter (about 347 days) because its spin axis is coupled to its orbit around the <em>Earth</em>; with a tilt of only 1.54°, the difference between those two cycles is far smaller than anything else this model resolves.</p>
+            <p>In this model the declination cycles over the year of whichever orbital distance you choose in the parameters — ~365 days at the default Earth distance, shorter at Venus's, longer at Mars's — and stays on that cycle no matter what you set the rotation period to: spinning the body faster changes its day length, not its orbit. The real Moon's seasonal cycle is a little shorter (about 347 days) because its spin axis is coupled to its orbit around the <em>Earth</em>; with a tilt of only 1.54°, the difference between those two cycles is far smaller than anything else this model resolves.</p>
           </div>
         </details>
         <details class="expander">
@@ -220,6 +220,20 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <span class="param-value-group">
               <input type="number" class="param-value-input" id="rotationHoursValue" min="1" max="720" step="0.1" value="708" />
               <span class="param-value-suffix" id="rotationHoursDays">(29.5 days)</span>
+            </span>
+          </div>
+
+          <div class="param-row">
+            <label>Orbital distance (sets sunlight strength and year length)</label>
+            <div class="param-slider-col">
+              <div class="param-presets">
+                <button type="button" class="mini-tool" data-orbit="venus">Venus (0.72 AU)</button>
+                <button type="button" class="mini-tool" data-orbit="earth">Earth (1 AU)</button>
+                <button type="button" class="mini-tool" data-orbit="mars">Mars (1.52 AU)</button>
+              </div>
+            </div>
+            <span class="param-value-group">
+              <span class="param-value-suffix" id="orbitReadout"></span>
             </span>
           </div>
 
@@ -602,6 +616,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       coreCellCount: 6,
     };
 
+    // Orbital-distance choice: same body, moved to another planet's orbit.
+    // Sunlight scales as 1/d² from the 1 AU solar constant, and the
+    // seasonal year length follows Kepler's third law (d^1.5) — spin stays
+    // whatever the rotation slider says. Earth's distance is the default
+    // because that's where the real Moon actually orbits.
+    const ORBITS = {
+      venus: { label: 'Venus', au: 0.723 },
+      earth: { label: 'Earth', au: 1.0 },
+      mars: { label: 'Mars', au: 1.524 },
+    };
+    let orbitChoice = 'earth';
+    function orbitSolarConstant(key) {
+      return MOON_DEFAULTS.solarConstant / (ORBITS[key].au * ORBITS[key].au);
+    }
+    function orbitYearSec(key) {
+      return 365.25 * 86400 * Math.pow(ORBITS[key].au, 1.5);
+    }
+
     const els = {
       rotationHours: document.getElementById('rotationHours'),
       rotationHoursValue: document.getElementById('rotationHoursValue'),
@@ -675,6 +707,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         regolithK: Number(els.regolithK.value),
         bulkK: Number(els.bulkK.value),
         regolithThickness: Number(els.regolithThickness.value),
+        orbit: orbitChoice,
         conductivityModel,
       };
     }
@@ -718,6 +751,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         regolithK: params.get('rk'),
         bulkK: params.get('bk'),
         regolithThickness: params.get('rt'),
+        orbit: params.get('od'),
         conductivityModel: params.get('cm'),
       };
     }
@@ -730,6 +764,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       params.set('rk', p.regolithK);
       params.set('bk', p.bulkK);
       params.set('rt', p.regolithThickness);
+      params.set('od', p.orbit);
       if (p.conductivityModel) params.set('cm', p.conductivityModel);
       const hash = '#' + params.toString();
       if (location.hash !== hash) history.replaceState(null, '', hash);
@@ -741,6 +776,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (restoredState.regolithK) els.regolithK.value = restoredState.regolithK;
       if (restoredState.bulkK) els.bulkK.value = restoredState.bulkK;
       if (restoredState.regolithThickness) els.regolithThickness.value = restoredState.regolithThickness;
+      if (restoredState.orbit && ORBITS[restoredState.orbit]) orbitChoice = restoredState.orbit;
     }
 
     // Once a run has completed, the Simulate button disables itself (see
@@ -853,6 +889,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         markParamsChanged();
       });
     });
+    const orbitReadout = document.getElementById('orbitReadout');
+    function refreshOrbitButtons() {
+      document.querySelectorAll('[data-orbit]').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-orbit') === orbitChoice);
+      });
+      orbitReadout.textContent = `${orbitSolarConstant(orbitChoice).toFixed(0)} W/m² sunlight`;
+    }
+    document.querySelectorAll('[data-orbit]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        orbitChoice = btn.getAttribute('data-orbit');
+        refreshOrbitButtons();
+        pushStateToUrl();
+        markParamsChanged();
+      });
+    });
+    refreshOrbitButtons();
     refreshReadouts();
     pushStateToUrl();
 
@@ -1398,16 +1450,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const isCheese = p.conductivityModel === 'cheese';
       const params = {
         materialChoice: p.conductivityModel,
+        orbit: p.orbit,
         radius: MOON_DEFAULTS.radius,
         albedo: p.albedo,
-        solarConstant: MOON_DEFAULTS.solarConstant,
+        solarConstant: orbitSolarConstant(p.orbit),
         obliquityDeg: MOON_DEFAULTS.obliquityDeg,
         rotationPeriodSec: p.rotationHours * 3600,
         // The body orbits the Sun on its own (see the note in "What this is
-        // actually computing"): its seasonal declination cycle is one Earth
-        // year, decoupled from the rotation slider — spin sets the day
-        // length, the orbit sets the seasons.
-        orbitalPeriodSec: 365.25 * 86400,
+        // actually computing"): its seasonal declination cycle is the year
+        // of the chosen orbital distance, decoupled from the rotation
+        // slider — spin sets the day length, the orbit sets the seasons.
+        orbitalPeriodSec: orbitYearSec(p.orbit),
         // Regolith-material specific heat re-evaluated from each cell's
         // current temperature (Hemingway et al. 1973 calorimetry via the
         // Hayne et al. 2017 fit) — applied identically under both
@@ -1766,6 +1819,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const parts = [];
       parts.push(params.materialChoice === 'metzger' ? 'Depth+T conductivity'
         : (params.materialChoice === 'cheese' ? 'Solid cheese' : 'Layered conductivity'));
+      parts.push(b(params.orbit !== 'earth', `${ORBITS[params.orbit].label}'s orbit`));
       const rotDays = (params.rotationPeriodSec / 86400).toFixed(1);
       parts.push(b(Math.abs(params.rotationPeriodSec / 3600 - MOON_DEFAULTS.rotationPeriodHours) > 0.5,
         `${rotDays} d rotation`));
@@ -1820,6 +1874,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         : (params.materialChoice === 'cheese'
           ? 'Solid cheese — uniform parmesan-like material (not a Moon estimate)'
           : 'Layered, fixed conductivity model'));
+
+      items.push(params.orbit !== 'earth'
+        ? `Orbital distance changed to ${ORBITS[params.orbit].label}'s (${ORBITS[params.orbit].au} AU — sunlight ${(1 / (ORBITS[params.orbit].au * ORBITS[params.orbit].au)).toFixed(2)}× the Moon's; the real Moon orbits at 1 AU)`
+        : `Orbital distance unchanged (Earth's, 1 AU — where the real Moon orbits)`);
 
       const rotDays = (params.rotationPeriodSec / 86400).toFixed(1);
       const moonDays = (MOON_DEFAULTS.rotationPeriodHours / 24).toFixed(1);
