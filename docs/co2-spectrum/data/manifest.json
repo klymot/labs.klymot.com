@@ -1,0 +1,230 @@
+{
+ "generated_at": "2026-09-04T10:52:21+00:00",
+ "grid": {
+  "nu_min_cm1": 400.0,
+  "bin_width_cm1": 2.0,
+  "n_bins": 3800,
+  "n_g": 8,
+  "g_weights": [
+   0.05061427,
+   0.11119052,
+   0.15685332,
+   0.18134189,
+   0.18134189,
+   0.15685332,
+   0.11119052,
+   0.05061427
+  ],
+  "layout": "uint16 little-endian, [layer][bin][g] row-major; code 0 = 0, codes 1..65535 linear in log10 between log10_lo and log10_hi"
+ },
+ "physics": {
+  "line_shape": "Voigt (HAPI absorptionCoefficient_Voigt)",
+  "wing_cutoff_cm1": 25.0,
+  "intensity_threshold": 1e-27,
+  "co2_note": "optical depth per unit vmr; air-broadened (self-broadening error <0.2% below 5000 ppm); line mixing not included",
+  "h2o_note": "optical depth at the profile's own humidity with air/self diluent per layer; includes the MT_CKD 4.3 water-vapour continuum (self + foreign, per layer) with the 25 cm-1 line pedestal removed first",
+  "reduction": "correlated-k per 2 cm-1 bin, 8-point Gauss-Legendre, rank-correlated across layers; combined-gas view assumes random overlap"
+ },
+ "sources": {
+  "lines": "HITRAN2020 via HITRANonline/HAPI, fetched 2026-09-04",
+  "profiles": "NOAA IGRA v2.2 derived parameters, per-level median of 2015-2019 soundings; extended above balloon top with US Standard Atmosphere 1976 (offset-matched)"
+ },
+ "stations": [
+  {
+   "id": "EIM00003953",
+   "name": "Valentia Observatory",
+   "country": "Ireland",
+   "lat": 51.94,
+   "lon": -10.25,
+   "elev_m": 24,
+   "years": "2015-2019",
+   "n_soundings": 3596,
+   "n_layers": 49,
+   "files": {
+    "co2_k.bin": {
+     "gas": "CO2",
+     "unit": "od_per_vmr",
+     "log10_lo": -7.465911,
+     "log10_hi": 7.534089,
+     "bytes": 2979200,
+     "sha256": "040c8545b15a22b53d4e85b7662de2c6c2fc9776295e409bd2ad1abacc94ca2e"
+    },
+    "h2o_od.bin": {
+     "gas": "H2O",
+     "unit": "od",
+     "log10_lo": -10.66583,
+     "log10_hi": 4.33417,
+     "bytes": 2979200,
+     "sha256": "19e3fd3d0d06674a14329ad86e262f182cc3dc3a9c9962f0250eb18c3153f910"
+    },
+    "energy_curves.json": {
+     "kind": "energy_curves",
+     "bytes": 5649,
+     "sha256": "21e97b2ce260cb58d3dd63304a2c60e6c102588d022a5a115659cbe98c1cd320"
+    }
+   }
+  },
+  {
+   "id": "ICM00004018",
+   "name": "Keflavíkurflugvöllur",
+   "country": "Iceland",
+   "lat": 63.98,
+   "lon": -22.6,
+   "elev_m": 52,
+   "years": "2015-2019",
+   "n_soundings": 3641,
+   "n_layers": 49,
+   "files": {
+    "co2_k.bin": {
+     "gas": "CO2",
+     "unit": "od_per_vmr",
+     "log10_lo": -7.43511,
+     "log10_hi": 7.56489,
+     "bytes": 2979200,
+     "sha256": "b978aff741d8a9f00f43eb9c6ee7e7966ff076f1971302ab41cb31a23579de68"
+    },
+    "h2o_od.bin": {
+     "gas": "H2O",
+     "unit": "od",
+     "log10_lo": -10.744784,
+     "log10_hi": 4.255216,
+     "bytes": 2979200,
+     "sha256": "631e41d582bb0d4f0d6275c8f7e0b5635f944f10e919f57bf36b515eefa41227"
+    },
+    "energy_curves.json": {
+     "kind": "energy_curves",
+     "bytes": 5667,
+     "sha256": "2e873216b8fe8e5c336ee6c86997b3e0ea75426618c0041a077746b311b2a8d7"
+    }
+   }
+  },
+  {
+   "id": "MOM00060155",
+   "name": "Casablanca",
+   "country": "Morocco",
+   "lat": 33.57,
+   "lon": -7.67,
+   "elev_m": 56,
+   "years": "2015-2019",
+   "n_soundings": 1422,
+   "n_layers": 49,
+   "files": {
+    "co2_k.bin": {
+     "gas": "CO2",
+     "unit": "od_per_vmr",
+     "log10_lo": -7.520104,
+     "log10_hi": 7.479896,
+     "bytes": 2979200,
+     "sha256": "4192e502069a5d9c3197cea9e377dbfaf2b2c80f128ee4bc0cd58a7f209c2694"
+    },
+    "h2o_od.bin": {
+     "gas": "H2O",
+     "unit": "od",
+     "log10_lo": -10.5594,
+     "log10_hi": 4.4406,
+     "bytes": 2979200,
+     "sha256": "d35826204cf3a6a631e51283e194c6ba564ed3ffde1b510353019ad4f12966ae"
+    },
+    "energy_curves.json": {
+     "kind": "energy_curves",
+     "bytes": 5638,
+     "sha256": "e81decbd121990846919c9b64a93bece0f48e4ab5d2606da8c3b3fb0e1a3dbc3"
+    }
+   }
+  },
+  {
+   "id": "MRM00061442",
+   "name": "Nouakchott",
+   "country": "Mauritania",
+   "lat": 18.1,
+   "lon": -15.95,
+   "elev_m": 2,
+   "years": "2015-2019",
+   "n_soundings": 572,
+   "n_layers": 49,
+   "files": {
+    "co2_k.bin": {
+     "gas": "CO2",
+     "unit": "od_per_vmr",
+     "log10_lo": -7.534381,
+     "log10_hi": 7.465619,
+     "bytes": 2979200,
+     "sha256": "02757fc41202ae08c2927fe9f5fc8dd1d7ddba4d5160c71cc1e1cd42499afcaf"
+    },
+    "h2o_od.bin": {
+     "gas": "H2O",
+     "unit": "od",
+     "log10_lo": -10.897565,
+     "log10_hi": 4.102435,
+     "bytes": 2979200,
+     "sha256": "e0807ad5e250f9cfe9e5e8e8609faeaa6fb29f96112832b12f9883d12ccf4484"
+    },
+    "energy_curves.json": {
+     "kind": "energy_curves",
+     "bytes": 5654,
+     "sha256": "59ef7cffdc32c038f596eb2adccf1e0c8de0932705ac7f026e03eb1475850686"
+    }
+   }
+  },
+  {
+   "id": "SPM00008221",
+   "name": "Madrid–Barajas",
+   "country": "Spain",
+   "lat": 40.47,
+   "lon": -3.58,
+   "elev_m": 631,
+   "years": "2015-2019",
+   "n_soundings": 3490,
+   "n_layers": 49,
+   "files": {
+    "co2_k.bin": {
+     "gas": "CO2",
+     "unit": "od_per_vmr",
+     "log10_lo": -7.514942,
+     "log10_hi": 7.485058,
+     "bytes": 2979200,
+     "sha256": "b8be9be137e90d8743de77e16436b73dcd6890cf856cfc1f4bc5f8ebe84eb35d"
+    },
+    "h2o_od.bin": {
+     "gas": "H2O",
+     "unit": "od",
+     "log10_lo": -10.738689,
+     "log10_hi": 4.261311,
+     "bytes": 2979200,
+     "sha256": "08d90e2ad08c009417254957c718ad57c3f648e788487fe9f808ddb40fa00332"
+    },
+    "energy_curves.json": {
+     "kind": "energy_curves",
+     "bytes": 5655,
+     "sha256": "606a9fd10567df05b31287d8dadf74fc09abb981bce01a02d849f655fd0e6faf"
+    }
+   }
+  }
+ ],
+ "standard": {
+  "id": "USSA1976",
+  "name": "US Standard Atmosphere 1976",
+  "country": "no location — a reference atmosphere",
+  "years": "1976",
+  "n_soundings": 0,
+  "n_layers": 49,
+  "files": {
+   "co2_k.bin": {
+    "gas": "CO2",
+    "unit": "od_per_vmr",
+    "log10_lo": -7.509603,
+    "log10_hi": 7.490397,
+    "bytes": 2979200,
+    "sha256": "38e4364e49ac89d9d985eaaa312f01b8d0bc5bc7d6a36dee8166025b3e07ef7b"
+   },
+   "h2o_od.bin": {
+    "gas": "H2O",
+    "unit": "od",
+    "log10_lo": -10.821016,
+    "log10_hi": 4.178984,
+    "bytes": 2979200,
+    "sha256": "eb33e09125096dc67d5c8ad38a4ee99bd6693cbb32c76a75208baba0399def91"
+   }
+  }
+ }
+}
