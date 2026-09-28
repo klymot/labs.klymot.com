@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T09:26:43+00:00",
+  "generated_at": "2026-09-28T10:21:59+00:00",
   "source": "Mixed: DWD (POT), KNMI (DBL), SMHI (STO), Open-Meteo placeholder (VAL, TOK, DAV, UCL)",
   "station_pairing_rule": "Choose the nearest GHCN temperature station whose record starts no later than the sunshine start year and ends no earlier than the sunshine end year. Valentia is fixed to EI000003953.",
   "stations": [
