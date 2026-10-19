@@ -5,10 +5,10 @@
   "lon": 4.3583,
   "source": "Open-Meteo Historical Weather API (placeholder \u2014 gridded model/reanalysis data; real pyranometer records not freely accessible without registration for this station)",
   "source_type": "open_meteo",
-  "generated_at": "2026-10-12T11:30:53+00:00",
-  "updated": "2026-10-12",
+  "generated_at": "2026-10-19T09:28:44+00:00",
+  "updated": "2026-10-19",
   "start_date": "1951-01-01",
-  "end_date": "2026-10-11",
+  "end_date": "2026-10-18",
   "temperature_station": {
     "id": "BE000006447",
     "name": "UCCLE",
@@ -184801,19 +184801,68 @@
     },
     {
       "date": "2026-10-08",
-      "shortwave_mj_m2": 10.47
+      "shortwave_mj_m2": 10.47,
+      "tmax_c": 15.2,
+      "tmin_c": 7.8,
+      "tavg_c": 11.5
     },
     {
       "date": "2026-10-09",
-      "shortwave_mj_m2": 3.83
+      "shortwave_mj_m2": 3.83,
+      "tmax_c": 15.8,
+      "tmin_c": 7.9,
+      "tavg_c": 11.9
     },
     {
       "date": "2026-10-10",
-      "shortwave_mj_m2": 11.16
+      "shortwave_mj_m2": 11.16,
+      "tmax_c": 14.7,
+      "tmin_c": 9.2,
+      "tavg_c": 11.9
     },
     {
       "date": "2026-10-11",
-      "shortwave_mj_m2": 10.15
+      "shortwave_mj_m2": 10.15,
+      "tmax_c": 14.4,
+      "tmin_c": 7.9,
+      "tavg_c": 11.2
+    },
+    {
+      "date": "2026-10-12",
+      "shortwave_mj_m2": 11.8,
+      "tmax_c": 17.8,
+      "tmin_c": 6.7,
+      "tavg_c": 12.2
+    },
+    {
+      "date": "2026-10-13",
+      "shortwave_mj_m2": 4.96,
+      "tmax_c": 20.8,
+      "tmin_c": 12.6,
+      "tavg_c": 16.7
+    },
+    {
+      "date": "2026-10-14",
+      "shortwave_mj_m2": 10.68,
+      "tmax_c": 17.7,
+      "tmin_c": 9.9,
+      "tavg_c": 13.8
+    },
+    {
+      "date": "2026-10-15",
+      "shortwave_mj_m2": 10.34
+    },
+    {
+      "date": "2026-10-16",
+      "shortwave_mj_m2": 7.23
+    },
+    {
+      "date": "2026-10-17",
+      "shortwave_mj_m2": 10.5
+    },
+    {
+      "date": "2026-10-18",
+      "shortwave_mj_m2": 4.09
     }
   ]
 }
