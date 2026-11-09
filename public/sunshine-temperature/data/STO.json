@@ -5,10 +5,10 @@
   "lon": 18.0686,
   "source": "Swedish Meteorological and Hydrological Institute (SMHI) \u2014 hourly global irradiance aggregated to daily MJ/m\u00b2, station 98735 Stockholm Sol (real pyranometer measurements from 1983)",
   "source_type": "smhi",
-  "generated_at": "2026-10-19T09:28:44+00:00",
-  "updated": "2026-10-19",
+  "generated_at": "2026-11-09T12:24:33+00:00",
+  "updated": "2026-11-09",
   "start_date": "1940-01-01",
-  "end_date": "2026-10-18",
+  "end_date": "2026-11-08",
   "temperature_station": {
     "id": "SWM00002485",
     "name": "STOCKHOLM",
@@ -109993,7 +109993,131 @@
     },
     {
       "date": "2026-07-01",
-      "shortwave_mj_m2": 1.832
+      "shortwave_mj_m2": 15.756
+    },
+    {
+      "date": "2026-07-02",
+      "shortwave_mj_m2": 21.056
+    },
+    {
+      "date": "2026-07-03",
+      "shortwave_mj_m2": 15.025
+    },
+    {
+      "date": "2026-07-04",
+      "shortwave_mj_m2": 17.817
+    },
+    {
+      "date": "2026-07-05",
+      "shortwave_mj_m2": 17.06
+    },
+    {
+      "date": "2026-07-06",
+      "shortwave_mj_m2": 26.06
+    },
+    {
+      "date": "2026-07-07",
+      "shortwave_mj_m2": 15.297
+    },
+    {
+      "date": "2026-07-08",
+      "shortwave_mj_m2": 14.259
+    },
+    {
+      "date": "2026-07-09",
+      "shortwave_mj_m2": 28.779
+    },
+    {
+      "date": "2026-07-10",
+      "shortwave_mj_m2": 18.945
+    },
+    {
+      "date": "2026-07-11",
+      "shortwave_mj_m2": 25.328
+    },
+    {
+      "date": "2026-07-12",
+      "shortwave_mj_m2": 24.156
+    },
+    {
+      "date": "2026-07-13",
+      "shortwave_mj_m2": 28.363
+    },
+    {
+      "date": "2026-07-14",
+      "shortwave_mj_m2": 27.985
+    },
+    {
+      "date": "2026-07-15",
+      "shortwave_mj_m2": 25.739
+    },
+    {
+      "date": "2026-07-16",
+      "shortwave_mj_m2": 27.635
+    },
+    {
+      "date": "2026-07-17",
+      "shortwave_mj_m2": 26.364
+    },
+    {
+      "date": "2026-07-18",
+      "shortwave_mj_m2": 7.621
+    },
+    {
+      "date": "2026-07-19",
+      "shortwave_mj_m2": 7.379
+    },
+    {
+      "date": "2026-07-20",
+      "shortwave_mj_m2": 12.114
+    },
+    {
+      "date": "2026-07-21",
+      "shortwave_mj_m2": 26.041
+    },
+    {
+      "date": "2026-07-22",
+      "shortwave_mj_m2": 8.243
+    },
+    {
+      "date": "2026-07-23",
+      "shortwave_mj_m2": 18.207
+    },
+    {
+      "date": "2026-07-24",
+      "shortwave_mj_m2": 22.745
+    },
+    {
+      "date": "2026-07-25",
+      "shortwave_mj_m2": 10.137
+    },
+    {
+      "date": "2026-07-26",
+      "shortwave_mj_m2": 17.233
+    },
+    {
+      "date": "2026-07-27",
+      "shortwave_mj_m2": 13.382
+    },
+    {
+      "date": "2026-07-28",
+      "shortwave_mj_m2": 26.07
+    },
+    {
+      "date": "2026-07-29",
+      "shortwave_mj_m2": 21.575
+    },
+    {
+      "date": "2026-07-30",
+      "shortwave_mj_m2": 22.206
+    },
+    {
+      "date": "2026-07-31",
+      "shortwave_mj_m2": 19.454
+    },
+    {
+      "date": "2026-08-01",
+      "shortwave_mj_m2": 1.964
     }
   ]
 }
