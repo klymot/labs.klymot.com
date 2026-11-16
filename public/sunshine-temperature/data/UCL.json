@@ -5,10 +5,10 @@
   "lon": 4.3583,
   "source": "Open-Meteo Historical Weather API (placeholder \u2014 gridded model/reanalysis data; real pyranometer records not freely accessible without registration for this station)",
   "source_type": "open_meteo",
-  "generated_at": "2026-11-09T12:24:33+00:00",
-  "updated": "2026-11-09",
+  "generated_at": "2026-11-16T12:20:27+00:00",
+  "updated": "2026-11-16",
   "start_date": "1951-01-01",
-  "end_date": "2026-11-08",
+  "end_date": "2026-11-15",
   "temperature_station": {
     "id": "BE000006447",
     "name": "UCCLE",
@@ -184976,31 +184976,83 @@
     },
     {
       "date": "2026-11-02",
-      "shortwave_mj_m2": 1.58
+      "shortwave_mj_m2": 1.58,
+      "tmax_c": 10.0,
+      "tmin_c": 7.9,
+      "tavg_c": 8.9
     },
     {
       "date": "2026-11-03",
-      "shortwave_mj_m2": 3.39
+      "shortwave_mj_m2": 3.39,
+      "tmax_c": 9.2,
+      "tmin_c": 4.8,
+      "tavg_c": 7.0
     },
     {
       "date": "2026-11-04",
-      "shortwave_mj_m2": 5.91
+      "shortwave_mj_m2": 5.91,
+      "tmax_c": 8.6,
+      "tmin_c": 4.4,
+      "tavg_c": 6.5
     },
     {
       "date": "2026-11-05",
-      "shortwave_mj_m2": 7.61
+      "shortwave_mj_m2": 7.61,
+      "tmax_c": 10.2,
+      "tmin_c": 2.0,
+      "tavg_c": 6.1
     },
     {
       "date": "2026-11-06",
-      "shortwave_mj_m2": 4.16
+      "shortwave_mj_m2": 4.16,
+      "tmax_c": 9.0,
+      "tmin_c": 2.8,
+      "tavg_c": 5.9
     },
     {
       "date": "2026-11-07",
-      "shortwave_mj_m2": 1.32
+      "shortwave_mj_m2": 1.32,
+      "tmax_c": 8.9,
+      "tmin_c": 5.9,
+      "tavg_c": 7.4
     },
     {
       "date": "2026-11-08",
-      "shortwave_mj_m2": 3.55
+      "shortwave_mj_m2": 3.55,
+      "tmax_c": 9.1,
+      "tmin_c": 4.8,
+      "tavg_c": 6.9
+    },
+    {
+      "date": "2026-11-09",
+      "shortwave_mj_m2": 7.1,
+      "tmax_c": 10.1,
+      "tmin_c": 1.6,
+      "tavg_c": 5.8
+    },
+    {
+      "date": "2026-11-10",
+      "shortwave_mj_m2": 6.77
+    },
+    {
+      "date": "2026-11-11",
+      "shortwave_mj_m2": 1.26
+    },
+    {
+      "date": "2026-11-12",
+      "shortwave_mj_m2": 3.76
+    },
+    {
+      "date": "2026-11-13",
+      "shortwave_mj_m2": 5.1
+    },
+    {
+      "date": "2026-11-14",
+      "shortwave_mj_m2": 6.31
+    },
+    {
+      "date": "2026-11-15",
+      "shortwave_mj_m2": 2.31
     }
   ]
 }

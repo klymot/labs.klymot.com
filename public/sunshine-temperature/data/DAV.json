@@ -5,10 +5,10 @@
   "lon": 9.85,
   "source": "Open-Meteo Historical Weather API (placeholder \u2014 gridded model/reanalysis data; real pyranometer records not freely accessible without registration for this station)",
   "source_type": "open_meteo",
-  "generated_at": "2026-11-09T12:24:33+00:00",
-  "updated": "2026-11-09",
+  "generated_at": "2026-11-16T12:20:27+00:00",
+  "updated": "2026-11-16",
   "start_date": "1940-01-01",
-  "end_date": "2026-11-08",
+  "end_date": "2026-11-15",
   "temperature_station": {
     "id": "SZ000002220",
     "name": "SAENTIS",
@@ -221860,23 +221860,69 @@
     },
     {
       "date": "2026-11-04",
-      "shortwave_mj_m2": 9.13
+      "shortwave_mj_m2": 9.13,
+      "tmax_c": -0.8,
+      "tmin_c": -2.1,
+      "tavg_c": -1.5
     },
     {
       "date": "2026-11-05",
-      "shortwave_mj_m2": 9.9
+      "shortwave_mj_m2": 9.9,
+      "tmax_c": 3.1,
+      "tmin_c": -0.9,
+      "tavg_c": 1.1
     },
     {
       "date": "2026-11-06",
-      "shortwave_mj_m2": 4.82
+      "shortwave_mj_m2": 4.82,
+      "tmax_c": 1.8,
+      "tmin_c": -3.4,
+      "tavg_c": -0.8
     },
     {
       "date": "2026-11-07",
-      "shortwave_mj_m2": 5.59
+      "shortwave_mj_m2": 5.59,
+      "tmax_c": -2.4,
+      "tmin_c": -3.8,
+      "tavg_c": -3.1
     },
     {
       "date": "2026-11-08",
-      "shortwave_mj_m2": 9.04
+      "shortwave_mj_m2": 9.04,
+      "tmax_c": -2.9,
+      "tmin_c": -5.3,
+      "tavg_c": -4.1
+    },
+    {
+      "date": "2026-11-09",
+      "shortwave_mj_m2": 3.37,
+      "tmax_c": 2.0,
+      "tmin_c": -2.4,
+      "tavg_c": -0.2
+    },
+    {
+      "date": "2026-11-10",
+      "shortwave_mj_m2": 4.99
+    },
+    {
+      "date": "2026-11-11",
+      "shortwave_mj_m2": 4.78
+    },
+    {
+      "date": "2026-11-12",
+      "shortwave_mj_m2": 2.7
+    },
+    {
+      "date": "2026-11-13",
+      "shortwave_mj_m2": 2.7
+    },
+    {
+      "date": "2026-11-14",
+      "shortwave_mj_m2": 9.11
+    },
+    {
+      "date": "2026-11-15",
+      "shortwave_mj_m2": 6.1
     }
   ]
 }
